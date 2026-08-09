@@ -1,0 +1,419 @@
+/**
+ * KOC Design System — design tokens
+ * GENERATED FILE. Do not edit.
+ *
+ * Source: packages/tokens/src/*.ts    Regenerate: npm run build:tokens
+ *
+ * Brand anchor: #0060A9 (kockw.com custom.css — rgb(0,96,169) on `h1, h2`; 29 rule-level uses, 182 computed uses)
+ */
+
+/* ── Raw palette ────────────────────────────────────────────────────────────
+ * The full ramps. Available to any consumer, but prefer the semantic tokens
+ * below — those are what re-theme correctly in dark mode.
+ */
+:root {
+  --koc-primary-50: oklch(0.9702 0.0131 251.56);
+  --koc-primary-100: oklch(0.936 0.0276 248.12);
+  --koc-primary-200: oklch(0.8823 0.0553 249.29);
+  --koc-primary-300: oklch(0.8137 0.0844 249.43);
+  --koc-primary-400: oklch(0.709 0.1147 250.08);
+  --koc-primary-500: oklch(0.5977 0.1324 250.51);
+  --koc-primary-600: oklch(0.483 0.139 250.61);
+  --koc-primary-700: oklch(0.4225 0.1219 250.7);
+  --koc-primary-800: oklch(0.3532 0.1038 251.39);
+  --koc-primary-900: oklch(0.2855 0.0802 250.94);
+  --koc-primary-950: oklch(0.2067 0.056 251.7);
+
+  --koc-neutral-50: oklch(0.97 0.0029 264.54);
+  --koc-neutral-100: oklch(0.9364 0.0046 258.33);
+  --koc-neutral-200: oklch(0.8829 0.0088 247.93);
+  --koc-neutral-300: oklch(0.8138 0.0125 247.98);
+  --koc-neutral-400: oklch(0.7082 0.0178 250.9);
+  --koc-neutral-500: oklch(0.5987 0.0205 250.71);
+  --koc-neutral-600: oklch(0.4836 0.0224 248.29);
+  --koc-neutral-700: oklch(0.4197 0.0203 251.08);
+  --koc-neutral-800: oklch(0.3528 0.0168 251.8);
+  --koc-neutral-900: oklch(0.2866 0.0131 253.03);
+  --koc-neutral-950: oklch(0.2061 0.0086 240.33);
+
+  --koc-success-50: oklch(0.9717 0.0107 158.85);
+  --koc-success-100: oklch(0.9363 0.0225 164.5);
+  --koc-success-200: oklch(0.8812 0.046 164.38);
+  --koc-success-300: oklch(0.8138 0.0702 163.93);
+  --koc-success-400: oklch(0.7087 0.0952 163.86);
+  --koc-success-500: oklch(0.5987 0.1093 163.94);
+  --koc-success-600: oklch(0.4825 0.1032 163.75);
+  --koc-success-700: oklch(0.4204 0.0893 164.23);
+  --koc-success-800: oklch(0.3556 0.0758 163.95);
+  --koc-success-900: oklch(0.2844 0.0602 164.46);
+  --koc-success-950: oklch(0.2044 0.043 164.96);
+
+  --koc-warning-50: oklch(0.9712 0.0137 67.67);
+  --koc-warning-100: oklch(0.9365 0.0313 70.52);
+  --koc-warning-200: oklch(0.8822 0.0623 70.83);
+  --koc-warning-300: oklch(0.8117 0.0944 70);
+  --koc-warning-400: oklch(0.7101 0.129 70.39);
+  --koc-warning-500: oklch(0.5975 0.1297 69.62);
+  --koc-warning-600: oklch(0.4826 0.1044 70.21);
+  --koc-warning-700: oklch(0.4208 0.0909 70.47);
+  --koc-warning-800: oklch(0.3545 0.0771 69.45);
+  --koc-warning-900: oklch(0.2856 0.0616 70.85);
+  --koc-warning-950: oklch(0.2057 0.0446 69.93);
+
+  --koc-danger-50: oklch(0.9708 0.0143 28.01);
+  --koc-danger-100: oklch(0.9354 0.0326 27.1);
+  --koc-danger-200: oklch(0.8816 0.0626 26.92);
+  --koc-danger-300: oklch(0.8134 0.1034 26.83);
+  --koc-danger-400: oklch(0.7084 0.1413 26.96);
+  --koc-danger-500: oklch(0.5971 0.1616 26.72);
+  --koc-danger-600: oklch(0.4835 0.1706 27.03);
+  --koc-danger-700: oklch(0.4215 0.1571 27.03);
+  --koc-danger-800: oklch(0.3541 0.1288 27.31);
+  --koc-danger-900: oklch(0.2862 0.0993 26.8);
+  --koc-danger-950: oklch(0.2056 0.0686 27.11);
+
+  --koc-info-50: oklch(0.97 0.0099 212.52);
+  --koc-info-100: oklch(0.9348 0.0228 210.4);
+  --koc-info-200: oklch(0.8819 0.046 210.17);
+  --koc-info-300: oklch(0.8134 0.0704 209.75);
+  --koc-info-400: oklch(0.708 0.0953 210.38);
+  --koc-info-500: oklch(0.5987 0.1036 210.19);
+  --koc-info-600: oklch(0.4833 0.0834 209.34);
+  --koc-info-700: oklch(0.4216 0.0728 209.39);
+  --koc-info-800: oklch(0.3542 0.0612 209.64);
+  --koc-info-900: oklch(0.2869 0.0496 209.82);
+  --koc-info-950: oklch(0.2071 0.0356 207.73);
+
+  --koc-accent-50: oklch(0.9713 0.0108 330.14);
+  --koc-accent-100: oklch(0.9356 0.0253 329.73);
+  --koc-accent-200: oklch(0.8811 0.048 330.33);
+  --koc-accent-300: oklch(0.813 0.0742 329.95);
+  --koc-accent-400: oklch(0.7089 0.1006 330.12);
+  --koc-accent-500: oklch(0.5974 0.1141 329.7);
+  --koc-accent-600: oklch(0.4828 0.1198 330.15);
+  --koc-accent-700: oklch(0.4224 0.1104 329.95);
+  --koc-accent-800: oklch(0.3534 0.0918 329.79);
+  --koc-accent-900: oklch(0.2864 0.0701 329.48);
+  --koc-accent-950: oklch(0.205 0.049 328.94);
+
+  /* Categorical chart series (theme-independent reference copies) */
+  --koc-chart-series-1: oklch(0.483 0.139 250.61);
+  --koc-chart-series-2: oklch(0.5975 0.1297 69.62);
+  --koc-chart-series-3: oklch(0.4825 0.1032 163.75);
+  --koc-chart-series-4: oklch(0.5974 0.1141 329.7);
+  --koc-chart-series-5: oklch(0.4833 0.0834 209.34);
+  --koc-chart-series-6: oklch(0.5971 0.1616 26.72);
+}
+
+/* ── Semantic tokens: light ─────────────────────────────────────────────────
+ * Names follow the shadcn/ui contract exactly, so any shadcn, Origin UI or
+ * Kibo UI component is automatically on-brand with no restyling.
+ */
+:root {
+  --background: oklch(0.97 0.0029 264.54);
+  --foreground: oklch(0.2061 0.0086 240.33);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2061 0.0086 240.33);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2061 0.0086 240.33);
+  --primary: oklch(0.483 0.139 250.61);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.9364 0.0046 258.33);
+  --secondary-foreground: oklch(0.2866 0.0131 253.03);
+  --muted: oklch(0.9364 0.0046 258.33);
+  --muted-foreground: oklch(0.4836 0.0224 248.29);
+  --accent: oklch(0.9702 0.0131 251.56);
+  --accent-foreground: oklch(0.4225 0.1219 250.7);
+  --destructive: oklch(0.4835 0.1706 27.03);
+  --destructive-foreground: oklch(1 0 0);
+  --success: oklch(0.4825 0.1032 163.75);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.4826 0.1044 70.21);
+  --warning-foreground: oklch(1 0 0);
+  --info: oklch(0.4833 0.0834 209.34);
+  --info-foreground: oklch(1 0 0);
+  --border: oklch(0.8829 0.0088 247.93);
+  --input: oklch(0.5987 0.0205 250.71);
+  --ring: oklch(0.483 0.139 250.61);
+  --chart-1: oklch(0.483 0.139 250.61);
+  --chart-2: oklch(0.5975 0.1297 69.62);
+  --chart-3: oklch(0.4825 0.1032 163.75);
+  --chart-4: oklch(0.5974 0.1141 329.7);
+  --chart-5: oklch(0.4833 0.0834 209.34);
+  --sidebar: oklch(0.3532 0.1038 251.39);
+  --sidebar-foreground: oklch(0.9702 0.0131 251.56);
+  --sidebar-primary: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0.3532 0.1038 251.39);
+  --sidebar-accent: oklch(0.4225 0.1219 250.7);
+  --sidebar-accent-foreground: oklch(1 0 0);
+  --sidebar-border: oklch(0.4225 0.1219 250.7);
+  --sidebar-ring: oklch(0.8137 0.0844 249.43);
+
+  --radius: 0.375rem;
+}
+
+/* ── Semantic tokens: dark ──────────────────────────────────────────────────
+ * A distinct mapping, not an inversion. 'primary' lifts 600 -> 400 because
+ * #0060A9 reaches only ~3.2:1 on a dark surface and would fail AA.
+ */
+.dark {
+  --background: oklch(0.2061 0.0086 240.33);
+  --foreground: oklch(0.97 0.0029 264.54);
+  --card: oklch(0.2866 0.0131 253.03);
+  --card-foreground: oklch(0.97 0.0029 264.54);
+  --popover: oklch(0.2866 0.0131 253.03);
+  --popover-foreground: oklch(0.97 0.0029 264.54);
+  --primary: oklch(0.709 0.1147 250.08);
+  --primary-foreground: oklch(0.2061 0.0086 240.33);
+  --secondary: oklch(0.3528 0.0168 251.8);
+  --secondary-foreground: oklch(0.9364 0.0046 258.33);
+  --muted: oklch(0.3528 0.0168 251.8);
+  --muted-foreground: oklch(0.8138 0.0125 247.98);
+  --accent: oklch(0.2855 0.0802 250.94);
+  --accent-foreground: oklch(0.936 0.0276 248.12);
+  --destructive: oklch(0.7084 0.1413 26.96);
+  --destructive-foreground: oklch(0.2061 0.0086 240.33);
+  --success: oklch(0.7087 0.0952 163.86);
+  --success-foreground: oklch(0.2061 0.0086 240.33);
+  --warning: oklch(0.7101 0.129 70.39);
+  --warning-foreground: oklch(0.2061 0.0086 240.33);
+  --info: oklch(0.708 0.0953 210.38);
+  --info-foreground: oklch(0.2061 0.0086 240.33);
+  --border: oklch(0.3528 0.0168 251.8);
+  --input: oklch(0.5987 0.0205 250.71);
+  --ring: oklch(0.709 0.1147 250.08);
+  --chart-1: oklch(0.709 0.1147 250.08);
+  --chart-2: oklch(0.7101 0.129 70.39);
+  --chart-3: oklch(0.7087 0.0952 163.86);
+  --chart-4: oklch(0.7089 0.1006 330.12);
+  --chart-5: oklch(0.8134 0.0704 209.75);
+  --sidebar: oklch(0.2866 0.0131 253.03);
+  --sidebar-foreground: oklch(0.9364 0.0046 258.33);
+  --sidebar-primary: oklch(0.709 0.1147 250.08);
+  --sidebar-primary-foreground: oklch(0.2061 0.0086 240.33);
+  --sidebar-accent: oklch(0.3528 0.0168 251.8);
+  --sidebar-accent-foreground: oklch(0.97 0.0029 264.54);
+  --sidebar-border: oklch(0.3528 0.0168 251.8);
+  --sidebar-ring: oklch(0.709 0.1147 250.08);
+}
+
+/* ── Tailwind v4 theme bridge ───────────────────────────────────────────────
+ * '@theme inline' maps our tokens onto Tailwind's colour namespace, so
+ * 'bg-primary', 'text-muted-foreground', 'border-border' etc. all resolve.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-koc-primary-50: var(--koc-primary-50);
+  --color-koc-primary-100: var(--koc-primary-100);
+  --color-koc-primary-200: var(--koc-primary-200);
+  --color-koc-primary-300: var(--koc-primary-300);
+  --color-koc-primary-400: var(--koc-primary-400);
+  --color-koc-primary-500: var(--koc-primary-500);
+  --color-koc-primary-600: var(--koc-primary-600);
+  --color-koc-primary-700: var(--koc-primary-700);
+  --color-koc-primary-800: var(--koc-primary-800);
+  --color-koc-primary-900: var(--koc-primary-900);
+  --color-koc-primary-950: var(--koc-primary-950);
+  --color-koc-neutral-50: var(--koc-neutral-50);
+  --color-koc-neutral-100: var(--koc-neutral-100);
+  --color-koc-neutral-200: var(--koc-neutral-200);
+  --color-koc-neutral-300: var(--koc-neutral-300);
+  --color-koc-neutral-400: var(--koc-neutral-400);
+  --color-koc-neutral-500: var(--koc-neutral-500);
+  --color-koc-neutral-600: var(--koc-neutral-600);
+  --color-koc-neutral-700: var(--koc-neutral-700);
+  --color-koc-neutral-800: var(--koc-neutral-800);
+  --color-koc-neutral-900: var(--koc-neutral-900);
+  --color-koc-neutral-950: var(--koc-neutral-950);
+  --color-koc-success-50: var(--koc-success-50);
+  --color-koc-success-100: var(--koc-success-100);
+  --color-koc-success-200: var(--koc-success-200);
+  --color-koc-success-300: var(--koc-success-300);
+  --color-koc-success-400: var(--koc-success-400);
+  --color-koc-success-500: var(--koc-success-500);
+  --color-koc-success-600: var(--koc-success-600);
+  --color-koc-success-700: var(--koc-success-700);
+  --color-koc-success-800: var(--koc-success-800);
+  --color-koc-success-900: var(--koc-success-900);
+  --color-koc-success-950: var(--koc-success-950);
+  --color-koc-warning-50: var(--koc-warning-50);
+  --color-koc-warning-100: var(--koc-warning-100);
+  --color-koc-warning-200: var(--koc-warning-200);
+  --color-koc-warning-300: var(--koc-warning-300);
+  --color-koc-warning-400: var(--koc-warning-400);
+  --color-koc-warning-500: var(--koc-warning-500);
+  --color-koc-warning-600: var(--koc-warning-600);
+  --color-koc-warning-700: var(--koc-warning-700);
+  --color-koc-warning-800: var(--koc-warning-800);
+  --color-koc-warning-900: var(--koc-warning-900);
+  --color-koc-warning-950: var(--koc-warning-950);
+  --color-koc-danger-50: var(--koc-danger-50);
+  --color-koc-danger-100: var(--koc-danger-100);
+  --color-koc-danger-200: var(--koc-danger-200);
+  --color-koc-danger-300: var(--koc-danger-300);
+  --color-koc-danger-400: var(--koc-danger-400);
+  --color-koc-danger-500: var(--koc-danger-500);
+  --color-koc-danger-600: var(--koc-danger-600);
+  --color-koc-danger-700: var(--koc-danger-700);
+  --color-koc-danger-800: var(--koc-danger-800);
+  --color-koc-danger-900: var(--koc-danger-900);
+  --color-koc-danger-950: var(--koc-danger-950);
+  --color-koc-info-50: var(--koc-info-50);
+  --color-koc-info-100: var(--koc-info-100);
+  --color-koc-info-200: var(--koc-info-200);
+  --color-koc-info-300: var(--koc-info-300);
+  --color-koc-info-400: var(--koc-info-400);
+  --color-koc-info-500: var(--koc-info-500);
+  --color-koc-info-600: var(--koc-info-600);
+  --color-koc-info-700: var(--koc-info-700);
+  --color-koc-info-800: var(--koc-info-800);
+  --color-koc-info-900: var(--koc-info-900);
+  --color-koc-info-950: var(--koc-info-950);
+  --color-koc-accent-50: var(--koc-accent-50);
+  --color-koc-accent-100: var(--koc-accent-100);
+  --color-koc-accent-200: var(--koc-accent-200);
+  --color-koc-accent-300: var(--koc-accent-300);
+  --color-koc-accent-400: var(--koc-accent-400);
+  --color-koc-accent-500: var(--koc-accent-500);
+  --color-koc-accent-600: var(--koc-accent-600);
+  --color-koc-accent-700: var(--koc-accent-700);
+  --color-koc-accent-800: var(--koc-accent-800);
+  --color-koc-accent-900: var(--koc-accent-900);
+  --color-koc-accent-950: var(--koc-accent-950);
+
+  --font-sans: Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial, sans-serif;
+  --font-mono: JetBrains Mono, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+
+  --radius-none: 0;
+  --radius-sm: 0.25rem;
+  --radius-DEFAULT: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  --shadow-none: none;
+  --shadow-xs: 0 1px 2px 0 oklch(0.28 0.02 250 / 0.05);
+  --shadow-sm: 0 1px 3px 0 oklch(0.28 0.02 250 / 0.08), 0 1px 2px -1px oklch(0.28 0.02 250 / 0.06);
+  --shadow-DEFAULT: 0 2px 4px -1px oklch(0.28 0.02 250 / 0.08), 0 1px 2px -1px oklch(0.28 0.02 250 / 0.06);
+  --shadow-md: 0 4px 8px -2px oklch(0.28 0.02 250 / 0.10), 0 2px 4px -2px oklch(0.28 0.02 250 / 0.06);
+  --shadow-lg: 0 12px 20px -4px oklch(0.28 0.02 250 / 0.12), 0 4px 8px -4px oklch(0.28 0.02 250 / 0.08);
+  --shadow-xl: 0 24px 32px -8px oklch(0.28 0.02 250 / 0.16), 0 8px 12px -6px oklch(0.28 0.02 250 / 0.10);
+  --shadow-focus: 0 0 0 3px oklch(0.483 0.139 250.61 / 0.35);
+
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+  --breakpoint-3xl: 1920px;
+
+  --duration-instant: 0ms;
+  --duration-fast: 120ms;
+  --duration-DEFAULT: 180ms;
+  --duration-slow: 240ms;
+  --duration-slower: 300ms;
+
+  --ease-DEFAULT: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-inOut: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Base layer ─────────────────────────────────────────────────────────────*/
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    /* Inter's defaults leave gaps at UI sizes; contextual alternates close them. */
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Numbers in dashboards must align on the decimal. Without tabular figures a
+   * column of production volumes shimmies by digit and can't be scanned. */
+  .tabular,
+  table tbody td,
+  [data-slot="kpi-value"] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+
+  /* A single visible focus style, everywhere. Keyboard users are the whole
+   * reason this exists — never remove it without a replacement. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Respect the OS-level reduced-motion setting. Vestibular disorders are real
+   * and this is a tool people use all day. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

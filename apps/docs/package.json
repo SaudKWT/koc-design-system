@@ -1,0 +1,30 @@
+{
+  "name": "@koc/docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 4180",
+    "build": "vite build",
+    "preview": "vite preview --port 4180",
+    "build:registry": "tsx scripts/build-registry.ts"
+  },
+  "dependencies": {
+    "@koc/tokens": "0.1.0",
+    "@koc/ui": "0.1.0",
+    "lucide-react": "^0.469.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "recharts": "^2.15.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "^4.3.4",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7"
+  }
+}

@@ -1,0 +1,16 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.env.*
+!.env.example
+
+# Build output. Listed per-path rather than as a bare `dist/` on purpose: git
+# cannot re-include a file whose parent directory is excluded, so a blanket
+# `dist/` would take packages/tokens/dist with it and no `!` rule could rescue it.
+apps/docs/dist/
+
+# packages/tokens/dist IS committed, deliberately. Consumers resolve the package
+# through the workspace with no publish step, so dist must be present — and a diff
+# on report.json is how a brand or contrast regression becomes visible in review
+# rather than at runtime.

@@ -1,0 +1,96 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "koc",
+  "homepage": "https://design.kockw.com",
+  "items": [
+    {
+      "name": "theme",
+      "type": "registry:theme",
+      "title": "KOC Theme",
+      "description": "Kuwait Oil Company brand tokens for light and dark. Anchored to #0060A9, recovered from KOC's own stylesheets. Install this first — it re-skins a stock shadcn app into a KOC app."
+    },
+    {
+      "name": "utils",
+      "type": "registry:lib",
+      "title": "cn utility",
+      "description": "Class merger — clsx + tailwind-merge."
+    },
+    {
+      "name": "button",
+      "type": "registry:ui",
+      "title": "Button",
+      "description": "Six variants, four sizes. Every label/background pair is contrast-tested.",
+      "categories": [
+        "form"
+      ]
+    },
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "The primary surface for grouping dashboard content.",
+      "categories": [
+        "layout"
+      ]
+    },
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "Text field. Its border carries KOC's WCAG 1.4.11 compliance at 3.63:1 — do not soften it to border-border.",
+      "categories": [
+        "form"
+      ]
+    },
+    {
+      "name": "label",
+      "type": "registry:ui",
+      "title": "Label",
+      "description": "Form label. Always pair with a control via htmlFor.",
+      "categories": [
+        "form"
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Counts, tags and categories. For plant state use @koc/status-badge instead."
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "Inline message. Callers must supply an icon — colour alone cannot carry severity."
+    },
+    {
+      "name": "table",
+      "type": "registry:ui",
+      "title": "Table",
+      "description": "Table primitives. Body cells get tabular figures automatically; right-align numeric columns.",
+      "categories": [
+        "data"
+      ]
+    },
+    {
+      "name": "status-badge",
+      "type": "registry:ui",
+      "title": "Status Badge",
+      "description": "Operational state for wells, assets and jobs. Takes a status, not a colour — it derives colour, icon and label together so WCAG 1.4.1 cannot be violated by omission.",
+      "categories": [
+        "data",
+        "koc"
+      ]
+    },
+    {
+      "name": "stat-card",
+      "type": "registry:ui",
+      "title": "Stat Card",
+      "description": "A KPI with a change indicator. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
+      "categories": [
+        "data",
+        "koc"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* The generated KOC tokens: raw ramps, semantic light/dark, the Tailwind v4
+ * @theme bridge, and the base layer. Everything visual originates here — nothing
+ * in this app hard-codes a colour.
+ *
+ * Imported by relative path rather than via the "@koc/tokens/css" export,
+ * because vite.config aliases the "@koc/tokens" specifier to the package *source*
+ * for hot-reload — which would swallow this subpath too. Generated file:
+ * run `npm run build:tokens` if it is missing. */
+@import "../../../packages/tokens/dist/koc-tokens.css";
+
+/* Tailwind v4 ships `dark:` bound to prefers-color-scheme. We rebind it to a
+ * `.dark` class so the theme can be toggled explicitly: an operator on night
+ * shift needs to choose dark mode regardless of what the OS thinks. */
+@custom-variant dark (&:is(.dark *));
+
+/* @koc/ui lives outside this app's root, so Tailwind's automatic content
+ * detection will not see it and would tree-shake away every class the component
+ * library uses. */
+@source "../../../packages/ui/src";

@@ -1,0 +1,24 @@
+{
+  "name": "koc-design-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "KOC Design System — unified React + shadcn foundation for Kuwait Oil Company digital products",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:tokens": "npm run build --workspace=@koc/tokens",
+    "test:tokens": "npm run test --workspace=@koc/tokens",
+    "dev": "npm run dev --workspace=@koc/docs",
+    "build": "npm run build:tokens && npm run build --workspace=@koc/docs",
+    "registry": "npm run build:registry --workspace=@koc/docs"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "tsx": "^4.19.2"
+  }
+}

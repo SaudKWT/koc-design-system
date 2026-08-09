@@ -1,0 +1,30 @@
+{
+  "name": "@koc/tokens",
+  "version": "0.1.0",
+  "description": "KOC design tokens — the single source of truth for Kuwait Oil Company's visual language",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./css": "./dist/koc-tokens.css",
+    "./json": "./dist/tokens.json"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsx src/build.ts",
+    "test": "tsx src/contrast.test.ts"
+  },
+  "dependencies": {
+    "culori": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/culori": "^2.1.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

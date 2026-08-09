@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "badge",
+  "type": "registry:ui",
+  "title": "Badge",
+  "description": "Counts, tags and categories. For plant state use @koc/status-badge instead.",
+  "dependencies": [
+    "class-variance-authority"
+  ],
+  "registryDependencies": [
+    "@koc/utils"
+  ],
+  "files": [
+    {
+      "path": "components/ui/badge.tsx",
+      "content": "import * as React from \"react\";\nimport { cva, type VariantProps } from \"class-variance-authority\";\nimport { cn } from \"@/lib/utils\";\n\n/**\n * Badge — a small label for counts, tags and categories.\n *\n * For plant/asset state use `StatusBadge` instead: it forces an icon and a text\n * label, which this component does not.\n */\nconst badgeVariants = cva(\n  [\n    \"inline-flex items-center gap-1 rounded-sm border px-2 py-0.5\",\n    \"text-2xs font-medium transition-colors\",\n    \"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2\",\n    \"[&_svg]:size-3 [&_svg]:shrink-0\",\n  ],\n  {\n    variants: {\n      variant: {\n        default: \"border-transparent bg-primary text-primary-foreground\",\n        secondary: \"border-transparent bg-secondary text-secondary-foreground\",\n        destructive: \"border-transparent bg-destructive text-destructive-foreground\",\n        success: \"border-transparent bg-success text-success-foreground\",\n        warning: \"border-transparent bg-warning text-warning-foreground\",\n        info: \"border-transparent bg-info text-info-foreground\",\n        outline: \"border-input text-foreground\",\n      },\n    },\n    defaultVariants: { variant: \"default\" },\n  },\n);\n\nexport interface BadgeProps\n  extends React.HTMLAttributes<HTMLSpanElement>,\n    VariantProps<typeof badgeVariants> {}\n\nfunction Badge({ className, variant, ...props }: BadgeProps) {\n  return (\n    <span data-slot=\"badge\" className={cn(badgeVariants({ variant }), className)} {...props} />\n  );\n}\n\nexport { Badge, badgeVariants };\n",
+      "type": "registry:ui",
+      "target": "components/ui/badge.tsx"
+    }
+  ]
+}
