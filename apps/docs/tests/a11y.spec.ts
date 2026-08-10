@@ -29,7 +29,9 @@ const SECTIONS: SectionLabel[] = [
   "Team dashboard shell",
   "Data table",
   "List view",
+  "KPI dashboard",
   "Accessibility",
+  "Staging ledger",
 ];
 
 for (const section of SECTIONS) {

@@ -92,6 +92,16 @@
       ]
     },
     {
+      "name": "chart",
+      "type": "registry:ui",
+      "title": "Charts",
+      "description": "TrendChart, ComparisonChart and VolumeChart. Series colour comes from the tested --chart-1..5 tokens in order, every chart carries a screen-reader text alternative, and the React 19 StrictMode fix is not a prop.",
+      "categories": [
+        "data",
+        "koc"
+      ]
+    },
+    {
       "name": "checkbox",
       "type": "registry:ui",
       "title": "Checkbox",
@@ -262,6 +272,15 @@
       "type": "registry:ui",
       "title": "Skeleton",
       "description": "Loading placeholder. Prefer it over a spinner so layout does not jump when data lands."
+    },
+    {
+      "name": "sonner",
+      "type": "registry:ui",
+      "title": "Toaster",
+      "description": "Transient confirmation of an action the user just took. Mount once at the app root; call `toast` from anywhere.",
+      "categories": [
+        "koc"
+      ]
     },
     {
       "name": "stat-card",

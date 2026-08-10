@@ -34,6 +34,7 @@ import {
   cn,
   kocColumnHelper,
   resolvePreset,
+  toast,
   type DateRangeValue,
 } from "@koc/ui";
 
@@ -347,7 +348,15 @@ export function ListViewPattern() {
         description="A voided report stays in the record with its figures excluded from unit totals. This cannot be undone from here."
         confirmLabel="Void report"
         onConfirm={() => {
-          if (confirming) setVoided((v) => [...v, confirming.id]);
+          if (confirming) {
+            setVoided((v) => [...v, confirming.id]);
+            // Confirms an action the user just took — which is what a toast is
+            // for. An operational event would go to the notification menu
+            // instead, where it persists until acknowledged.
+            toast.success(`Report ${confirming.well} voided`, {
+              description: "Its figures are excluded from unit totals.",
+            });
+          }
           setConfirming(null);
           setOpen(null);
         }}

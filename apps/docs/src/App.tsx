@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 
-import { cn } from "@koc/ui";
+import { Toaster, cn } from "@koc/ui";
 import { Overview } from "./sections/Overview";
 import { Colour } from "./sections/Colour";
 import { Typography } from "./sections/Typography";
@@ -10,9 +10,11 @@ import { DashboardDemo } from "./sections/DashboardDemo";
 import { Accessibility } from "./sections/Accessibility";
 import { Bakeoff } from "./sections/Bakeoff";
 import { SpaceCandidates } from "./sections/SpaceCandidates";
+import { Ledger } from "./sections/Ledger";
 import { TeamShell } from "./sections/TeamShell";
 import { DataTableSection } from "./sections/DataTableSection";
 import { ListViewPattern } from "./sections/ListViewPattern";
+import { KpiDashboard } from "./sections/KpiDashboard";
 
 const SECTIONS = [
   { id: "overview", label: "Overview", group: "Start", el: Overview },
@@ -23,8 +25,10 @@ const SECTIONS = [
   { id: "team-shell", label: "Team dashboard shell", group: "Library", el: TeamShell },
   { id: "data-table", label: "Data table", group: "Library", el: DataTableSection },
   { id: "list-view", label: "List view", group: "Patterns", el: ListViewPattern },
+  { id: "kpi", label: "KPI dashboard", group: "Patterns", el: KpiDashboard },
   { id: "a11y", label: "Accessibility", group: "Quality", el: Accessibility },
   // Evaluation only — not part of the system. See src/bakeoff/README.md.
+  { id: "ledger", label: "Staging ledger", group: "Evaluation", el: Ledger },
   { id: "bakeoff", label: "Sidebar bake-off", group: "Evaluation", el: Bakeoff },
   { id: "space", label: "shadcn-space audit", group: "Evaluation", el: SpaceCandidates },
 ] as const;
@@ -104,6 +108,9 @@ export default function App() {
           </button>
         </div>
       </aside>
+
+      {/* Mounted once, at the app root. */}
+      <Toaster position="bottom-right" />
 
       <main className="min-w-0 flex-1">
         <div className="mx-auto max-w-5xl px-8 py-10">

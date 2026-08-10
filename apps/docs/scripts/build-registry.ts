@@ -104,6 +104,20 @@ const LIB_META: Record<string, Meta> = {
 };
 
 const META: Record<string, Meta> = {
+  chart: {
+    title: "Charts",
+    description:
+      "TrendChart, ComparisonChart and VolumeChart. Series colour comes from the tested --chart-1..5 tokens in order, every chart carries a screen-reader text alternative, and the React 19 StrictMode fix is not a prop.",
+    categories: ["data", "koc"],
+    docs: "isAnimationActive={false} is hardcoded: under StrictMode Recharts' mount tween never advances past frame zero and lines render with correct geometry, opacity 1 and zero pixels drawn — still true in recharts 3.8. Adjacent chart tokens are asserted at ΔE2000 >= 15 AND >= 1.2:1 in greyscale, so series survive a printout; choosing colours per chart throws that away.",
+  },
+  sonner: {
+    title: "Toaster",
+    description:
+      "Transient confirmation of an action the user just took. Mount once at the app root; call `toast` from anywhere.",
+    categories: ["koc"],
+    docs: "Never the only notification of an operational event — a toast is gone in four seconds. An NPT threshold or a well going critical belongs in @koc/notification-menu, where it persists until acknowledged. Rewritten without next-themes: it follows the `.dark` class, so it works in Vite and Next alike.",
+  },
   "notification-menu": {
     title: "Notification Menu",
     description:

@@ -33,7 +33,9 @@ export type SectionLabel =
   | "Data table"
   | "Accessibility"
   | "List view"
+  | "KPI dashboard"
   | "shadcn-space audit"
+  | "Staging ledger"
   | "Sidebar bake-off";
 
 /** Open a docs section and wait for it to settle. */

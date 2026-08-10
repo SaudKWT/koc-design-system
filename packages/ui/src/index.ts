@@ -128,3 +128,16 @@ export * from "./components/command";
 export { Combobox, type ComboboxProps, type ComboboxOption } from "./components/combobox";
 export * from "./components/breadcrumb";
 export { Calendar } from "./components/calendar";
+
+// ── Charts ──────────────────────────────────────────────────────────────────
+// Series colour comes from the tested --chart-1..5 tokens, the React 19
+// StrictMode fix is not optional, and every chart carries a text alternative.
+
+export {
+  TrendChart,
+  ComparisonChart,
+  VolumeChart,
+  type ChartProps,
+  type ChartSeries,
+} from "./components/chart";
+export { Toaster, toast } from "./components/sonner";
