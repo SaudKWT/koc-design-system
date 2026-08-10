@@ -64,3 +64,28 @@ export {
 // standard one genuinely does not fit.
 export * from "./components/sidebar";
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/collapsible";
+
+// ── Data table ──────────────────────────────────────────────────────────────
+// Built rather than installed: there is no data table in the shadcn registry,
+// only a docs example. See components/data-table.tsx for the reasoning.
+
+export {
+  DataTable,
+  kocTableFeatures,
+  kocColumnHelper,
+  type DataTableProps,
+  type DataTableEmptyState,
+  type KocColumnMeta,
+} from "./components/data-table";
+export {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
+} from "./components/select";
+export { Checkbox } from "./components/checkbox";
+export { Skeleton } from "./components/skeleton";

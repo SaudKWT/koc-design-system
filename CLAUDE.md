@@ -83,11 +83,20 @@ description field, and Figma variants map 1:1 to real props.
 
 ## Known state
 
-- **9 components exist.** The app-shell layer is the blocker for any real redesign: sidebar
-  nav, data table (sort/filter/pagination/empty/loading), dialog, tabs, combobox, date-range,
-  toast, form layout, page header, chart wrappers — plus patterns (list view, detail view,
-  KPI dashboard). Much of this is an *install* from the shadcn ecosystem, not a build, because
-  of invariant 5.
+- **The app shell and data table exist.** `AppShell` is configured from a `TeamConfig`
+  (Directorate → Group → Team → Unit); adding a KOC team is a config file, never a component.
+  `DataTable` is TanStack Table v9 with loading, empty and filtered-empty as distinct states
+  and numeric alignment declared via column `meta`.
+- **Still missing:** dialog, tabs, combobox, date-range, toast, form layout, page header,
+  chart wrappers — plus patterns (list view, detail view, KPI dashboard). Much of this is an
+  *install* from the shadcn ecosystem rather than a build, because of invariant 5.
+- **There is no data table in the shadcn registry.** `@shadcn/data-table` is named as a
+  registry dependency but never published; only a `registry:example` exists, which the CLI
+  will not install. Don't go looking for it again.
+- **Installing a block pulls a lot.** `dashboard-01` added 12 dependencies — four `@dnd-kit`
+  packages, `@tabler/icons-react` (a second icon library beside lucide), `next-themes`,
+  `sonner`, `vaul`, `zod` — and silently bumped **recharts 2.15 → 3.8**. Check
+  `git diff package.json` after every block install.
 - **The registry hostname is aspirational.** `design.kockw.com` is a placeholder.
 - **Contrast is tested; behaviour is not.** Nothing here proves focus order, screen-reader
   output, or keyboard traps in composed views.
@@ -97,6 +106,8 @@ description field, and Figma variants map 1:1 to real props.
 - **Recharts lines render invisible under React 19 StrictMode.** Set
   `isAnimationActive={false}` on every `<Line>`. Diagnose via `stroke-dasharray` on
   `path.recharts-line-curve` — if it starts with `0px`, this is it.
+  *Possibly obsolete on recharts 3:* after the unintended 2.15 → 3.8 bump, the docs charts
+  render with `stroke-dasharray: none`. Verify properly before removing the workaround.
 - **WCAG contrast is the wrong tool for hue separation.** Use CIEDE2000 ΔE (`culori`'s
   `differenceCiede2000`), threshold ~15. But test luminance separately for greyscale.
 - **Vite string aliases are prefix matches**, so an alias on `@koc/tokens` swallows
