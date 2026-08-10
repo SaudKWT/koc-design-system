@@ -18,6 +18,7 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarMenuSub,
@@ -280,14 +281,28 @@ function NavSection({
                   <>
                     {item.icon && <item.icon />}
                     <span>{item.label}</span>
-                    {item.badge !== undefined && (
-                      <span className="ml-auto text-xs tabular-nums text-muted-foreground">
-                        {item.badge}
-                      </span>
-                    )}
                   </>,
                 )}
               </SidebarMenuButton>
+              {/*
+               * The badge is a SIBLING of the button, not a child of it, and it
+               * has to be SidebarMenuBadge rather than a span.
+               *
+               * A hand-rolled `<span className="ml-auto">` inside the button
+               * breaks two things at once. The sidebar styles the label with
+               * `[&>span:last-child]:truncate` — an inline badge becomes the last
+               * span, so the badge gets truncated and the label loses its
+               * truncation, wraps, and spills out of the collapsed 32px rail.
+               * And a plain span has no collapse rule, so it stays visible in the
+               * icon rail with nothing to attach to.
+               *
+               * SidebarMenuBadge is absolutely positioned and carries
+               * `group-data-[collapsible=icon]:hidden`, so it disappears with the
+               * label and never enters the button's flex row at all.
+               */}
+              {item.badge !== undefined && (
+                <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
+              )}
             </SidebarMenuItem>
           ),
         )}

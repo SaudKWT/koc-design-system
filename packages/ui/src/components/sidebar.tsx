@@ -474,16 +474,34 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  // Collapsed-rail icon centring needs BOTH `justify-center` and `gap-0`, and
-  // the gap is the part that is easy to miss.
+  // DO NOT add `justify-center` / `gap-0` for the collapsed rail. It looks like
+  // the fix and is not.
   //
-  // Measured: 32px button, 8px padding each side → 16px content box, holding a
-  // 16px icon plus a zero-width label span. The `gap-2` between them still
-  // occupies 8px, so flex centres a 24px row inside a 16px box and the icon
-  // lands 4px left of where it belongs — every icon in the rail off-axis by 4px,
-  // which reads as sloppiness rather than as a bug. Zeroing the gap when there
-  // is nothing to separate puts it at a true 8/8.
-  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] duration-slow ease-out group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+  // Collapsed, a default button is 32px with 8px padding → a 16px content box
+  // starting at x=8, holding a 16px shrink-0 icon. The icon already spans 8→24:
+  // centred by construction, no justification needed. Overflow beyond it is
+  // clipped by `overflow-hidden`, which is how the label disappears.
+  //
+  // Adding `justify-center` centres the *overflowing* row instead. The `lg`
+  // switcher collapses to 32px with `p-0` while still containing a 32px tile,
+  // a gap, a text block and a chevron — roughly 64px of content — so centring
+  // shifts it 16px left and slices the tile in half.
+  //
+  // If an icon looks off-axis, the cause is in that button's children (see the
+  // SidebarMenuBadge note below), not in this justification.
+  // DIVERGES FROM UPSTREAM: collapsed padding moved out of the base and into the
+  // size variants.
+  //
+  // Upstream puts `group-data-[collapsible=icon]:p-2!` here in the base while
+  // `lg` carries `p-0!`. Both are !important and Tailwind emits `p-0` before
+  // `p-2`, so the base wins on source order regardless of what `cn()` does with
+  // the class list — `lg` never gets its zero padding. In the collapsed rail
+  // that leaves an lg button's 32px content (a brand tile, an avatar) inside a
+  // 16px content box: it starts 8px in and overflows 8px out, clipped.
+  //
+  // Scoping the padding per size removes the collision instead of trying to
+  // out-specify it. Keep this if the file is ever regenerated from upstream.
+  "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm ring-sidebar-ring outline-hidden transition-[width,height,padding] duration-slow ease-out group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -492,8 +510,10 @@ const sidebarMenuButtonVariants = cva(
           "bg-background shadow-[0_0_0_1px_var(--sidebar-border)] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_var(--sidebar-accent)]",
       },
       size: {
-        default: "h-8 text-sm",
-        sm: "h-7 text-xs",
+        default: "h-8 text-sm group-data-[collapsible=icon]:p-2!",
+        sm: "h-7 text-xs group-data-[collapsible=icon]:p-2!",
+        // No padding: an lg button holds a 32px tile, which fills the collapsed
+        // 32px button exactly.
         lg: "h-12 text-sm group-data-[collapsible=icon]:p-0!",
       },
     },
