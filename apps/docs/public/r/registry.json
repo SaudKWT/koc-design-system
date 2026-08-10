@@ -116,6 +116,15 @@
       "description": "Filterable command list built on cmdk. Backs @koc/combobox."
     },
     {
+      "name": "confirm-dialog",
+      "type": "registry:ui",
+      "title": "Confirm Dialog",
+      "description": "A decision that cannot be undone. Takes the subject as a required prop, so the question reads 'Void report BG-1042?' rather than 'Delete Item?' — a confirmation that does not name what it destroys is how people delete the wrong thing.",
+      "categories": [
+        "koc"
+      ]
+    },
+    {
       "name": "data-table",
       "type": "registry:ui",
       "title": "Data Table",
@@ -166,10 +175,29 @@
       ]
     },
     {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "title": "Navigation Menu",
+      "description": "Horizontal menu primitive with dropdown panels. Backs @koc/page-nav.",
+      "categories": [
+        "layout"
+      ]
+    },
+    {
       "name": "page-header",
       "type": "registry:ui",
       "title": "Page Header",
       "description": "The top of every KOC application screen — title, optional breadcrumb, actions and meta. The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
+      "categories": [
+        "layout",
+        "koc"
+      ]
+    },
+    {
+      "name": "page-nav",
+      "type": "registry:ui",
+      "title": "Page Nav",
+      "description": "Horizontal navigation inside an application. The sidebar answers 'which app am I in'; this answers 'which part of this app'. One level of dropdown only — deeper than that and the screen wants a sidebar.",
       "categories": [
         "layout",
         "koc"

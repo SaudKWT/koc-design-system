@@ -45,6 +45,20 @@ function DialogOverlay({
   )
 }
 
+/**
+ * Entrance is a rise, not a zoom.
+ *
+ * shadcn's default scales the panel from 95% — which reads as the dialog
+ * *growing at* you, and at speed on a large monitor it is the one bit of motion
+ * in the system people notice. Sliding up 8px with no scale change is calmer and
+ * carries a clearer meaning: the panel arrives from below rather than expanding
+ * out of nowhere. Adapted from shadcn-space's dialog-02, with the timing moved
+ * onto the KOC motion scale — `slower` in, `slow` out, so it settles gently and
+ * leaves briskly.
+ *
+ * Every dialog in the system inherits this, including the data table's record
+ * view. That is the point of putting it here rather than on one call site.
+ */
 function DialogContent({
   className,
   children,
@@ -59,7 +73,7 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg outline-none data-[state=closed]:animate-out data-[state=closed]:duration-slow data-[state=closed]:ease-in data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:duration-slower data-[state=open]:ease-out data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg",
+          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg outline-none data-[state=closed]:animate-out data-[state=closed]:duration-slow data-[state=closed]:ease-in data-[state=closed]:fade-out-0 data-[state=closed]:slide-out-to-bottom-8 data-[state=open]:animate-in data-[state=open]:duration-slower data-[state=open]:ease-out data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-8 sm:max-w-lg",
           className
         )}
         {...props}

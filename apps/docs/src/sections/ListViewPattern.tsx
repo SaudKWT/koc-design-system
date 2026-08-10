@@ -1,9 +1,21 @@
 import { useMemo, useState } from "react";
-import { Download, Maximize2, Plus } from "lucide-react";
+import {
+  ClipboardList,
+  Download,
+  Drill,
+  FileBarChart,
+  Gauge,
+  Maximize2,
+  Package,
+  Plus,
+  Timer,
+  Trash2,
+} from "lucide-react";
 
 import {
   Button,
   Combobox,
+  ConfirmDialog,
   DataTable,
   DateRangeFilter,
   Dialog,
@@ -12,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
   PageHeader,
+  PageNav,
   Select,
   SelectContent,
   SelectItem,
@@ -57,6 +70,8 @@ export function ListViewPattern() {
   const [rig, setRig] = useState<string>("all");
   const [well, setWell] = useState<string | undefined>();
   const [open, setOpen] = useState<DdrRow | null>(null);
+  const [confirming, setConfirming] = useState<DdrRow | null>(null);
+  const [voided, setVoided] = useState<string[]>([]);
 
   const columns = useMemo(
     () =>
@@ -84,7 +99,15 @@ export function ListViewPattern() {
         }),
         col.accessor("status", {
           header: "Status",
-          cell: ({ row }) => <StatusBadge status={row.original.status} />,
+          cell: ({ row }) =>
+            voided.includes(row.original.id) ? (
+              // A voided report stays in the list. Removing it would hide the
+              // fact that it ever existed, which is the opposite of what an
+              // auditable operations record needs.
+              <span className="text-xs font-medium text-muted-foreground">Voided</span>
+            ) : (
+              <StatusBadge status={row.original.status} />
+            ),
         }),
         col.display({
           id: "open",
@@ -101,7 +124,9 @@ export function ListViewPattern() {
           ),
         }),
       ]),
-    [],
+    // `voided` is a real dependency — without it the status cell would keep
+    // rendering the pre-void badge from a stale closure.
+    [voided],
   );
 
   // Filtering happens here rather than inside DataTable on purpose: scope
@@ -167,6 +192,13 @@ export function ListViewPattern() {
               </span>
             }
           />
+
+          {/* In-app navigation. The sidebar says which app you are in; this says
+              which part of it. A unit app has several related screens and should
+              not need a second global nav to move between them. */}
+          <div className="border-b border-border py-2">
+            <PageNav activeHref="/ddr" groups={APP_NAV} />
+          </div>
 
           {/* Filter bar. Date first because it is the filter people change most,
               then the coarse scope (rig), then the fine one (well). */}
@@ -285,7 +317,16 @@ export function ListViewPattern() {
                 <p className="mt-1 text-sm">{open.summary}</p>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-between gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-destructive"
+                  onClick={() => setConfirming(open)}
+                >
+                  <Trash2 aria-hidden className="mr-1.5 size-3.5" />
+                  Void report
+                </Button>
                 <Button variant="outline" size="sm">
                   <Maximize2 aria-hidden className="mr-1.5 size-3.5" />
                   Open full report
@@ -295,6 +336,41 @@ export function ListViewPattern() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* The confirmation names the report. "Void report BG-1042?" is catchable;
+          "Delete Item?" is what you click through three times and regret. */}
+      <ConfirmDialog
+        open={!!confirming}
+        onOpenChange={(o) => !o && setConfirming(null)}
+        title="Void report"
+        subject={confirming?.well ?? ""}
+        description="A voided report stays in the record with its figures excluded from unit totals. This cannot be undone from here."
+        confirmLabel="Void report"
+        onConfirm={() => {
+          if (confirming) setVoided((v) => [...v, confirming.id]);
+          setConfirming(null);
+          setOpen(null);
+        }}
+      />
     </>
   );
 }
+
+/**
+ * Screens within this app. Placeholder like everything else here, but the shape
+ * is the point: one dropdown group plus flat links, no second level.
+ */
+const APP_NAV = [
+  {
+    label: "Reports",
+    icon: ClipboardList,
+    items: [
+      { label: "Daily drilling", href: "/ddr", description: "One per well per day" },
+      { label: "Job reports", href: "/jobs" },
+      { label: "NPT log", href: "/npt", description: "Non-productive time" },
+    ],
+  },
+  { label: "Rigs", icon: Drill, href: "/rigs" },
+  { label: "Materials", icon: Package, href: "/materials" },
+  { label: "Performance", icon: Gauge, href: "/kpi" },
+];

@@ -104,6 +104,25 @@ const LIB_META: Record<string, Meta> = {
 };
 
 const META: Record<string, Meta> = {
+  "confirm-dialog": {
+    title: "Confirm Dialog",
+    description:
+      "A decision that cannot be undone. Takes the subject as a required prop, so the question reads 'Void report BG-1042?' rather than 'Delete Item?' — a confirmation that does not name what it destroys is how people delete the wrong thing.",
+    categories: ["koc"],
+    docs: "Cancel is ordered first and takes initial focus. Radix focuses the first focusable child on open, and on a destructive dialog that must not be the destructive button — a stray Enter is a very common way to dismiss a dialog.",
+  },
+  "page-nav": {
+    title: "Page Nav",
+    description:
+      "Horizontal navigation inside an application. The sidebar answers 'which app am I in'; this answers 'which part of this app'. One level of dropdown only — deeper than that and the screen wants a sidebar.",
+    categories: ["layout", "koc"],
+    docs: "Adapted from shadcn-space's topbar-05 with its sidebar coupling removed — the original calls useSidebar() and throws outside a provider. Pass `renderLink` to integrate your router.",
+  },
+  "navigation-menu": {
+    title: "Navigation Menu",
+    description: "Horizontal menu primitive with dropdown panels. Backs @koc/page-nav.",
+    categories: ["layout"],
+  },
   "page-header": {
     title: "Page Header",
     description:

@@ -94,9 +94,13 @@ export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./co
 // ── Page-level composition ──────────────────────────────────────────────────
 
 export { PageHeader, type PageHeaderProps, type PageHeaderCrumb } from "./components/page-header";
+export { PageNav, type PageNavProps, type PageNavGroup, type PageNavItem } from "./components/page-nav";
+export { ConfirmDialog, type ConfirmDialogProps } from "./components/confirm-dialog";
+export * from "./components/navigation-menu";
 export {
   DateRangeFilter,
   resolvePreset,
+  describeRange,
   type DateRangeFilterProps,
   type DateRangeValue,
   type DateRangePresetId,
