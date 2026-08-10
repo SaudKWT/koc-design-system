@@ -9,6 +9,7 @@ import { Components } from "./sections/Components";
 import { DashboardDemo } from "./sections/DashboardDemo";
 import { Accessibility } from "./sections/Accessibility";
 import { Bakeoff } from "./sections/Bakeoff";
+import { SpaceCandidates } from "./sections/SpaceCandidates";
 import { TeamShell } from "./sections/TeamShell";
 import { DataTableSection } from "./sections/DataTableSection";
 import { ListViewPattern } from "./sections/ListViewPattern";
@@ -25,6 +26,7 @@ const SECTIONS = [
   { id: "a11y", label: "Accessibility", group: "Quality", el: Accessibility },
   // Evaluation only — not part of the system. See src/bakeoff/README.md.
   { id: "bakeoff", label: "Sidebar bake-off", group: "Evaluation", el: Bakeoff },
+  { id: "space", label: "shadcn-space picks", group: "Evaluation", el: SpaceCandidates },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
