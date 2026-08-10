@@ -60,21 +60,22 @@ export const light: SemanticTheme = {
   //
   // Measured against white, across the ramp:
   //
-  //   step  vs white   label on it
-  //   50    1.09:1     7.70:1   <- was here; a change you have to hunt for
-  //   100   1.20:1     6.97:1
-  //   200   1.42:1     5.92:1   <- here now
-  //   300   1.77:1     4.73:1   <- label only 0.23 above the AA floor
+  //   step  vs white   label on it   ΔE2000 vs #E0F2FE
+  //   50    1.09:1     7.70:1        4.22   <- was here; a change you hunt for
+  //   100   1.20:1     6.97:1        2.48   <- here now
+  //   200   1.42:1     5.92:1        8.57   <- tried; read as too heavy
+  //   300   1.77:1     4.73:1               <- label 0.23 above the AA floor
   //
-  // 200 roughly quadruples the step away from white while leaving the label at
-  // 5.92:1, comfortably clear. 300 looks stronger but leaves no headroom on a
-  // token this widely used — every button, menu item, table row and active nav
-  // item sits on it, so it has to survive later adjustment without a re-test.
+  // Landed on 100 after 200 was judged too deep in use. It is ΔE 2.48 from the
+  // #E0F2FE that was asked for — under the ~3 threshold where a difference is
+  // noticeable at all — so it is that colour, expressed as a ramp step rather
+  // than a hand-written hex (invariant 1). It also sits marginally further from
+  // white than the target did, 1.20:1 against 1.15:1.
   //
   // WCAG has nothing to say about the surface itself — a hover background
   // carries no information a sighted user must *read* — so the tested
   // constraint is the label on top of it.
-  accent: primary[200],
+  accent: primary[100],
   "accent-foreground": primary[700],
 
   destructive: danger[600],
@@ -139,7 +140,7 @@ export const light: SemanticTheme = {
   // Active item: a blue wash with the label in brand blue — enough to locate
   // yourself at a glance, far short of a slab. Moves with `accent`, because a
   // current nav item and a hovered button should read as the same idea.
-  "sidebar-accent": primary[200],
+  "sidebar-accent": primary[100],
   "sidebar-accent-foreground": primary[700],
   "sidebar-border": neutral[200],
   "sidebar-ring": primary[600],

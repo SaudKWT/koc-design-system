@@ -10,8 +10,8 @@ import { cn } from "../lib/utils";
  */
 const badgeVariants = cva(
   [
-    "inline-flex items-center gap-1 rounded-sm border px-2 py-0.5",
-    "text-2xs font-medium transition-colors",
+    "inline-flex items-center gap-1 border",
+    "text-2xs font-medium transition-colors duration-fast ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "[&_svg]:size-3 [&_svg]:shrink-0",
   ],
@@ -26,8 +26,30 @@ const badgeVariants = cva(
         info: "border-transparent bg-info text-info-foreground",
         outline: "border-input text-foreground",
       },
+      shape: {
+        label: "rounded-sm px-2 py-0.5",
+        /**
+         * A count next to a label — tab counts, unread markers, nav badges.
+         *
+         * `min-w-5` with `h-5` rather than a fixed `size-5`: at one digit the
+         * min-width and height are equal so it renders as a true circle, and at
+         * three digits it grows into a pill instead of clipping the number or
+         * squashing it into an ellipse. A hard-coded circle looks right until
+         * the first count reaches 100, which on an operations dashboard is a
+         * matter of time.
+         *
+         * The padding is `px-1`, not `px-1.5`: at 1.5 a single digit plus 12px
+         * of padding measured 21px against a 20px height — one pixel out of
+         * round, which is invisible in a spec and obvious on a 20px circle.
+         * At `px-1` the min-width wins for one and two digits and the padding
+         * only takes over at three.
+         *
+         * `tabular-nums` so a count ticking 8 → 9 → 10 does not jitter.
+         */
+        count: "h-5 min-w-5 justify-center rounded-full px-1 tabular-nums",
+      },
     },
-    defaultVariants: { variant: "default" },
+    defaultVariants: { variant: "default", shape: "label" },
   },
 );
 
@@ -35,9 +57,13 @@ export interface BadgeProps
   extends React.HTMLAttributes<HTMLSpanElement>,
     VariantProps<typeof badgeVariants> {}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({ className, variant, shape, ...props }: BadgeProps) {
   return (
-    <span data-slot="badge" className={cn(badgeVariants({ variant }), className)} {...props} />
+    <span
+      data-slot="badge"
+      className={cn(badgeVariants({ variant, shape }), className)}
+      {...props}
+    />
   );
 }
 

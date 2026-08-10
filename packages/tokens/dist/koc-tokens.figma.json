@@ -583,7 +583,7 @@
       "type": "color"
     },
     "accent": {
-      "value": "{color.primary.200}",
+      "value": "{color.primary.100}",
       "type": "color"
     },
     "accent-foreground": {
@@ -671,7 +671,7 @@
       "type": "color"
     },
     "sidebar-accent": {
-      "value": "{color.primary.200}",
+      "value": "{color.primary.100}",
       "type": "color"
     },
     "sidebar-accent-foreground": {

@@ -169,7 +169,7 @@ export function DataTableSection() {
             {ASSETS.map((a) => (
               <TabsTrigger key={a} value={a} className="gap-1.5">
                 {a}
-                <Badge variant="secondary" className="px-1.5 tabular-nums">
+                <Badge variant="secondary" shape="count">
                   {countFor(a)}
                 </Badge>
               </TabsTrigger>

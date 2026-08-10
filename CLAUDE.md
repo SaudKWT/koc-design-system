@@ -52,6 +52,10 @@ Each one exists because documentation already failed to hold the line:
 
 - **Distribution is hybrid.** `@koc/tokens` via npm (central brand control) + components via
   the `@koc/*` shadcn registry (teams own the source they pull).
+- **Recharts 3.8, deliberately.** It arrived as a side effect of installing `dashboard-01`
+  and was then kept on purpose: today the blast radius is one file, and once chart wrappers
+  land in `@koc/ui` and teams consume them a major-version move gets expensive. It fixes
+  nothing about the StrictMode bug below — that workaround stays either way.
 - **English-only, no RTL.** [ADR 0001](docs/adr/0001-english-only-no-rtl.md). Re-confirmed
   2026-08-09 against the wider org-standard scope, with the retrofit cost stated. Settled.
 - **npm workspaces, not pnpm.** KOC teams will have npm.
