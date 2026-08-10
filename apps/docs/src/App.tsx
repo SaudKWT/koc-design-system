@@ -11,6 +11,7 @@ import { Accessibility } from "./sections/Accessibility";
 import { Bakeoff } from "./sections/Bakeoff";
 import { TeamShell } from "./sections/TeamShell";
 import { DataTableSection } from "./sections/DataTableSection";
+import { ListViewPattern } from "./sections/ListViewPattern";
 
 const SECTIONS = [
   { id: "overview", label: "Overview", group: "Start", el: Overview },
@@ -20,6 +21,7 @@ const SECTIONS = [
   { id: "dashboard", label: "Dashboard pattern", group: "Library", el: DashboardDemo },
   { id: "team-shell", label: "Team dashboard shell", group: "Library", el: TeamShell },
   { id: "data-table", label: "Data table", group: "Library", el: DataTableSection },
+  { id: "list-view", label: "List view", group: "Patterns", el: ListViewPattern },
   { id: "a11y", label: "Accessibility", group: "Quality", el: Accessibility },
   // Evaluation only — not part of the system. See src/bakeoff/README.md.
   { id: "bakeoff", label: "Sidebar bake-off", group: "Evaluation", el: Bakeoff },

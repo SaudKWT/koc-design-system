@@ -104,6 +104,49 @@ const LIB_META: Record<string, Meta> = {
 };
 
 const META: Record<string, Meta> = {
+  "page-header": {
+    title: "Page Header",
+    description:
+      "The top of every KOC application screen — title, optional breadcrumb, actions and meta. The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
+    categories: ["layout", "koc"],
+    docs: "Keep breadcrumbs shallow. Directorate and Group are identity, not navigation, and the unit is already in the sidebar switcher — a breadcrumb here should carry only the path within the app.",
+  },
+  "date-range-filter": {
+    title: "Date Range Filter",
+    description:
+      "Presets first, calendar second. Today / 7 days / 30 days / This month are one click; the range picker is there for the exception.",
+    categories: ["form", "koc"],
+    docs: "Pass `today` in rather than letting the component read the clock — that keeps it testable and stops a 'Today' filter meaning a different day than the data does.",
+  },
+  combobox: {
+    title: "Combobox",
+    description:
+      "Searchable single-select. shadcn documents this as a Command + Popover pattern rather than shipping it, which means every project assembles a slightly different one; this is the KOC version.",
+    categories: ["form"],
+    docs: "Use only when a list is long enough that scanning is work — roughly ten items. Below that Select is faster and a search box is noise. `label` is required: a trigger reading only 'Select…' tells a screen-reader user nothing.",
+  },
+  dialog: {
+    title: "Dialog",
+    description: "Modal surface. Use for a record you read and return from, or a short focused form.",
+  },
+  popover: {
+    title: "Popover",
+    description: "Non-modal floating panel. Backs the date picker and combobox.",
+  },
+  command: {
+    title: "Command",
+    description: "Filterable command list built on cmdk. Backs @koc/combobox.",
+  },
+  calendar: {
+    title: "Calendar",
+    description: "Date and range picker built on react-day-picker.",
+    categories: ["form"],
+  },
+  breadcrumb: {
+    title: "Breadcrumb",
+    description: "Path within an app. Used by @koc/page-header.",
+    categories: ["layout"],
+  },
   button: {
     title: "Button",
     description: "Six variants, four sizes. Every label/background pair is contrast-tested.",

@@ -32,6 +32,7 @@ export type SectionLabel =
   | "Team dashboard shell"
   | "Data table"
   | "Accessibility"
+  | "List view"
   | "Sidebar bake-off";
 
 /** Open a docs section and wait for it to settle. */

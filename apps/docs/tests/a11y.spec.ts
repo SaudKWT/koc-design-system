@@ -28,6 +28,7 @@ const SECTIONS: SectionLabel[] = [
   "Dashboard pattern",
   "Team dashboard shell",
   "Data table",
+  "List view",
   "Accessibility",
 ];
 

@@ -90,3 +90,20 @@ export {
 export { Checkbox } from "./components/checkbox";
 export { Skeleton } from "./components/skeleton";
 export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./components/tabs";
+
+// ── Page-level composition ──────────────────────────────────────────────────
+
+export { PageHeader, type PageHeaderProps, type PageHeaderCrumb } from "./components/page-header";
+export {
+  DateRangeFilter,
+  resolvePreset,
+  type DateRangeFilterProps,
+  type DateRangeValue,
+  type DateRangePresetId,
+} from "./components/date-range-filter";
+export * from "./components/dialog";
+export * from "./components/popover";
+export * from "./components/command";
+export { Combobox, type ComboboxProps, type ComboboxOption } from "./components/combobox";
+export * from "./components/breadcrumb";
+export { Calendar } from "./components/calendar";

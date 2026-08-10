@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "date-range-filter",
+  "type": "registry:ui",
+  "title": "Date Range Filter",
+  "description": "Presets first, calendar second. Today / 7 days / 30 days / This month are one click; the range picker is there for the exception.",
+  "categories": [
+    "form",
+    "koc"
+  ],
+  "docs": "Pass `today` in rather than letting the component read the clock — that keeps it testable and stops a 'Today' filter meaning a different day than the data does.",
+  "dependencies": [
+    "lucide-react",
+    "react-day-picker"
+  ],
+  "registryDependencies": [
+    "@koc/button",
+    "@koc/calendar",
+    "@koc/popover",
+    "@koc/utils"
+  ],
+  "files": [
+    {
+      "path": "components/ui/date-range-filter.tsx",
+      "content": "\"use client\";\n\nimport * as React from \"react\";\nimport { CalendarIcon } from \"lucide-react\";\nimport type { DateRange } from \"react-day-picker\";\n\nimport { cn } from \"@/lib/utils\";\nimport { Button } from \"@/components/ui/button\";\nimport { Calendar } from \"@/components/ui/calendar\";\nimport { Popover, PopoverContent, PopoverTrigger } from \"@/components/ui/popover\";\n\n/**\n * DateRangeFilter — presets first, calendar second.\n *\n * The usual dashboard pattern is a bare date-range picker, and it is a poor fit\n * for operations work. \"Yesterday's reports\" and \"this week\" are the questions\n * people actually ask, dozens of times a day, and a calendar makes each of them\n * a four-interaction task: open, click a start day, navigate, click an end day.\n * Presets make the common case one click and leave the calendar for the genuine\n * exception.\n *\n * The presets are relative to a `today` the CALLER passes in. That is not\n * ceremony: reading the clock inside the component makes it untestable and makes\n * server and client disagree during hydration, and a \"Today\" filter that quietly\n * means a different day than the data does is the kind of bug nobody reports —\n * they just stop trusting the dashboard.\n */\n\nexport type DateRangePresetId = \"today\" | \"7d\" | \"30d\" | \"month\" | \"custom\";\n\nexport interface DateRangeValue {\n  preset: DateRangePresetId;\n  range?: DateRange;\n}\n\nconst PRESETS: { id: Exclude<DateRangePresetId, \"custom\">; label: string }[] = [\n  { id: \"today\", label: \"Today\" },\n  { id: \"7d\", label: \"7 days\" },\n  { id: \"30d\", label: \"30 days\" },\n  { id: \"month\", label: \"This month\" },\n];\n\n/** Resolve a preset to concrete dates, relative to the caller's `today`. */\nexport function resolvePreset(\n  preset: Exclude<DateRangePresetId, \"custom\">,\n  today: Date,\n): DateRange {\n  const end = new Date(today);\n  const start = new Date(today);\n\n  switch (preset) {\n    case \"today\":\n      break;\n    case \"7d\":\n      start.setDate(start.getDate() - 6);\n      break;\n    case \"30d\":\n      start.setDate(start.getDate() - 29);\n      break;\n    case \"month\":\n      start.setDate(1);\n      break;\n  }\n  return { from: start, to: end };\n}\n\nfunction format(d: Date): string {\n  return d.toLocaleDateString(\"en-GB\", {\n    day: \"numeric\",\n    month: \"short\",\n    year: \"numeric\",\n  });\n}\n\nexport interface DateRangeFilterProps {\n  value: DateRangeValue;\n  onChange: (value: DateRangeValue) => void;\n  /** Today's date. Passed in rather than read from the clock — see above. */\n  today: Date;\n  className?: string;\n}\n\nexport function DateRangeFilter({\n  value,\n  onChange,\n  today,\n  className,\n}: DateRangeFilterProps) {\n  const [open, setOpen] = React.useState(false);\n\n  const customLabel =\n    value.preset === \"custom\" && value.range?.from\n      ? value.range.to\n        ? `${format(value.range.from)} – ${format(value.range.to)}`\n        : format(value.range.from)\n      : \"Custom\";\n\n  return (\n    <div\n      className={cn(\"flex flex-wrap items-center gap-1\", className)}\n      role=\"group\"\n      aria-label=\"Date range\"\n    >\n      {PRESETS.map((p) => {\n        const active = value.preset === p.id;\n        return (\n          <Button\n            key={p.id}\n            type=\"button\"\n            size=\"sm\"\n            variant={active ? \"default\" : \"outline\"}\n            // `aria-pressed` rather than relying on colour: these are toggles,\n            // and which one is on must be available to a screen reader.\n            aria-pressed={active}\n            onClick={() => onChange({ preset: p.id, range: resolvePreset(p.id, today) })}\n          >\n            {p.label}\n          </Button>\n        );\n      })}\n\n      <Popover open={open} onOpenChange={setOpen}>\n        <PopoverTrigger asChild>\n          <Button\n            type=\"button\"\n            size=\"sm\"\n            variant={value.preset === \"custom\" ? \"default\" : \"outline\"}\n            aria-pressed={value.preset === \"custom\"}\n          >\n            <CalendarIcon aria-hidden className=\"mr-1.5 size-3.5\" />\n            {customLabel}\n          </Button>\n        </PopoverTrigger>\n        <PopoverContent className=\"w-auto p-0\" align=\"start\">\n          <Calendar\n            mode=\"range\"\n            defaultMonth={value.range?.from ?? today}\n            selected={value.range}\n            onSelect={(range) => onChange({ preset: \"custom\", range })}\n            numberOfMonths={2}\n            autoFocus\n          />\n        </PopoverContent>\n      </Popover>\n    </div>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/ui/date-range-filter.tsx"
+    }
+  ]
+}
