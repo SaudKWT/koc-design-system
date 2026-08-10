@@ -6,12 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/bakeoff/ui/avatar";
 import { SidebarTrigger } from "@/bakeoff/ui/sidebar";
 import { BellRing, Globe } from "lucide-react";
 import { NavigationMenu, NavigationMenuList } from "@/bakeoff/ui/navigation-menu";
-import LanguageDropdown from "@/components/shadcn-space/blocks/topbar-05/header/dropdown-language";
-import ProfileDropdown from "@/components/shadcn-space/blocks/topbar-05/header/dropdown-profile";
-import { NavDropdown, NavButton } from "@/components/shadcn-space/blocks/topbar-05/header/desktop-nav";
-import NavData from "@/components/shadcn-space/blocks/topbar-05/data";
-import { NavGroup } from "@/components/shadcn-space/blocks/topbar-05/types";
-import NotificationDropdown from "@/components/shadcn-space/blocks/topbar-05/header/notification-dropdown";
+import LanguageDropdown from "@/bakeoff/shadcn-space/blocks/topbar-05/header/dropdown-language";
+import ProfileDropdown from "@/bakeoff/shadcn-space/blocks/topbar-05/header/dropdown-profile";
+import { NavDropdown, NavButton } from "@/bakeoff/shadcn-space/blocks/topbar-05/header/desktop-nav";
+import NavData from "@/bakeoff/shadcn-space/blocks/topbar-05/data";
+import { NavGroup } from "@/bakeoff/shadcn-space/blocks/topbar-05/types";
+import NotificationDropdown from "@/bakeoff/shadcn-space/blocks/topbar-05/header/notification-dropdown";
 
 export default function Header() {
   return (

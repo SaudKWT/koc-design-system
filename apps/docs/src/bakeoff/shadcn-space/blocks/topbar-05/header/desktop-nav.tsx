@@ -5,7 +5,7 @@ import {
   NavigationMenuLink,
   NavigationMenuTrigger,
 } from "@/bakeoff/ui/navigation-menu";
-import { NavItem } from "../types";
+import { NavItem } from "@/bakeoff/shadcn-space/blocks/topbar-05/types";
 
 export function NavDropdown({
   label,
@@ -18,9 +18,7 @@ export function NavDropdown({
 }) {
   return (
     <NavigationMenuItem>
-      <NavigationMenuTrigger
-        className="gap-2 rounded-lg border border-transparent bg-transparent! cursor-pointer"
-      >
+      <NavigationMenuTrigger className="gap-2 rounded-lg border border-transparent bg-transparent! cursor-pointer">
         <Icon size={16} />
         <span className="text-sm">{label}</span>
       </NavigationMenuTrigger>
@@ -31,19 +29,17 @@ export function NavDropdown({
             const ItemIcon = item.icon;
             return (
               <li key={item.label}>
-                <NavigationMenuLink
-                  render={
-                    <a
-                      href={item.href}
-                      className="flex items-left gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-foreground"
-                    >
-                      <div className="flex items-center gap-2">
-                        <ItemIcon size={16} />
-                        <span>{item.label}</span>
-                      </div>
-                    </a>
-                  }
-                />
+                <NavigationMenuLink asChild>
+                  <a
+                    href={item.href}
+                    className="flex items-left gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-foreground"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ItemIcon size={16} />
+                      <span>{item.label}</span>
+                    </div>
+                  </a>
+                </NavigationMenuLink>
               </li>
             );
           })}
@@ -64,17 +60,15 @@ export function NavButton({
 }) {
   return (
     <NavigationMenuItem>
-      <NavigationMenuLink
-        render={
-          <a
-            href={href}
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-accent transition-colors"
-          >
-            <Icon size={16} />
-            <span className="text-sm">{label}</span>
-          </a>
-        }
-      />
+      <NavigationMenuLink asChild>
+        <a
+          href={href}
+          className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-accent transition-colors"
+        >
+          <Icon size={16} />
+          <span className="text-sm">{label}</span>
+        </a>
+      </NavigationMenuLink>
     </NavigationMenuItem>
   );
 }

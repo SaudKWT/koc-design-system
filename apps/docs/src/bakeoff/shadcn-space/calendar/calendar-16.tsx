@@ -70,52 +70,47 @@ const CalendarWithTimeRange = () => {
 
   return (
     <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            className={cn(
-              "group/pick-date w-full sm:w-fit min-w-0 sm:min-w-80 max-w-full justify-between text-left font-normal border-input hover:bg-accent hover:text-accent-foreground transition-all duration-200 cursor-pointer",
-              !date && "text-muted-foreground",
+      <PopoverTrigger asChild>
+        <Button
+          className={cn(
+            "group/pick-date w-full sm:w-fit min-w-0 sm:min-w-80 max-w-full justify-between text-left font-normal border-input hover:bg-accent hover:text-accent-foreground transition-all duration-200 cursor-pointer",
+            !date && "text-muted-foreground",
+          )}
+          id={id}
+          variant="outline"
+        >
+          <div className="flex items-center gap-2.5 truncate">
+            <CalendarIcon
+              aria-hidden="true"
+              className="text-muted-foreground/80 group-hover/pick-date:text-foreground shrink-0 transition-colors h-4 w-4"
+            />
+            {date ? (
+              <span className="text-foreground font-medium text-sm">
+                {format(date, "MMM d, yyyy")}
+              </span>
+            ) : (
+              <span className="text-muted-foreground text-sm">
+                Pick a date and time
+              </span>
             )}
-            id={id}
-            variant="outline"
-          />
-        }
-      >
-        <div className="flex items-center gap-2.5 truncate">
-          <CalendarIcon
-            aria-hidden="true"
-            className="text-muted-foreground/80 group-hover/pick-date:text-foreground shrink-0 transition-colors h-4 w-4"
-          />
-          {date ? (
-            <span className="text-foreground font-medium text-sm">
-              {format(date, "MMM d, yyyy")}
-            </span>
-          ) : (
-            <span className="text-muted-foreground text-sm">
-              Pick a date and time
-            </span>
-          )}
-          {date && (startTime || endTime) && (
-            <>
-              <span className="text-muted-foreground/30 select-none">|</span>
-              <div className="flex items-center gap-1.5 text-muted-foreground/90">
-                <ClockIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
-                <span className="text-xs font-normal">
-                  {startTime ? formatTime12h(startTime) : "—"}
-                  {" – "}
-                  {endTime ? formatTime12h(endTime) : "—"}
-                </span>
-              </div>
-            </>
-          )}
-        </div>
-        <ChevronDownIcon className="h-4 w-4 text-muted-foreground/60 group-hover/pick-date:text-foreground shrink-0 transition-colors ml-2" />
+            {date && (startTime || endTime) && (
+              <>
+                <span className="text-muted-foreground/30 select-none">|</span>
+                <div className="flex items-center gap-1.5 text-muted-foreground/90">
+                  <ClockIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/70" />
+                  <span className="text-xs font-normal">
+                    {startTime ? formatTime12h(startTime) : "—"}
+                    {" – "}
+                    {endTime ? formatTime12h(endTime) : "—"}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+          <ChevronDownIcon className="h-4 w-4 text-muted-foreground/60 group-hover/pick-date:text-foreground shrink-0 transition-colors ml-2" />
+        </Button>
       </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        className="w-auto p-0 flex flex-col sm:flex-row"
-      >
+      <PopoverContent align="start" className="w-auto p-0 flex flex-col sm:flex-row">
         {/* Left Side: Calendar */}
         <div className="p-2.5">
           <Calendar

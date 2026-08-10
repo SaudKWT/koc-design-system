@@ -1,7 +1,11 @@
 "use client";
 
 import type { ReactElement } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/bakeoff/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/bakeoff/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,7 +57,7 @@ const itemClass = "px-4 py-2.5 text-base cursor-pointer gap-3";
 const ProfileDropdown = ({ trigger, defaultOpen, align = "end" }: Props) => {
   return (
     <DropdownMenu defaultOpen={defaultOpen}>
-      <DropdownMenuTrigger render={trigger} />
+      <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-80" align={align}>
         <DropdownMenuGroup>

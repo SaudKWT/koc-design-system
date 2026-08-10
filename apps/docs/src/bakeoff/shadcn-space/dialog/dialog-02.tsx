@@ -15,8 +15,10 @@ import { Button } from "@/bakeoff/ui/button";
 export default function Dialog02() {
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="outline" className="cursor-pointer" />}>
-        Delete Item
+      <DialogTrigger asChild>
+        <Button variant="outline" className="cursor-pointer">
+          Delete Item
+        </Button>
       </DialogTrigger>
       <DialogContent
         className="data-open:slide-in-from-bottom-8 data-closed:slide-out-to-bottom-8 data-open:zoom-in-100 data-closed:zoom-out-100 duration-300 [[data-slot=dialog-overlay]:has(~_&)]:duration-300"
@@ -34,15 +36,15 @@ export default function Dialog02() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-2 w-full">
-            <DialogClose
-              render={<Button variant="outline" className="flex-1 cursor-pointer" />}
-            >
-              Cancel
+            <DialogClose asChild>
+              <Button variant="outline" className="flex-1 cursor-pointer">
+                Cancel
+              </Button>
             </DialogClose>
-            <DialogClose
-              render={<Button variant="destructive" className="flex-1 cursor-pointer" />}
-            >
-              Delete
+            <DialogClose asChild>
+              <Button variant="destructive" className="flex-1 cursor-pointer">
+                Delete
+              </Button>
             </DialogClose>
           </div>
         </div>
