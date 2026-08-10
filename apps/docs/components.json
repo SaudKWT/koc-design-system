@@ -20,6 +20,7 @@
   },
   "registries": {
     "@koc": "http://localhost:4180/r/{name}.json",
-    "@kibo": "https://www.kibo-ui.com/registry/{name}.json"
+    "@kibo": "https://www.kibo-ui.com/registry/{name}.json",
+    "@shadcn-space": "https://shadcnspace.com/r/{name}.json"
   }
 }

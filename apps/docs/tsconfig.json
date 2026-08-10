@@ -25,5 +25,8 @@
       "@koc/tokens": ["../../packages/tokens/src"]
     }
   },
-  "include": ["src", "scripts", "vite.config.ts"]
+  "include": ["src", "scripts", "vite.config.ts"],
+  // Base UI-authored reference code that does not compile against our Radix
+  // primitives. Kept for porting, excluded so the build stays honest.
+  "exclude": ["src/bakeoff/reference"]
 }

@@ -67,6 +67,14 @@ strictly, over pairs no page happens to render.
   2026-08-09 against the wider org-standard scope, with the retrofit cost stated. Settled.
 - **npm workspaces, not pnpm.** KOC teams will have npm.
 - **Code is the source of truth; Figma is the sketching and handoff surface.**
+- **Radix, not Base UI — for now.** Checked 2026-08-10, not assumed:
+  shadcn's canonical registry still ships Radix (`radix-ui`, `asChild`,
+  `data-[state=open]`); Base UI is `1.0.0-rc.0`, pre-stable; Radix 1.6.7 shipped
+  more recently than Base UI did and has 1.7 in flight; adoption is ~28× wider.
+  Migrating now would *break* invariant 5, which is defined against shadcn
+  upstream. **Revisit when shadcn canonical moves** — that is the trigger, not
+  when an individual kit does. Some kits (shadcn-space) have already moved and
+  their components will not compile here; port the design, not the code.
 - **Paper (paper.design) considered and declined** as the standard — technically closer to
   this architecture, but too new to bet an org standard on, and KOC vendors all have Figma.
 
