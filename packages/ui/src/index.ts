@@ -42,3 +42,24 @@ export {
   TableCell,
   TableCaption,
 } from "./components/table";
+
+// ── App shell ───────────────────────────────────────────────────────────────
+// The standard KOC team dashboard frame, plus the org model it is configured
+// from. A new team dashboard is a TeamConfig, not a new component.
+
+export { AppShell, type AppShellProps, type AppShellUser } from "./components/app-shell";
+export {
+  ALL_UNITS,
+  groupsForUnit,
+  teamItems,
+  unitItems,
+  type NavItem,
+  type NavGroup,
+  type Unit,
+  type TeamConfig,
+} from "./lib/org";
+
+// Underlying primitives, exported so a team can compose its own frame if the
+// standard one genuinely does not fit.
+export * from "./components/sidebar";
+export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./components/collapsible";
