@@ -4,14 +4,14 @@
   "type": "registry:ui",
   "title": "Label",
   "description": "Form label. Always pair with a control via htmlFor.",
+  "categories": [
+    "form"
+  ],
   "dependencies": [
     "@radix-ui/react-label"
   ],
   "registryDependencies": [
     "@koc/utils"
-  ],
-  "categories": [
-    "form"
   ],
   "files": [
     {

@@ -23,7 +23,7 @@
       "secondary-foreground": "oklch(0.2866 0.0131 253.03)",
       "muted": "oklch(0.9364 0.0046 258.33)",
       "muted-foreground": "oklch(0.4836 0.0224 248.29)",
-      "accent": "oklch(0.9702 0.0131 251.56)",
+      "accent": "oklch(0.936 0.0276 248.12)",
       "accent-foreground": "oklch(0.4225 0.1219 250.7)",
       "destructive": "oklch(0.4835 0.1706 27.03)",
       "destructive-foreground": "oklch(1 0 0)",
@@ -41,14 +41,14 @@
       "chart-3": "oklch(0.4825 0.1032 163.75)",
       "chart-4": "oklch(0.5974 0.1141 329.7)",
       "chart-5": "oklch(0.4833 0.0834 209.34)",
-      "sidebar": "oklch(0.3532 0.1038 251.39)",
-      "sidebar-foreground": "oklch(0.9702 0.0131 251.56)",
-      "sidebar-primary": "oklch(1 0 0)",
-      "sidebar-primary-foreground": "oklch(0.3532 0.1038 251.39)",
-      "sidebar-accent": "oklch(0.4225 0.1219 250.7)",
-      "sidebar-accent-foreground": "oklch(1 0 0)",
-      "sidebar-border": "oklch(0.4225 0.1219 250.7)",
-      "sidebar-ring": "oklch(0.8137 0.0844 249.43)"
+      "sidebar": "oklch(1 0 0)",
+      "sidebar-foreground": "oklch(0.4197 0.0203 251.08)",
+      "sidebar-primary": "oklch(0.483 0.139 250.61)",
+      "sidebar-primary-foreground": "oklch(1 0 0)",
+      "sidebar-accent": "oklch(0.936 0.0276 248.12)",
+      "sidebar-accent-foreground": "oklch(0.4225 0.1219 250.7)",
+      "sidebar-border": "oklch(0.8829 0.0088 247.93)",
+      "sidebar-ring": "oklch(0.483 0.139 250.61)"
     },
     "dark": {
       "background": "oklch(0.2061 0.0086 240.33)",
@@ -85,8 +85,8 @@
       "sidebar-foreground": "oklch(0.9364 0.0046 258.33)",
       "sidebar-primary": "oklch(0.709 0.1147 250.08)",
       "sidebar-primary-foreground": "oklch(0.2061 0.0086 240.33)",
-      "sidebar-accent": "oklch(0.3528 0.0168 251.8)",
-      "sidebar-accent-foreground": "oklch(0.97 0.0029 264.54)",
+      "sidebar-accent": "oklch(0.2067 0.056 251.7)",
+      "sidebar-accent-foreground": "oklch(0.8137 0.0844 249.43)",
       "sidebar-border": "oklch(0.3528 0.0168 251.8)",
       "sidebar-ring": "oklch(0.709 0.1147 250.08)"
     }

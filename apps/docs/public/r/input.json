@@ -4,11 +4,11 @@
   "type": "registry:ui",
   "title": "Input",
   "description": "Text field. Its border carries KOC's WCAG 1.4.11 compliance at 3.63:1 — do not soften it to border-border.",
-  "registryDependencies": [
-    "@koc/utils"
-  ],
   "categories": [
     "form"
+  ],
+  "registryDependencies": [
+    "@koc/utils"
   ],
   "files": [
     {

@@ -4,18 +4,18 @@
   "type": "registry:ui",
   "title": "Stat Card",
   "description": "A KPI with a change indicator. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
-  "dependencies": [
-    "lucide-react"
-  ],
-  "registryDependencies": [
-    "@koc/utils",
-    "@koc/card"
-  ],
   "categories": [
     "data",
     "koc"
   ],
   "docs": "Set `intent` explicitly: 'higher-is-better' (production, uptime), 'lower-is-better' (flaring, emissions, downtime, water cut). Defaults to 'neutral' — an honest grey delta beats a confident wrong colour.",
+  "dependencies": [
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "@koc/card",
+    "@koc/utils"
+  ],
   "files": [
     {
       "path": "components/ui/stat-card.tsx",

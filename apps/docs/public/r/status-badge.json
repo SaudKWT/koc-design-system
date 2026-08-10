@@ -4,17 +4,17 @@
   "type": "registry:ui",
   "title": "Status Badge",
   "description": "Operational state for wells, assets and jobs. Takes a status, not a colour — it derives colour, icon and label together so WCAG 1.4.1 cannot be violated by omission.",
+  "categories": [
+    "data",
+    "koc"
+  ],
+  "docs": "Statuses: producing, normal, warning, critical, shutin, maintenance, offline, unknown. `critical` is the only filled variant — keep it rare so it stays pre-attentive.",
   "dependencies": [
     "lucide-react"
   ],
   "registryDependencies": [
     "@koc/utils"
   ],
-  "categories": [
-    "data",
-    "koc"
-  ],
-  "docs": "Statuses: producing, normal, warning, critical, shutin, maintenance, offline, unknown. `critical` is the only filled variant — keep it rare so it stays pre-attentive.",
   "files": [
     {
       "path": "components/ui/status-badge.tsx",

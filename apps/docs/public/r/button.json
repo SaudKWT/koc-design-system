@@ -4,15 +4,15 @@
   "type": "registry:ui",
   "title": "Button",
   "description": "Six variants, four sizes. Every label/background pair is contrast-tested.",
+  "categories": [
+    "form"
+  ],
   "dependencies": [
     "@radix-ui/react-slot",
     "class-variance-authority"
   ],
   "registryDependencies": [
     "@koc/utils"
-  ],
-  "categories": [
-    "form"
   ],
   "files": [
     {

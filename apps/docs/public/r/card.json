@@ -4,11 +4,11 @@
   "type": "registry:ui",
   "title": "Card",
   "description": "The primary surface for grouping dashboard content.",
-  "registryDependencies": [
-    "@koc/utils"
-  ],
   "categories": [
     "layout"
+  ],
+  "registryDependencies": [
+    "@koc/utils"
   ],
   "files": [
     {

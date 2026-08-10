@@ -10,10 +10,44 @@
       "description": "Kuwait Oil Company brand tokens for light and dark. Anchored to #0060A9, recovered from KOC's own stylesheets. Install this first — it re-skins a stock shadcn app into a KOC app."
     },
     {
+      "name": "org",
+      "type": "registry:lib",
+      "title": "Org model",
+      "description": "The KOC organisational model a team dashboard is configured from — Directorate › Group › Team › Unit. Adding a team dashboard is a TeamConfig, not a new component."
+    },
+    {
+      "name": "use-mobile",
+      "type": "registry:lib",
+      "title": "useIsMobile",
+      "description": "Viewport hook backing the sidebar's mobile sheet behaviour."
+    },
+    {
       "name": "utils",
       "type": "registry:lib",
       "title": "cn utility",
       "description": "Class merger — clsx + tailwind-merge."
+    },
+    {
+      "name": "alert",
+      "type": "registry:ui",
+      "title": "Alert",
+      "description": "Inline message. Callers must supply an icon — colour alone cannot carry severity."
+    },
+    {
+      "name": "app-shell",
+      "type": "registry:ui",
+      "title": "App Shell",
+      "description": "The standard KOC team dashboard frame. Configured entirely from a TeamConfig — unit switcher, unit nav and an always-visible team-wide zone. Building a dashboard for another team is a config file, not a fork.",
+      "categories": [
+        "layout",
+        "koc"
+      ]
+    },
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Counts, tags and categories. `shape=\"count\"` gives a circular count that becomes a pill past two digits. For plant state use @koc/status-badge instead."
     },
     {
       "name": "button",
@@ -34,6 +68,37 @@
       ]
     },
     {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "Binary control built on Radix.",
+      "categories": [
+        "form"
+      ]
+    },
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "title": "Collapsible",
+      "description": "Show/hide a region. Backs nested sidebar navigation."
+    },
+    {
+      "name": "data-table",
+      "type": "registry:ui",
+      "title": "Data Table",
+      "description": "Sorting, filtering, column visibility and pagination on TanStack Table v9 — with loading, empty and filtered-empty as three distinct states, and numeric alignment declared on the column rather than remembered in a cell renderer.",
+      "categories": [
+        "data",
+        "koc"
+      ]
+    },
+    {
+      "name": "dropdown-menu",
+      "type": "registry:ui",
+      "title": "Dropdown Menu",
+      "description": "Action and option menus built on Radix."
+    },
+    {
       "name": "input",
       "type": "registry:ui",
       "title": "Input",
@@ -52,24 +117,52 @@
       ]
     },
     {
-      "name": "badge",
+      "name": "select",
       "type": "registry:ui",
-      "title": "Badge",
-      "description": "Counts, tags and categories. For plant state use @koc/status-badge instead."
-    },
-    {
-      "name": "alert",
-      "type": "registry:ui",
-      "title": "Alert",
-      "description": "Inline message. Callers must supply an icon — colour alone cannot carry severity."
-    },
-    {
-      "name": "table",
-      "type": "registry:ui",
-      "title": "Table",
-      "description": "Table primitives. Body cells get tabular figures automatically; right-align numeric columns.",
+      "title": "Select",
+      "description": "Single-choice dropdown built on Radix.",
       "categories": [
-        "data"
+        "form"
+      ]
+    },
+    {
+      "name": "separator",
+      "type": "registry:ui",
+      "title": "Separator",
+      "description": "Visual divider."
+    },
+    {
+      "name": "sheet",
+      "type": "registry:ui",
+      "title": "Sheet",
+      "description": "Edge-anchored panel. Backs the sidebar's mobile behaviour.",
+      "categories": [
+        "layout"
+      ]
+    },
+    {
+      "name": "sidebar",
+      "type": "registry:ui",
+      "title": "Sidebar",
+      "description": "Collapsible sidebar primitives with an icon rail, mobile sheet and keyboard shortcut. Diverges from upstream: collapsed padding is scoped per size, because upstream's base `p-2!` beats `lg`'s `p-0!` on CSS source order.",
+      "categories": [
+        "layout"
+      ]
+    },
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Loading placeholder. Prefer it over a spinner so layout does not jump when data lands."
+    },
+    {
+      "name": "stat-card",
+      "type": "registry:ui",
+      "title": "Stat Card",
+      "description": "A KPI with a change indicator. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
+      "categories": [
+        "data",
+        "koc"
       ]
     },
     {
@@ -83,14 +176,28 @@
       ]
     },
     {
-      "name": "stat-card",
+      "name": "table",
       "type": "registry:ui",
-      "title": "Stat Card",
-      "description": "A KPI with a change indicator. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
+      "title": "Table",
+      "description": "Table primitives. Body cells get tabular figures automatically; right-align numeric columns. For sorting, filtering and pagination use @koc/data-table.",
       "categories": [
-        "data",
-        "koc"
+        "data"
       ]
+    },
+    {
+      "name": "tabs",
+      "type": "registry:ui",
+      "title": "Tabs",
+      "description": "Switch between sibling views. Use for scope (assets, periods), not for filters.",
+      "categories": [
+        "layout"
+      ]
+    },
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "Short label on hover and focus. Load-bearing in a collapsed icon rail — it is the only accessible name those buttons have."
     }
   ]
 }

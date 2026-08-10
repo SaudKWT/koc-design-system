@@ -3,12 +3,12 @@
   "name": "table",
   "type": "registry:ui",
   "title": "Table",
-  "description": "Table primitives. Body cells get tabular figures automatically; right-align numeric columns.",
-  "registryDependencies": [
-    "@koc/utils"
-  ],
+  "description": "Table primitives. Body cells get tabular figures automatically; right-align numeric columns. For sorting, filtering and pagination use @koc/data-table.",
   "categories": [
     "data"
+  ],
+  "registryDependencies": [
+    "@koc/utils"
   ],
   "files": [
     {
