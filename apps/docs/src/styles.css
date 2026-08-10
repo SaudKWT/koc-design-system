@@ -19,3 +19,20 @@
  * detection will not see it and would tree-shake away every class the component
  * library uses. */
 @source "../../../packages/ui/src";
+
+/* ── DO NOT ADD TOKEN DEFINITIONS BELOW THIS LINE ───────────────────────────
+ *
+ * `npx shadcn add sidebar` appends its own `:root` / `.dark` blocks here with
+ * stock Zinc defaults — `--sidebar: hsl(0 0% 98%)` and friends. They land AFTER
+ * the KOC import above, carry identical specificity, and therefore WIN: KOC's
+ * sidebar (primary-800, #003C6F) silently becomes near-white grey.
+ *
+ * That block has been removed. If it reappears after a future `shadcn add`,
+ * delete it again — the token values in packages/tokens/src are the only ones
+ * that have passed a contrast assertion.
+ *
+ * This is not a quirk of the sidebar. Any shadcn-ecosystem component that ships
+ * theme variables can de-brand an app on install, and nothing about it is
+ * visible in a diff unless someone is looking. It is the concrete case for the
+ * CI check that flags raw colour in consuming repos — see CLAUDE.md.
+ */

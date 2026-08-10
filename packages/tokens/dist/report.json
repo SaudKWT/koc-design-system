@@ -953,14 +953,38 @@
         "onBlack": 3.37
       },
       "sidebar": {
-        "hex": "#003C6F",
-        "l": 0.3532,
-        "c": 0.1038,
-        "h": 251.39,
-        "onWhite": 11.19,
-        "onBlack": 1.88
+        "hex": "#FFFFFF",
+        "l": 1,
+        "c": 0,
+        "h": 0,
+        "onWhite": 1,
+        "onBlack": 21
       },
       "sidebar-foreground": {
+        "hex": "#454E58",
+        "l": 0.4197,
+        "c": 0.0203,
+        "h": 251.08,
+        "onWhite": 8.46,
+        "onBlack": 2.48
+      },
+      "sidebar-primary": {
+        "hex": "#0060A9",
+        "l": 0.483,
+        "c": 0.139,
+        "h": 250.61,
+        "onWhite": 6.47,
+        "onBlack": 3.25
+      },
+      "sidebar-primary-foreground": {
+        "hex": "#FFFFFF",
+        "l": 1,
+        "c": 0,
+        "h": 0,
+        "onWhite": 1,
+        "onBlack": 21
+      },
+      "sidebar-accent": {
         "hex": "#EFF6FE",
         "l": 0.9702,
         "c": 0.0131,
@@ -968,53 +992,29 @@
         "onWhite": 1.09,
         "onBlack": 19.28
       },
-      "sidebar-primary": {
-        "hex": "#FFFFFF",
-        "l": 1,
-        "c": 0,
-        "h": 0,
-        "onWhite": 1,
-        "onBlack": 21
-      },
-      "sidebar-primary-foreground": {
-        "hex": "#003C6F",
-        "l": 0.3532,
-        "c": 0.1038,
-        "h": 251.39,
-        "onWhite": 11.19,
-        "onBlack": 1.88
-      },
-      "sidebar-accent": {
+      "sidebar-accent-foreground": {
         "hex": "#004F8D",
         "l": 0.4225,
         "c": 0.1219,
         "h": 250.7,
         "onWhite": 8.39,
         "onBlack": 2.5
-      },
-      "sidebar-accent-foreground": {
-        "hex": "#FFFFFF",
-        "l": 1,
-        "c": 0,
-        "h": 0,
-        "onWhite": 1,
-        "onBlack": 21
       },
       "sidebar-border": {
-        "hex": "#004F8D",
-        "l": 0.4225,
-        "c": 0.1219,
-        "h": 250.7,
-        "onWhite": 8.39,
-        "onBlack": 2.5
+        "hex": "#D4D9DE",
+        "l": 0.8829,
+        "c": 0.0088,
+        "h": 247.93,
+        "onWhite": 1.42,
+        "onBlack": 14.78
       },
       "sidebar-ring": {
-        "hex": "#98C7F7",
-        "l": 0.8137,
-        "c": 0.0844,
-        "h": 249.43,
-        "onWhite": 1.77,
-        "onBlack": 11.85
+        "hex": "#0060A9",
+        "l": 0.483,
+        "c": 0.139,
+        "h": 250.61,
+        "onWhite": 6.47,
+        "onBlack": 3.25
       }
     },
     "dark": {
@@ -1291,20 +1291,20 @@
         "onBlack": 1.18
       },
       "sidebar-accent": {
-        "hex": "#353C44",
-        "l": 0.3528,
-        "c": 0.0168,
-        "h": 251.8,
-        "onWhite": 11.16,
-        "onBlack": 1.88
+        "hex": "#021830",
+        "l": 0.2067,
+        "c": 0.056,
+        "h": 251.7,
+        "onWhite": 17.86,
+        "onBlack": 1.18
       },
       "sidebar-accent-foreground": {
-        "hex": "#F4F5F7",
-        "l": 0.97,
-        "c": 0.0029,
-        "h": 264.54,
-        "onWhite": 1.09,
-        "onBlack": 19.25
+        "hex": "#98C7F7",
+        "l": 0.8137,
+        "c": 0.0844,
+        "h": 249.43,
+        "onWhite": 1.77,
+        "onBlack": 11.85
       },
       "sidebar-border": {
         "hex": "#353C44",

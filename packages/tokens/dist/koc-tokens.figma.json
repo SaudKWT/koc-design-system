@@ -655,35 +655,35 @@
       "type": "color"
     },
     "sidebar": {
-      "value": "{color.primary.800}",
+      "value": "#FFFFFF",
       "type": "color"
     },
     "sidebar-foreground": {
-      "value": "{color.primary.50}",
+      "value": "{color.neutral.700}",
       "type": "color"
     },
     "sidebar-primary": {
-      "value": "#FFFFFF",
+      "value": "{color.primary.600}",
       "type": "color"
     },
     "sidebar-primary-foreground": {
-      "value": "{color.primary.800}",
-      "type": "color"
-    },
-    "sidebar-accent": {
-      "value": "{color.primary.700}",
-      "type": "color"
-    },
-    "sidebar-accent-foreground": {
       "value": "#FFFFFF",
       "type": "color"
     },
-    "sidebar-border": {
+    "sidebar-accent": {
+      "value": "{color.primary.50}",
+      "type": "color"
+    },
+    "sidebar-accent-foreground": {
       "value": "{color.primary.700}",
       "type": "color"
     },
+    "sidebar-border": {
+      "value": "{color.neutral.200}",
+      "type": "color"
+    },
     "sidebar-ring": {
-      "value": "{color.primary.300}",
+      "value": "{color.primary.600}",
       "type": "color"
     }
   },
@@ -825,11 +825,11 @@
       "type": "color"
     },
     "sidebar-accent": {
-      "value": "{color.neutral.800}",
+      "value": "{color.primary.950}",
       "type": "color"
     },
     "sidebar-accent-foreground": {
-      "value": "{color.neutral.50}",
+      "value": "{color.primary.300}",
       "type": "color"
     },
     "sidebar-border": {

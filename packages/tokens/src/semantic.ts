@@ -91,16 +91,33 @@ export const light: SemanticTheme = {
   "chart-4": chartSeries[3],
   "chart-5": chartSeries[4],
 
-  // The sidebar is KOC blue. This is where the brand lives in a dashboard —
-  // and it doubles as the dark backdrop the white-only KOC logo requires.
-  sidebar: primary[800],
-  "sidebar-foreground": primary[50],
-  "sidebar-primary": "#FFFFFF",
-  "sidebar-primary-foreground": primary[800],
-  "sidebar-accent": primary[700],
-  "sidebar-accent-foreground": "#FFFFFF",
-  "sidebar-border": primary[700],
-  "sidebar-ring": primary[300],
+  // The sidebar is a quiet surface, not a brand panel.
+  //
+  // It was primary[800] — a full-height slab of KOC blue. That reads as strong
+  // branding for about a day, and as noise every day after: navigation is the
+  // one element on screen at all times, so it is the worst place to spend
+  // saturation. A dashboard's colour budget should be carried by the data, where
+  // colour means something (a status, a series, a threshold). Nav chrome
+  // competing with a chart for attention is a competition the chart should win.
+  //
+  // So the brand now appears in the sidebar in exactly two places: the active
+  // item, and the focus ring. Both are places where colour is doing work —
+  // signalling where you are and where your keyboard is — rather than decorating.
+  //
+  // Consequence to know about: the KOC logo SVG ships fill="white" only, and it
+  // is unreadable on a light surface. Consumers must put it on a `bg-primary`
+  // tile (see the docs sidebar header) rather than dropping it straight onto
+  // `bg-sidebar`. That is a real constraint the old dark slab was hiding.
+  sidebar: "#FFFFFF",
+  "sidebar-foreground": neutral[700],
+  "sidebar-primary": primary[600],
+  "sidebar-primary-foreground": "#FFFFFF",
+  // Active item: the faintest blue wash, with the label in brand blue. Enough to
+  // locate yourself at a glance, far short of a slab.
+  "sidebar-accent": primary[50],
+  "sidebar-accent-foreground": primary[700],
+  "sidebar-border": neutral[200],
+  "sidebar-ring": primary[600],
 };
 
 /**
@@ -166,12 +183,16 @@ export const dark: SemanticTheme = {
   "chart-4": accent[400],
   "chart-5": info[300],
 
+  // Dark was already restrained, but its active item was a neutral grey — which
+  // means in dark mode you could not tell "hovered" from "current page" by
+  // colour alone. Light now marks the active item in brand blue, so dark does
+  // the same, one rung brighter to survive the dark surface.
   sidebar: neutral[900],
   "sidebar-foreground": neutral[100],
   "sidebar-primary": primary[400],
   "sidebar-primary-foreground": neutral[950],
-  "sidebar-accent": neutral[800],
-  "sidebar-accent-foreground": neutral[50],
+  "sidebar-accent": primary[950],
+  "sidebar-accent-foreground": primary[300],
   "sidebar-border": neutral[800],
   "sidebar-ring": primary[400],
 };

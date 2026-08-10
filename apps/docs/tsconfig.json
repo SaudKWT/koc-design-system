@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Mirrors the Vite aliases. The shadcn CLI reads `paths` to decide where to
+    // write files, so this is not merely for the editor — get it wrong and
+    // components land in the wrong directory.
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@koc/ui": ["../../packages/ui/src"],
+      "@koc/ui/*": ["../../packages/ui/src/components/*"],
+      "@koc/tokens": ["../../packages/tokens/src"]
+    }
+  },
+  "include": ["src", "scripts", "vite.config.ts"]
+}
