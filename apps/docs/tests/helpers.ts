@@ -33,6 +33,7 @@ export type SectionLabel =
   | "Data table"
   | "Accessibility"
   | "List view"
+  | "shadcn-space audit"
   | "Sidebar bake-off";
 
 /** Open a docs section and wait for it to settle. */
