@@ -38,7 +38,7 @@ silently is the worst outcome in this repo.
    `duration-200`, never `ease-linear`, never an arbitrary value. `npm run check:motion`
    fails the build on any off-scale literal.
 
-## The three build gates
+## The build gates
 
 Each one exists because documentation already failed to hold the line:
 
@@ -106,9 +106,11 @@ description field, and Figma variants map 1:1 to real props.
   (Directorate → Group → Team → Unit); adding a KOC team is a config file, never a component.
   `DataTable` is TanStack Table v9 with loading, empty and filtered-empty as distinct states
   and numeric alignment declared via column `meta`.
-- **Still missing:** dialog, tabs, combobox, date-range, toast, form layout, page header,
-  chart wrappers — plus patterns (list view, detail view, KPI dashboard). Much of this is an
-  *install* from the shadcn ecosystem rather than a build, because of invariant 5.
+- **39 registry items.** Dialog, tabs, combobox, date-range, page header, page nav, confirm
+  dialog, notification menu and user menu all exist. The **list view** pattern is built.
+- **Still missing:** toast, form layout, chart wrappers — plus the **detail view** and
+  **KPI dashboard** patterns. Some of this is an *install* from the shadcn ecosystem rather
+  than a build, because of invariant 5.
 - **There is no data table in the shadcn registry.** `@shadcn/data-table` is named as a
   registry dependency but never published; only a `registry:example` exists, which the CLI
   will not install. Don't go looking for it again.
@@ -117,8 +119,17 @@ description field, and Figma variants map 1:1 to real props.
   `sonner`, `vaul`, `zod` — and silently bumped **recharts 2.15 → 3.8**. Check
   `git diff package.json` after every block install.
 - **The registry hostname is aspirational.** `design.kockw.com` is a placeholder.
-- **Contrast is tested; behaviour is not.** Nothing here proves focus order, screen-reader
-  output, or keyboard traps in composed views.
+- **All DWOS app lists and the DDR column shape are placeholder.** The org structure is real;
+  the workflows under each unit are invented. Replace before showing a KOC team.
+- **Behaviour is tested in Chromium; no screen reader has been run.** The harness proves
+  keyboard reach, visible focus, ARIA correctness and announced state. It cannot tell you what
+  NVDA actually says — live-region politeness, table navigation mode, how `aria-sort` is
+  voiced. That needs a real screen reader on Windows, periodically. KOC is a Windows/Edge
+  organisation, so test NVDA + Edge, not VoiceOver.
+- **Third-party registry items can write outside your configured aliases** and can inject
+  theme blocks into your CSS entry. `@shadcn-space` items landed in `src/components/` despite
+  `components.json` mapping components to `@/bakeoff`. Argument for `@koc` being the sanctioned
+  registry, and for checking `git status` after any third-party install.
 
 ## Traps that have already cost time
 
@@ -130,6 +141,16 @@ description field, and Figma variants map 1:1 to real props.
   workaround is not obsolete; do not remove it on the assumption that a major version fixed it.
 - **WCAG contrast is the wrong tool for hue separation.** Use CIEDE2000 ΔE (`culori`'s
   `differenceCiede2000`), threshold ~15. But test luminance separately for greyscale.
+- **A blank page after changing a dependency is Vite's dep cache, not your code.**
+  Vite pre-bundles `node_modules` into `apps/docs/node_modules/.vite` and does not always
+  re-optimise when the set of imported names changes. The tell is a console error naming an
+  export that demonstrably exists — `does not provide an export named 'Form'` while
+  `require('lucide-react').Form` is fine — usually with a stale `?v=<hash>` on the module URL.
+  Run `npm run dev:clean`. It bit twice in one session: once blanking the site, once failing
+  all 18 behaviour tests at once for reasons unrelated to the code under test. **If the whole
+  suite goes red after a dependency change, suspect the cache before the change.**
+  Confirm the code is fine with `npm run build --workspace=@koc/docs`, which is cache-independent.
+
 - **Vite string aliases are prefix matches**, so an alias on `@koc/tokens` swallows
   `@koc/tokens/css`. Import generated CSS by relative path.
 - **`StatCard` must not guess sentiment.** At an oil company "up" is not always good —
