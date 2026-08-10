@@ -5,6 +5,7 @@ import { cn } from "../lib/utils";
 import {
   ALL_UNITS,
   groupsForUnit,
+  unitDisplayName,
   type NavGroup,
   type NavItem,
   type TeamConfig,
@@ -110,7 +111,15 @@ export function AppShell({
 
   const unitGroups = groupsForUnit(team, currentUnit);
   const activeUnit = team.units.find((u) => u.id === currentUnit);
-  const unitLabel = currentUnit === ALL_UNITS ? "All units" : (activeUnit?.label ?? "—");
+  // The header shows what the unit *covers*, not its number — "Deep" rather than
+  // "Unit 3". The number stays in the switcher list, where it is needed to match
+  // against forms and job titles.
+  const unitLabel =
+    currentUnit === ALL_UNITS
+      ? "All units"
+      : activeUnit
+        ? unitDisplayName(activeUnit)
+        : "—";
 
   return (
     <SidebarProvider>
@@ -130,8 +139,14 @@ export function AppShell({
                     <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                       <PanelLeft className="size-4" />
                     </div>
-                    <div className="grid flex-1 text-left leading-tight">
-                      <span className="truncate text-sm font-semibold">
+                    {/* `min-w-0` is what makes `truncate` work on the children.
+                        A grid item's default `min-width: auto` refuses to shrink
+                        below its content, so without it the text pushes the row
+                        wider instead of ellipsing and the chevron gets shoved
+                        out. `title` keeps the full name reachable when it does
+                        truncate. */}
+                    <div className="grid min-w-0 flex-1 text-left leading-tight">
+                      <span className="truncate text-sm font-semibold" title={team.name}>
                         {team.shortName}
                       </span>
                       <span className="truncate text-xs text-muted-foreground">
@@ -162,11 +177,14 @@ export function AppShell({
                       onSelect={() => selectUnit(unit.id)}
                       className="gap-2"
                     >
-                      <div className="grid flex-1">
+                      {/* The list keeps KOC's numbering as the primary line —
+                          that is the designation people are given — with the
+                          coverage underneath so the number is decodable. */}
+                      <div className="grid min-w-0 flex-1">
                         <span>{unit.label}</span>
-                        {unit.description && (
-                          <span className="text-xs text-muted-foreground">
-                            {unit.description}
+                        {unit.name && (
+                          <span className="truncate text-xs text-muted-foreground">
+                            {unit.name}
                           </span>
                         )}
                       </div>

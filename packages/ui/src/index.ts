@@ -51,6 +51,7 @@ export { AppShell, type AppShellProps, type AppShellUser } from "./components/ap
 export {
   ALL_UNITS,
   groupsForUnit,
+  unitDisplayName,
   teamItems,
   unitItems,
   type NavItem,

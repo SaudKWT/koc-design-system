@@ -115,47 +115,47 @@ function drillingUnitGroups(unitId: string): NavGroup[] {
 export const DWOS: TeamConfig = {
   id: "dwos",
   name: "Drilling & Workover Operational Support Team",
-  shortName: "D&W Operational Support",
+  shortName: "Operational Support",
   directorate: "Exploration & Drilling",
   group: "Drilling & Workover Engineering",
 
   /**
-   * The seven units, with what each actually covers.
+   * The seven units. `label` is KOC's designation, `name` is what it covers.
    *
-   * The numbers are KOC's and are not going away, but on their own they tell a
-   * user nothing — "Unit 3" is unguessable, "Deep" is not. Every unit therefore
-   * carries a `description`, which the switcher renders under the label. That is
-   * the cheap fix; renaming is KOC's call, not this repo's.
+   * The numbers are KOC's and are not going away — they are what appears on a
+   * form and in a job title, so the switcher list has to show them. But "Unit 3"
+   * is unguessable and "Deep" is not, so the header shows the name. Number where
+   * you need to match a record, name where you need to know where you are.
    */
   units: [
     {
       id: "unit-1",
       label: "Unit 1",
-      description: "North & West Kuwait + Heavy Oil",
+      name: "North & West + Heavy Oil",
       groups: drillingUnitGroups("unit-1"),
     },
     {
       id: "unit-2",
       label: "Unit 2",
-      description: "South & East Kuwait",
+      name: "South & East",
       groups: drillingUnitGroups("unit-2"),
     },
     {
       id: "unit-3",
       label: "Unit 3",
-      description: "Deep",
+      name: "Deep",
       groups: drillingUnitGroups("unit-3"),
     },
     {
       id: "unit-4",
       label: "Unit 4",
-      description: "Offshore",
+      name: "Offshore",
       groups: drillingUnitGroups("unit-4"),
     },
     {
       id: "unit-5",
       label: "Unit 5",
-      description: "Water Well",
+      name: "Water Well",
       groups: [
         {
           id: "operations",
@@ -171,7 +171,7 @@ export const DWOS: TeamConfig = {
     {
       id: "unit-6",
       label: "Unit 6",
-      description: "Well Intervention",
+      name: "Well Intervention",
       groups: [
         {
           id: "operations",
@@ -187,7 +187,7 @@ export const DWOS: TeamConfig = {
     {
       id: "unit-7",
       label: "Unit 7",
-      description: "Support",
+      name: "Support",
       groups: [
         {
           id: "operations",

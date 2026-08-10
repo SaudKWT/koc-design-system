@@ -60,17 +60,31 @@ export interface NavGroup {
 /**
  * A unit inside a team, with the apps scoped to it.
  *
- * Note on naming: KOC's DWOS team mixes numbered units (Unit 1–4) with named
- * ones (Water Well, Offshore Logistics, Well Intervention). Numbers carry no
- * information about what a unit does, which makes the switcher harder to use
- * than it needs to be. `description` exists so a numbered unit can at least say
- * what it covers in the switcher.
+ * Two names, deliberately, because they are read in different places for
+ * different reasons.
+ *
+ * `label` is KOC's official designation — "Unit 1". It is what appears on a
+ * form, in an email, in someone's job title, so the switcher list has to show it
+ * or people cannot match what they see to what they were told.
+ *
+ * `name` is what the unit actually covers — "North & West Kuwait + Heavy Oil".
+ * That is what belongs in the sidebar header, because the header answers "where
+ * am I?" and "Unit 1" answers nothing. A number is a good identifier and a bad
+ * label; showing the number where the answer should be is how internal tools end
+ * up needing a glossary.
  */
 export interface Unit {
   id: string;
+  /** KOC's official designation, e.g. "Unit 1". Shown in the switcher list. */
   label: string;
-  description?: string;
+  /** What the unit covers, e.g. "Deep". Shown in the header. Falls back to `label`. */
+  name?: string;
   groups: NavGroup[];
+}
+
+/** What to show when identifying the unit you are currently in. */
+export function unitDisplayName(unit: Unit): string {
+  return unit.name ?? unit.label;
 }
 
 /** The sentinel unit id meaning "show every unit's work at once". */
