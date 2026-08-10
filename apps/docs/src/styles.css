@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Entrance/exit keyframes (animate-in, fade-in-0, zoom-in-95, slide-in-from-*).
+ *
+ * shadcn components ship these classes and assume the plugin is present. It was
+ * not — so every tooltip, dropdown and sheet in this app had zero entrance and
+ * exit animation and simply popped. Nothing errors when it is missing; the
+ * classes are just inert, which is why it survived unnoticed.
+ *
+ * Consumers installing @koc/ui components need this too. */
+@import "tw-animate-css";
+
 /* The generated KOC tokens: raw ramps, semantic light/dark, the Tailwind v4
  * @theme bridge, and the base layer. Everything visual originates here — nothing
  * in this app hard-codes a colour.

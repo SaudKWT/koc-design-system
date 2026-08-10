@@ -14,9 +14,10 @@
     "build:tokens": "npm run build --workspace=@koc/tokens",
     "test:tokens": "npm run test --workspace=@koc/tokens",
     "check:drift": "tsx packages/tokens/src/check-drift.ts apps/docs/src/styles.css",
-    "test": "npm run test:tokens && npm run check:drift",
+    "check:motion": "tsx packages/tokens/src/check-motion.ts packages/ui/src",
+    "test": "npm run test:tokens && npm run check:drift && npm run check:motion",
     "dev": "npm run dev --workspace=@koc/docs",
-    "build": "npm run build:tokens && npm run check:drift && npm run build --workspace=@koc/docs",
+    "build": "npm run build:tokens && npm run check:drift && npm run check:motion && npm run build --workspace=@koc/docs",
     "registry": "npm run build:registry --workspace=@koc/docs"
   },
   "devDependencies": {

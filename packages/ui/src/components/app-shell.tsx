@@ -318,7 +318,7 @@ function CollapsibleNavItem({
             <span>{item.label}</span>
             <ChevronRight
               className={cn(
-                "ml-auto transition-transform duration-200",
+                "ml-auto transition-transform duration-fast ease-out",
                 "group-data-[state=open]/collapsible:rotate-90",
               )}
             />

@@ -10,7 +10,7 @@ this repo — other KOC teams and that developer — over internal convenience.
 
 ```bash
 npm run build:tokens   # regenerate CSS / DTCG JSON / Figma JSON / report
-npm run test:tokens    # 63 WCAG assertions — must pass before anything ships
+npm test               # contrast + token drift + motion scale. All three gate the build.
 npm run dev            # docs site → http://localhost:4180
 npm run registry       # regenerate the @koc shadcn registry
 ```
@@ -33,6 +33,20 @@ silently is the worst outcome in this repo.
 5. **Semantic token names follow the shadcn contract exactly.** This is load-bearing, not
    cosmetic: it means any component from ui.shadcn.com, Origin UI, or Kibo UI is on-brand
    with no restyling. Renaming a token to something "clearer" breaks that for free.
+6. **Motion comes from the scale, never from a literal.** `duration-fast` / `-base` / `-slow`
+   / `-slower` and `ease-out` / `-in` / `-spring`, defined in `foundation.ts`. Never
+   `duration-200`, never `ease-linear`, never an arbitrary value. `npm run check:motion`
+   fails the build on any off-scale literal.
+
+## The three build gates
+
+Each one exists because documentation already failed to hold the line:
+
+| Gate | Catches | Why a test and not a comment |
+| --- | --- | --- |
+| `test:tokens` | contrast regressions | 63 assertions; a guideline drifts the first time someone is in a hurry |
+| `check:drift` | redefinition of KOC tokens | `shadcn add` appends stock theme blocks that silently de-brand the app — it appended one *directly beneath the warning comment telling it not to* |
+| `check:motion` | off-scale duration/easing | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed |
 
 ## Decisions already made — don't re-litigate without new information
 

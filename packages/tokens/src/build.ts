@@ -134,6 +134,28 @@ ${Object.entries(foundation.easing)
   .join("\n")}
 }
 
+/* ── Motion utilities ───────────────────────────────────────────────────────
+ * Tailwind v4 has an \`--ease-*\` theme namespace but NOT a \`--duration-*\` one:
+ * \`duration-<number>\` takes a bare millisecond value and nothing else. So
+ * emitting --duration-* into @theme produces the custom properties without
+ * producing any utility that uses them — the scale exists and is unreachable,
+ * which is how it went unused from the first commit.
+ *
+ * These @utility rules close that gap. Each sets BOTH transition-duration and
+ * animation-duration, because the two are separate properties and shadcn's
+ * entrance/exit classes (animate-in, fade-in-0, zoom-in-95) are CSS animations,
+ * not transitions — a transition-only duration would silently do nothing to them.
+ */
+${Object.entries(foundation.duration)
+  .map(([k, v]) => {
+    const name = k === "DEFAULT" ? "base" : k;
+    return `@utility duration-${name} {
+  transition-duration: ${v};
+  animation-duration: ${v};
+}`;
+  })
+  .join("\n\n")}
+
 /* ── Base layer ─────────────────────────────────────────────────────────────*/
 @layer base {
   * {
