@@ -47,6 +47,13 @@ Each one exists because documentation already failed to hold the line:
 | `test:tokens` | contrast regressions | 63 assertions; a guideline drifts the first time someone is in a hurry |
 | `check:drift` | redefinition of KOC tokens | `shadcn add` appends stock theme blocks that silently de-brand the app — it appended one *directly beneath the warning comment telling it not to* |
 | `check:motion` | off-scale duration/easing | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed |
+| `test:a11y` | broken ARIA, unreachable controls, invisible focus, unannounced state | Playwright + axe in a real browser. Found a `Tabs` with no `TabsContent` — `aria-controls` pointing at an id that didn't exist — on its first run |
+| `registry` (in `build`) | components missing from the registry | 12 had gone missing, uninstallable, silently |
+
+Behaviour tests live in `apps/docs/tests/`. Chromium only, deliberately: KOC is a
+Windows/Edge organisation, and WebKit would be testing a browser no KOC user has.
+`color-contrast` is disabled in axe because the token tests already assert it more
+strictly, over pairs no page happens to render.
 
 ## Decisions already made — don't re-litigate without new information
 

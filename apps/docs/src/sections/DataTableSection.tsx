@@ -6,6 +6,7 @@ import {
   DataTable,
   StatusBadge,
   Tabs,
+  TabsContent,
   TabsList,
   TabsTrigger,
   cn,
@@ -96,7 +97,6 @@ export function DataTableSection() {
   const [demo, setDemo] = useState<Demo>("data");
   const [asset, setAsset] = useState<Asset>("North");
 
-  const rowsForAsset = ROWS.filter((r) => r.asset === asset);
   const countFor = (a: Asset) => ROWS.filter((r) => r.asset === a).length;
 
   return (
@@ -161,9 +161,21 @@ export function DataTableSection() {
           </p>
         </div>
 
-        {/* Counts on the tabs so you can see where the work is without
-            switching — and so an empty asset is visibly empty rather than a
-            tab you click and find nothing behind. */}
+        {/*
+         * The table lives INSIDE a TabsContent, not beside the TabsList.
+         *
+         * Radix wires `aria-controls` from each trigger to its panel. With no
+         * TabsContent the attribute points at an id that does not exist — axe
+         * flags it critical, and a screen reader announces a tab that controls
+         * nothing. Putting the table in the panel makes the relationship real:
+         * the table IS what the tab switches.
+         *
+         * Radix mounts only the active panel, so this renders one table, not four.
+         *
+         * Counts on the triggers so you can see where the work is without
+         * switching, and so an empty asset is visibly empty rather than a tab
+         * you click and find nothing behind.
+         */}
         <Tabs value={asset} onValueChange={(v) => setAsset(v as Asset)}>
           <TabsList className="mb-3">
             {ASSETS.map((a) => (
@@ -175,23 +187,26 @@ export function DataTableSection() {
               </TabsTrigger>
             ))}
           </TabsList>
-        </Tabs>
 
-        <DataTable
-          key={asset}
-          caption={`Wells in the ${asset} asset, by rig, depth, non-productive time and operational status`}
-          columns={COLUMNS}
-          data={demo === "empty" ? [] : rowsForAsset}
-          loading={demo === "loading"}
-          filterColumn="well"
-          filterPlaceholder="Search wells…"
-          pageSize={10}
-          empty={{
-            title: `No wells in ${asset}`,
-            description: "Wells appear here once they're assigned to this asset.",
-            action: <Button size="sm">Assign a well</Button>,
-          }}
-        />
+          {ASSETS.map((a) => (
+            <TabsContent key={a} value={a}>
+              <DataTable
+                caption={`Wells in the ${a} asset, by rig, depth, non-productive time and operational status`}
+                columns={COLUMNS}
+                data={demo === "empty" ? [] : ROWS.filter((r) => r.asset === a)}
+                loading={demo === "loading"}
+                filterColumn="well"
+                filterPlaceholder="Search wells…"
+                pageSize={10}
+                empty={{
+                  title: `No wells in ${a}`,
+                  description: "Wells appear here once they're assigned to this asset.",
+                  action: <Button size="sm">Assign a well</Button>,
+                }}
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
       </Section>
 
       <Section
