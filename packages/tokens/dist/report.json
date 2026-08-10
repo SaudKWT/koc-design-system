@@ -809,12 +809,12 @@
         "onBlack": 3.27
       },
       "accent": {
-        "hex": "#EFF6FE",
-        "l": 0.9702,
-        "c": 0.0131,
-        "h": 251.56,
-        "onWhite": 1.09,
-        "onBlack": 19.28
+        "hex": "#BDDCFC",
+        "l": 0.8823,
+        "c": 0.0553,
+        "h": 249.29,
+        "onWhite": 1.42,
+        "onBlack": 14.81
       },
       "accent-foreground": {
         "hex": "#004F8D",
@@ -985,12 +985,12 @@
         "onBlack": 21
       },
       "sidebar-accent": {
-        "hex": "#EFF6FE",
-        "l": 0.9702,
-        "c": 0.0131,
-        "h": 251.56,
-        "onWhite": 1.09,
-        "onBlack": 19.28
+        "hex": "#BDDCFC",
+        "l": 0.8823,
+        "c": 0.0553,
+        "h": 249.29,
+        "onWhite": 1.42,
+        "onBlack": 14.81
       },
       "sidebar-accent-foreground": {
         "hex": "#004F8D",

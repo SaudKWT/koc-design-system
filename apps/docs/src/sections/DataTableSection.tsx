@@ -1,9 +1,13 @@
 import { useState } from "react";
 
 import {
+  Badge,
   Button,
   DataTable,
   StatusBadge,
+  Tabs,
+  TabsList,
+  TabsTrigger,
   cn,
   kocColumnHelper,
   type OperationalStatus,
@@ -19,27 +23,44 @@ import { PageHead, Section, Note, Pre } from "./parts";
  * that get discovered in production.
  */
 
+type Asset = "North" | "West" | "South" | "Heavy Oil";
+
 interface WellRow extends Record<string, unknown> {
   well: string;
+  asset: Asset;
   rig: string;
   depth: number;
   npt: number;
   status: OperationalStatus;
 }
 
+/**
+ * Asset is a *scope*, so it is a tab rather than a column filter.
+ *
+ * The distinction matters: a column filter is a question you ask of one list
+ * ("show me rigs called KDC-04"), while a tab switches which list you are
+ * looking at. Assets partition the wells — every well belongs to exactly one —
+ * and people work within one asset for hours at a time, so it belongs in the
+ * chrome where the current scope stays visible, not buried in a filter someone
+ * has to remember they applied.
+ *
+ * Same reasoning as the unit switcher in AppShell, one level down.
+ */
+const ASSETS: Asset[] = ["North", "West", "South", "Heavy Oil"];
+
 const ROWS: WellRow[] = [
-  { well: "BG-1042", rig: "KDC-12", depth: 9450, npt: 4.5, status: "producing" },
-  { well: "BG-1088", rig: "KDC-12", depth: 11200, npt: 0, status: "producing" },
-  { well: "RA-207", rig: "KDC-04", depth: 7310, npt: 18.25, status: "warning" },
-  { well: "SA-3391", rig: "KDC-19", depth: 13980, npt: 2, status: "producing" },
-  { well: "MN-118", rig: "KDC-07", depth: 8600, npt: 41.75, status: "critical" },
-  { well: "BG-1155", rig: "KDC-04", depth: 10450, npt: 6.5, status: "maintenance" },
-  { well: "RA-302", rig: "KDC-19", depth: 6120, npt: 0, status: "shutin" },
-  { well: "SA-3402", rig: "KDC-07", depth: 15310, npt: 9.25, status: "warning" },
-  { well: "MN-140", rig: "KDC-12", depth: 7890, npt: 0, status: "producing" },
-  { well: "BG-1201", rig: "KDC-19", depth: 12040, npt: 13.5, status: "maintenance" },
-  { well: "RA-355", rig: "KDC-04", depth: 5980, npt: 1.25, status: "producing" },
-  { well: "SA-3450", rig: "KDC-07", depth: 14220, npt: 0, status: "normal" },
+  { well: "BG-1042", asset: "North", rig: "KDC-12", depth: 9450, npt: 4.5, status: "producing" },
+  { well: "BG-1088", asset: "West", rig: "KDC-12", depth: 11200, npt: 0, status: "producing" },
+  { well: "RA-207", asset: "South", rig: "KDC-04", depth: 7310, npt: 18.25, status: "warning" },
+  { well: "SA-3391", asset: "Heavy Oil", rig: "KDC-19", depth: 13980, npt: 2, status: "producing" },
+  { well: "MN-118", asset: "North", rig: "KDC-07", depth: 8600, npt: 41.75, status: "critical" },
+  { well: "BG-1155", asset: "West", rig: "KDC-04", depth: 10450, npt: 6.5, status: "maintenance" },
+  { well: "RA-302", asset: "South", rig: "KDC-19", depth: 6120, npt: 0, status: "shutin" },
+  { well: "SA-3402", asset: "Heavy Oil", rig: "KDC-07", depth: 15310, npt: 9.25, status: "warning" },
+  { well: "MN-140", asset: "North", rig: "KDC-12", depth: 7890, npt: 0, status: "producing" },
+  { well: "BG-1201", asset: "West", rig: "KDC-19", depth: 12040, npt: 13.5, status: "maintenance" },
+  { well: "RA-355", asset: "South", rig: "KDC-04", depth: 5980, npt: 1.25, status: "producing" },
+  { well: "SA-3450", asset: "Heavy Oil", rig: "KDC-07", depth: 14220, npt: 0, status: "normal" },
 ];
 
 const col = kocColumnHelper<WellRow>();
@@ -73,6 +94,10 @@ type Demo = "data" | "loading" | "empty";
 
 export function DataTableSection() {
   const [demo, setDemo] = useState<Demo>("data");
+  const [asset, setAsset] = useState<Asset>("North");
+
+  const rowsForAsset = ROWS.filter((r) => r.asset === asset);
+  const countFor = (a: Asset) => ROWS.filter((r) => r.asset === a).length;
 
   return (
     <>
@@ -136,17 +161,34 @@ export function DataTableSection() {
           </p>
         </div>
 
+        {/* Counts on the tabs so you can see where the work is without
+            switching — and so an empty asset is visibly empty rather than a
+            tab you click and find nothing behind. */}
+        <Tabs value={asset} onValueChange={(v) => setAsset(v as Asset)}>
+          <TabsList className="mb-3">
+            {ASSETS.map((a) => (
+              <TabsTrigger key={a} value={a} className="gap-1.5">
+                {a}
+                <Badge variant="secondary" className="px-1.5 tabular-nums">
+                  {countFor(a)}
+                </Badge>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
         <DataTable
-          caption="Wells by rig, depth, non-productive time and operational status"
+          key={asset}
+          caption={`Wells in the ${asset} asset, by rig, depth, non-productive time and operational status`}
           columns={COLUMNS}
-          data={demo === "empty" ? [] : ROWS}
+          data={demo === "empty" ? [] : rowsForAsset}
           loading={demo === "loading"}
           filterColumn="well"
           filterPlaceholder="Search wells…"
           pageSize={10}
           empty={{
-            title: "No wells in this unit",
-            description: "Wells appear here once they're assigned to Unit 1.",
+            title: `No wells in ${asset}`,
+            description: "Wells appear here once they're assigned to this asset.",
             action: <Button size="sm">Assign a well</Button>,
           }}
         />

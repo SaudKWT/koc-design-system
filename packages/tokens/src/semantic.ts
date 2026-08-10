@@ -50,7 +50,31 @@ export const light: SemanticTheme = {
   // clears 4.5:1, so "muted" text stays legible rather than merely decorative.
   "muted-foreground": neutral[600],
 
-  accent: primary[50],
+  // Hover and active surfaces.
+  //
+  // This was primary[50] (#EFF6FE), which against a white card is a ~1.06:1
+  // step — technically a colour change, visually almost nothing. A hover state
+  // you have to look for is not a hover state; on a dense operations screen it
+  // means people cannot tell what is under the cursor, and keyboard users lose
+  // the only non-focus-ring cue that a control is interactive.
+  //
+  // Measured against white, across the ramp:
+  //
+  //   step  vs white   label on it
+  //   50    1.09:1     7.70:1   <- was here; a change you have to hunt for
+  //   100   1.20:1     6.97:1
+  //   200   1.42:1     5.92:1   <- here now
+  //   300   1.77:1     4.73:1   <- label only 0.23 above the AA floor
+  //
+  // 200 roughly quadruples the step away from white while leaving the label at
+  // 5.92:1, comfortably clear. 300 looks stronger but leaves no headroom on a
+  // token this widely used — every button, menu item, table row and active nav
+  // item sits on it, so it has to survive later adjustment without a re-test.
+  //
+  // WCAG has nothing to say about the surface itself — a hover background
+  // carries no information a sighted user must *read* — so the tested
+  // constraint is the label on top of it.
+  accent: primary[200],
   "accent-foreground": primary[700],
 
   destructive: danger[600],
@@ -112,9 +136,10 @@ export const light: SemanticTheme = {
   "sidebar-foreground": neutral[700],
   "sidebar-primary": primary[600],
   "sidebar-primary-foreground": "#FFFFFF",
-  // Active item: the faintest blue wash, with the label in brand blue. Enough to
-  // locate yourself at a glance, far short of a slab.
-  "sidebar-accent": primary[50],
+  // Active item: a blue wash with the label in brand blue — enough to locate
+  // yourself at a glance, far short of a slab. Moves with `accent`, because a
+  // current nav item and a hovered button should read as the same idea.
+  "sidebar-accent": primary[200],
   "sidebar-accent-foreground": primary[700],
   "sidebar-border": neutral[200],
   "sidebar-ring": primary[600],

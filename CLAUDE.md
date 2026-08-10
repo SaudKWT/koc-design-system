@@ -106,8 +106,9 @@ description field, and Figma variants map 1:1 to real props.
 - **Recharts lines render invisible under React 19 StrictMode.** Set
   `isAnimationActive={false}` on every `<Line>`. Diagnose via `stroke-dasharray` on
   `path.recharts-line-curve` — if it starts with `0px`, this is it.
-  *Possibly obsolete on recharts 3:* after the unintended 2.15 → 3.8 bump, the docs charts
-  render with `stroke-dasharray: none`. Verify properly before removing the workaround.
+  **Still present in recharts 3.8** — retested 2026-08-09 by removing the workaround under
+  StrictMode: `stroke-dasharray: "0px, 858.606px"` on an 858px path at opacity 1. The
+  workaround is not obsolete; do not remove it on the assumption that a major version fixed it.
 - **WCAG contrast is the wrong tool for hue separation.** Use CIEDE2000 ΔE (`culori`'s
   `differenceCiede2000`), threshold ~15. But test luminance separately for greyscale.
 - **Vite string aliases are prefix matches**, so an alias on `@koc/tokens` swallows

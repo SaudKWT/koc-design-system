@@ -89,3 +89,4 @@ export {
 } from "./components/select";
 export { Checkbox } from "./components/checkbox";
 export { Skeleton } from "./components/skeleton";
+export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./components/tabs";

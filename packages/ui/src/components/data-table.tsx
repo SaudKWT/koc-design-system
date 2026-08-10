@@ -351,8 +351,14 @@ export function DataTable<T extends RowData>({
             ) : (
               <TableRow>
                 <TableCell colSpan={visibleColumnCount} className="h-32">
+                  {/*
+                   * The dashed outline is doing work, not decoration: it says
+                   * "content belongs here and is absent", where a bare centred
+                   * sentence reads as "this area is finished and blank". A
+                   * solid border would claim the space is a real container.
+                   */}
                   {isFilteredEmpty ? (
-                    <div className="text-center">
+                    <div className="mx-auto flex max-w-md flex-col items-center rounded-lg border border-dashed border-input px-6 py-6 text-center">
                       <p className="text-sm font-medium">No matching rows</p>
                       <p className="mt-1 text-sm text-muted-foreground">
                         No results for the current filter.
@@ -367,7 +373,7 @@ export function DataTable<T extends RowData>({
                       </Button>
                     </div>
                   ) : isEmpty && empty ? (
-                    <div className="text-center">
+                    <div className="mx-auto flex max-w-md flex-col items-center rounded-lg border border-dashed border-input px-6 py-6 text-center">
                       <p className="text-sm font-medium">{empty.title}</p>
                       {empty.description && (
                         <p className="mt-1 text-sm text-muted-foreground">
@@ -377,9 +383,9 @@ export function DataTable<T extends RowData>({
                       {empty.action && <div className="mt-3">{empty.action}</div>}
                     </div>
                   ) : (
-                    <p className="text-center text-sm text-muted-foreground">
-                      No rows.
-                    </p>
+                    <div className="mx-auto flex max-w-md flex-col items-center rounded-lg border border-dashed border-input px-6 py-6 text-center">
+                      <p className="text-sm text-muted-foreground">No rows.</p>
+                    </div>
                   )}
                 </TableCell>
               </TableRow>
