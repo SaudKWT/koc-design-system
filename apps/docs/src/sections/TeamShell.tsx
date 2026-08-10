@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Maximize2 } from "lucide-react";
 
-import { AppShell, cn } from "@koc/ui";
+import { AppShell, cn, type NotificationItem, type UserMenuItem } from "@koc/ui";
+import { LogOut, Settings, UserRound } from "lucide-react";
 
 import { DWOS } from "../examples/dwos";
 import { PageHead, Section, Note, Pre } from "./parts";
@@ -141,7 +142,13 @@ import { DWOS } from "./teams/dwos";
           data-shell-frame
           className="relative h-[42rem] overflow-hidden rounded-lg border border-input"
         >
-          <AppShell team={DWOS} activeItemId="unit-1-ddr" user={DEMO_USER}>
+          <AppShell
+            team={DWOS}
+            activeItemId="unit-1-ddr"
+            user={DEMO_USER}
+            notifications={DEMO_NOTIFICATIONS}
+            userMenu={DEMO_USER_MENU}
+          >
             <DemoContent />
           </AppShell>
         </div>
@@ -160,7 +167,13 @@ import { DWOS } from "./teams/dwos";
           >
             Close (Esc)
           </button>
-          <AppShell team={DWOS} activeItemId="unit-1-ddr" user={DEMO_USER}>
+          <AppShell
+            team={DWOS}
+            activeItemId="unit-1-ddr"
+            user={DEMO_USER}
+            notifications={DEMO_NOTIFICATIONS}
+            userMenu={DEMO_USER_MENU}
+          >
             <DemoContent />
           </AppShell>
         </div>
@@ -170,6 +183,44 @@ import { DWOS } from "./teams/dwos";
 }
 
 const DEMO_USER = { name: "Saud Alkharji", role: "Operational Support" };
+
+/**
+ * Placeholder alerts, but the *shape* is the point: a KOC notification is an
+ * operational event with a severity, not a marketing announcement.
+ */
+const DEMO_NOTIFICATIONS: NotificationItem[] = [
+  {
+    id: "n1",
+    severity: "critical",
+    title: "MN-118 stuck pipe",
+    description: "NPT has passed 24 hrs. Fishing operations ongoing.",
+    timestamp: "12 min ago",
+  },
+  {
+    id: "n2",
+    severity: "warning",
+    title: "RA-207 mud losses",
+    description: "Losses reported at 7,290 ft. LCM pill pumped.",
+    timestamp: "1 hr ago",
+  },
+  {
+    id: "n3",
+    severity: "info",
+    title: "Daily reports submitted",
+    description: "11 of 12 wells reported for 08 Aug.",
+    timestamp: "3 hrs ago",
+    read: true,
+  },
+];
+
+// Sign out is its own group so it is not one pixel below Settings.
+const DEMO_USER_MENU: UserMenuItem[][] = [
+  [
+    { id: "profile", label: "Profile", icon: UserRound },
+    { id: "settings", label: "Settings", icon: Settings },
+  ],
+  [{ id: "signout", label: "Sign out", icon: LogOut, destructive: true }],
+];
 
 function DemoContent() {
   return (

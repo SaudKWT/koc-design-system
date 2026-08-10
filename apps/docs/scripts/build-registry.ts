@@ -104,6 +104,24 @@ const LIB_META: Record<string, Meta> = {
 };
 
 const META: Record<string, Meta> = {
+  "notification-menu": {
+    title: "Notification Menu",
+    description:
+      "Operational alerts in the app header. The unread count is derived from the items rather than passed in, so the badge cannot disagree with the list — an unread count nobody can clear trains people to ignore it.",
+    categories: ["koc"],
+    docs: "Severity carries an icon per level, not just a colour, so it survives greyscale and deuteranopia — the same rule @koc/status-badge follows. Omit the component entirely rather than rendering a bell that never rings.",
+  },
+  "user-menu": {
+    title: "User Menu",
+    description:
+      "Account menu. Groups render with separators between them; put sign out in its own group so it is not one pixel below Settings.",
+    categories: ["koc"],
+    docs: "`variant=\"compact\"` is avatar-only for a header; `full` shows name and role and suits a sidebar footer. The avatar is decorative — the accessible name comes from the user's name.",
+  },
+  avatar: {
+    title: "Avatar",
+    description: "User image with initials fallback. Two letters is the most that stays legible at 32px.",
+  },
   "confirm-dialog": {
     title: "Confirm Dialog",
     description:

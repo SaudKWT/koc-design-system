@@ -30,6 +30,8 @@ import {
   SidebarTrigger,
 } from "./sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
+import { NotificationMenu, type NotificationItem } from "./notification-menu";
+import { UserMenu, type UserMenuItem } from "./user-menu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,6 +84,18 @@ export interface AppShellProps {
    * the consumer's to supply and a plain `<a>` is the default.
    */
   renderLink?: (item: NavItem, children: React.ReactNode) => React.ReactNode;
+  /**
+   * Operational alerts. Omit to hide the bell entirely — an empty notification
+   * icon that never does anything is worse than no icon.
+   */
+  notifications?: NotificationItem[];
+  onNotificationSelect?: (item: NotificationItem) => void;
+  onMarkAllRead?: () => void;
+  /**
+   * Account menu groups. Each array is a group, rendered with a separator —
+   * put sign out in its own so it is not one pixel below Settings.
+   */
+  userMenu?: UserMenuItem[][];
   children?: React.ReactNode;
 }
 
@@ -97,6 +111,10 @@ export function AppShell({
   activeItemId,
   user,
   renderLink = defaultRenderLink,
+  notifications,
+  onNotificationSelect,
+  onMarkAllRead,
+  userMenu,
   children,
 }: AppShellProps) {
   const [internalUnit, setInternalUnit] = React.useState(
@@ -256,9 +274,29 @@ export function AppShell({
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border px-4">
           <SidebarTrigger className="-ml-1" />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-medium">{team.name}</div>
           </div>
+
+          {/* Notifications and the account menu live in the header, not the
+              sidebar footer: they are about *you* rather than about where you
+              are, and they need to stay reachable when the rail is collapsed to
+              32px. Both are omitted entirely when not supplied — a bell that
+              never rings is noise. */}
+          {notifications && (
+            <NotificationMenu
+              items={notifications}
+              onSelect={onNotificationSelect}
+              onMarkAllRead={onMarkAllRead}
+            />
+          )}
+          {user && userMenu && (
+            <UserMenu
+              variant="compact"
+              user={{ name: user.name, role: user.role }}
+              groups={userMenu}
+            />
+          )}
         </header>
         <div className="flex-1 overflow-auto">{children}</div>
       </SidebarInset>

@@ -96,14 +96,31 @@ export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./co
 export { PageHeader, type PageHeaderProps, type PageHeaderCrumb } from "./components/page-header";
 export { PageNav, type PageNavProps, type PageNavGroup, type PageNavItem } from "./components/page-nav";
 export { ConfirmDialog, type ConfirmDialogProps } from "./components/confirm-dialog";
+export {
+  NotificationMenu,
+  type NotificationMenuProps,
+  type NotificationItem,
+  type NotificationSeverity,
+} from "./components/notification-menu";
+export {
+  UserMenu,
+  initials,
+  type UserMenuProps,
+  type UserMenuItem,
+  type UserMenuUser,
+} from "./components/user-menu";
+export { Avatar, AvatarImage, AvatarFallback } from "./components/avatar";
 export * from "./components/navigation-menu";
 export {
   DateRangeFilter,
   resolvePreset,
   describeRange,
+  PAST_PRESETS,
+  FUTURE_PRESETS,
   type DateRangeFilterProps,
   type DateRangeValue,
-  type DateRangePresetId,
+  type DateRangePreset,
+  type DateRangePresetGroup,
 } from "./components/date-range-filter";
 export * from "./components/dialog";
 export * from "./components/popover";

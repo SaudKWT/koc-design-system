@@ -1,6 +1,15 @@
 "use client";
 
 import * as React from "react";
+import {
+  addDays,
+  addMonths,
+  endOfMonth,
+  startOfMonth,
+  startOfWeek,
+  subDays,
+  subMonths,
+} from "date-fns";
 import { CalendarIcon, ChevronDown } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 
@@ -10,75 +19,171 @@ import { Calendar } from "./calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 
 /**
- * DateRangeFilter — one compact trigger, presets and calendar inside.
+ * DateRangeFilter — compact trigger, calendar and grouped presets side by side.
  *
- * The first version put the presets in the toolbar as a row of five buttons.
- * That is one click to "last 7 days", which is good, and a permanent 340px of
- * chrome saying the same thing every day, which is not — on a filter bar that
- * also carries rig, well and search, it crowds out the controls people change
- * *less* often but need to find.
+ * Combines two shadcn-space calendars, taking the better half of each:
  *
- * This arrangement, adapted from shadcn-space's calendar-16, keeps the one-click
- * property where it matters and gives the toolbar back its space: the trigger
- * states the current range in words, and everything that changes it lives in the
- * popover — presets down one side, calendar down the other, both visible at
- * once. Picking a preset closes it; dragging a custom range does not, because
- * you are mid-gesture and have a second date to choose.
+ *   calendar-16  the compact trigger and the horizontal popover — calendar on
+ *                one side, controls on the other, both visible at once.
+ *   calendar-14  the preset model: grouped by unit of time rather than a flat
+ *                list, and selecting one moves the calendar to that month so you
+ *                can see what you picked instead of trusting a label.
  *
- * `today` is still a prop rather than a clock read: it keeps the component
- * testable, and stops "Today" quietly meaning a different day than the data does.
+ * The trigger states the current range in words and costs one line of toolbar.
+ * An earlier version put five preset buttons in the toolbar itself: one click to
+ * "last 7 days", and 340px of chrome repeating it every day, on a bar that also
+ * carries rig, well and search.
+ *
+ * `today` is a prop, not a clock read — it keeps this testable and stops "Today"
+ * quietly meaning a different day than the data does.
  */
 
-export type DateRangePresetId = "today" | "7d" | "30d" | "month" | "custom";
+export interface DateRangePreset {
+  id: string;
+  label: string;
+  range: (today: Date) => DateRange;
+}
+
+export interface DateRangePresetGroup {
+  label: string;
+  presets: DateRangePreset[];
+}
+
+/**
+ * Default presets: everything looks backwards.
+ *
+ * calendar-14 ships Tomorrow / Next 7 days / Next month, which are right for a
+ * booking UI and useless on an operations list — no drilling report exists for
+ * tomorrow, so those options can only ever return an empty table. A scheduling
+ * screen should pass its own forward-looking groups via `presetGroups`.
+ */
+export const PAST_PRESETS: DateRangePresetGroup[] = [
+  {
+    label: "Days",
+    presets: [
+      { id: "today", label: "Today", range: (t) => ({ from: t, to: t }) },
+      {
+        id: "yesterday",
+        label: "Yesterday",
+        range: (t) => ({ from: subDays(t, 1), to: subDays(t, 1) }),
+      },
+    ],
+  },
+  {
+    label: "Weeks",
+    presets: [
+      { id: "7d", label: "Last 7 days", range: (t) => ({ from: subDays(t, 6), to: t }) },
+      {
+        id: "wtd",
+        label: "Week to date",
+        range: (t) => ({ from: startOfWeek(t, { weekStartsOn: 0 }), to: t }),
+      },
+    ],
+  },
+  {
+    label: "Months",
+    presets: [
+      { id: "30d", label: "Last 30 days", range: (t) => ({ from: subDays(t, 29), to: t }) },
+      { id: "mtd", label: "Month to date", range: (t) => ({ from: startOfMonth(t), to: t }) },
+      {
+        id: "lastmonth",
+        label: "Last month",
+        range: (t) => ({
+          from: startOfMonth(subMonths(t, 1)),
+          to: endOfMonth(subMonths(t, 1)),
+        }),
+      },
+      { id: "90d", label: "Last 90 days", range: (t) => ({ from: subDays(t, 89), to: t }) },
+    ],
+  },
+];
+
+/** Forward-looking groups, for scheduling screens rather than record lists. */
+export const FUTURE_PRESETS: DateRangePresetGroup[] = [
+  {
+    label: "Days",
+    presets: [
+      { id: "today", label: "Today", range: (t) => ({ from: t, to: t }) },
+      {
+        id: "tomorrow",
+        label: "Tomorrow",
+        range: (t) => ({ from: addDays(t, 1), to: addDays(t, 1) }),
+      },
+    ],
+  },
+  {
+    label: "Weeks",
+    presets: [
+      {
+        id: "next7",
+        label: "Next 7 days",
+        range: (t) => ({ from: t, to: addDays(t, 6) }),
+      },
+      {
+        id: "next14",
+        label: "Next 14 days",
+        range: (t) => ({ from: t, to: addDays(t, 13) }),
+      },
+    ],
+  },
+  {
+    label: "Months",
+    presets: [
+      { id: "next30", label: "Next 30 days", range: (t) => ({ from: t, to: addDays(t, 29) }) },
+      {
+        id: "nextmonth",
+        label: "Next month",
+        range: (t) => ({
+          from: startOfMonth(addMonths(t, 1)),
+          to: endOfMonth(addMonths(t, 1)),
+        }),
+      },
+    ],
+  },
+];
 
 export interface DateRangeValue {
-  preset: DateRangePresetId;
+  /** Preset id, or `"custom"` when the range came from the calendar. */
+  preset: string;
   range?: DateRange;
 }
 
-const PRESETS: { id: Exclude<DateRangePresetId, "custom">; label: string }[] = [
-  { id: "today", label: "Today" },
-  { id: "7d", label: "Last 7 days" },
-  { id: "30d", label: "Last 30 days" },
-  { id: "month", label: "This month" },
-];
-
-/** Resolve a preset to concrete dates, relative to the caller's `today`. */
-export function resolvePreset(
-  preset: Exclude<DateRangePresetId, "custom">,
-  today: Date,
-): DateRange {
-  const end = new Date(today);
-  const start = new Date(today);
-
-  switch (preset) {
-    case "today":
-      break;
-    case "7d":
-      start.setDate(start.getDate() - 6);
-      break;
-    case "30d":
-      start.setDate(start.getDate() - 29);
-      break;
-    case "month":
-      start.setDate(1);
-      break;
-  }
-  return { from: start, to: end };
+function sameDay(a?: Date, b?: Date) {
+  return !!a && !!b && a.toDateString() === b.toDateString();
 }
 
 function fmt(d: Date): string {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 }
 
-/** What the trigger says. A preset states its own name; a custom range states the dates. */
-export function describeRange(value: DateRangeValue): string {
+/** Resolve a preset id against a set of groups. */
+export function resolvePreset(
+  id: string,
+  today: Date,
+  groups: DateRangePresetGroup[] = PAST_PRESETS,
+): DateRange | undefined {
+  for (const g of groups) {
+    const p = g.presets.find((x) => x.id === id);
+    if (p) return p.range(today);
+  }
+  return undefined;
+}
+
+/** What the trigger says: a preset states its name, a custom range its dates. */
+export function describeRange(
+  value: DateRangeValue,
+  groups: DateRangePresetGroup[] = PAST_PRESETS,
+): string {
   if (value.preset !== "custom") {
-    return PRESETS.find((p) => p.id === value.preset)?.label ?? "Select dates";
+    for (const g of groups) {
+      const p = g.presets.find((x) => x.id === value.preset);
+      if (p) return p.label;
+    }
   }
   const { from, to } = value.range ?? {};
   if (!from) return "Select dates";
-  return to ? `${fmt(from)} – ${fmt(to)}` : fmt(from);
+  if (!to || sameDay(from, to)) return fmt(from);
+  return `${fmt(from)} – ${fmt(to)}`;
 }
 
 export interface DateRangeFilterProps {
@@ -86,19 +191,33 @@ export interface DateRangeFilterProps {
   onChange: (value: DateRangeValue) => void;
   /** Today's date. Passed in rather than read from the clock — see above. */
   today: Date;
-  className?: string;
-  /** Accessible name for the trigger. */
+  /** Defaults to backward-looking groups. Pass FUTURE_PRESETS for scheduling. */
+  presetGroups?: DateRangePresetGroup[];
   label?: string;
+  className?: string;
 }
 
 export function DateRangeFilter({
   value,
   onChange,
   today,
-  className,
+  presetGroups = PAST_PRESETS,
   label = "Date range",
+  className,
 }: DateRangeFilterProps) {
   const [open, setOpen] = React.useState(false);
+  // The calendar's visible month is controlled so that picking a preset moves it
+  // — calendar-14's best detail. Without it "Last month" selects dates you
+  // cannot see, and you are trusting a label instead of reading a range.
+  const [month, setMonth] = React.useState<Date>(value.range?.from ?? today);
+
+  const applyPreset = (p: DateRangePreset) => {
+    const range = p.range(today);
+    onChange({ preset: p.id, range });
+    setMonth(range.to ?? range.from ?? today);
+    // A preset is a complete answer, so close. A custom range is not — see below.
+    setOpen(false);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -106,59 +225,83 @@ export function DateRangeFilter({
         <Button
           variant="outline"
           size="sm"
-          aria-label={`${label}: ${describeRange(value)}`}
-          className={cn("justify-between gap-2 font-normal", className)}
+          aria-label={`${label}: ${describeRange(value, presetGroups)}`}
+          className={cn("h-9 justify-between gap-2 rounded-lg font-normal", className)}
         >
           <span className="flex items-center gap-2">
-            <CalendarIcon aria-hidden className="size-3.5 text-muted-foreground" />
-            {describeRange(value)}
+            <CalendarIcon aria-hidden className="size-4 text-muted-foreground" />
+            <span className="font-medium">{describeRange(value, presetGroups)}</span>
           </span>
-          <ChevronDown aria-hidden className="size-3.5 opacity-50" />
+          <ChevronDown aria-hidden className="size-4 text-muted-foreground" />
         </Button>
       </PopoverTrigger>
 
       <PopoverContent className="w-auto p-0" align="start">
+        {/* Horizontal: calendar left, presets right, both visible at once.
+            calendar-14 stacks them and puts the presets in a 44px scroll area,
+            which hides two of the three groups behind a scroll nobody notices. */}
         <div className="flex flex-col sm:flex-row">
-          {/* Presets first in DOM order so a keyboard user reaches the one-click
-              answers before the calendar grid, which is 42 tab stops of days. */}
+          <div className="p-2">
+            <Calendar
+              mode="range"
+              selected={value.range}
+              month={month}
+              onMonthChange={setMonth}
+              // Deliberately does NOT close: after picking `from` the user is
+              // mid-gesture with `to` still to choose. Closing here is the most
+              // common way a range picker becomes infuriating.
+              onSelect={(range) => onChange({ preset: "custom", range })}
+              numberOfMonths={1}
+              autoFocus
+              className="p-0"
+            />
+          </div>
+
           <div
-            className="flex flex-col gap-1 border-b border-border p-2 sm:border-r sm:border-b-0"
+            className="min-w-52 border-t border-border p-3 sm:border-t-0 sm:border-l"
             role="group"
             aria-label="Date range presets"
           >
-            {PRESETS.map((p) => {
-              const active = value.preset === p.id;
-              return (
-                <Button
-                  key={p.id}
-                  variant={active ? "default" : "ghost"}
-                  size="sm"
-                  aria-pressed={active}
-                  className="justify-start"
-                  onClick={() => {
-                    onChange({ preset: p.id, range: resolvePreset(p.id, today) });
-                    // A preset is a complete answer, so close. A custom range is
-                    // not — see below.
-                    setOpen(false);
-                  }}
-                >
-                  {p.label}
-                </Button>
-              );
-            })}
+            <div className="flex flex-col gap-3">
+              {presetGroups.map((group) => (
+                <div key={group.label}>
+                  <p className="mb-1.5 px-1 text-2xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {group.label}
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {group.presets.map((p) => {
+                      const active = value.preset === p.id;
+                      return (
+                        <Button
+                          key={p.id}
+                          variant="ghost"
+                          size="sm"
+                          aria-pressed={active}
+                          onClick={() => applyPreset(p)}
+                          className={cn(
+                            "h-7 justify-center gap-1.5 border border-border text-xs font-normal",
+                            // The dot is not decoration: `aria-pressed` covers
+                            // screen readers, but a tinted background alone is a
+                            // colour-only cue, which WCAG 1.4.1 does not accept.
+                            active &&
+                              "border-primary bg-accent text-accent-foreground hover:bg-accent",
+                          )}
+                        >
+                          {active && (
+                            <span
+                              aria-hidden
+                              className="size-1.5 shrink-0 rounded-full bg-primary"
+                            />
+                          )}
+                          {p.label}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <Calendar
-            mode="range"
-            defaultMonth={value.range?.from ?? today}
-            selected={value.range}
-            // Deliberately does NOT close: selecting `from` leaves the user
-            // mid-gesture with `to` still to pick. Closing here is the most
-            // common way a range picker becomes infuriating.
-            onSelect={(range) => onChange({ preset: "custom", range })}
-            numberOfMonths={1}
-            autoFocus
-          />
         </div>
       </PopoverContent>
     </Popover>
