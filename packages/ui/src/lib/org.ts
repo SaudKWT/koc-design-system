@@ -3,11 +3,11 @@
  *
  * THE PROBLEM THIS SOLVES
  * -----------------------
- * KOC nests four levels deep: Directorate → Group → Team → Unit. Exploration &
- * Drilling alone holds 6 groups; Drilling & Workover Engineering holds 6 teams;
- * the Operational Support team holds 7 units. Multiply that out across 8
- * directorates and there are on the order of a few hundred teams that will each
- * eventually want a dashboard.
+ * KOC nests four levels deep: Directorate → Group → Team → Unit. A directorate
+ * holds several groups, a group several teams, and a team several units, which
+ * multiplies out to a few hundred teams that could each eventually want a
+ * dashboard. (The live org chart is configuration, not something this package
+ * ships — see the consuming app's team configs.)
  *
  * If each of those is a hand-built sidebar, the standard is dead on arrival —
  * the second team forks the first team's component and the two drift within a
@@ -24,8 +24,8 @@
  * Within a team dashboard, the unit is a **context**, not a nav section. That is
  * the load-bearing choice, so it is worth stating why:
  *
- *   - Unit-as-nav-section means 7 units × ~5 apps = 35 permanent nav items, and
- *     34 of them are irrelevant to any given user on any given day.
+ *   - Unit-as-nav-section means seven units × ~5 apps = 35 permanent nav items,
+ *     and 34 of them are irrelevant to any given user on any given day.
  *   - Unit-as-context means the nav shows *your* unit's apps, and switching unit
  *     is a deliberate act that changes what you are looking at.
  *
@@ -67,7 +67,7 @@ export interface NavGroup {
  * form, in an email, in someone's job title, so the switcher list has to show it
  * or people cannot match what they see to what they were told.
  *
- * `name` is what the unit actually covers — "North & West Kuwait + Heavy Oil".
+ * `name` is what the unit actually covers — "Deep", "Offshore".
  * That is what belongs in the sidebar header, because the header answers "where
  * am I?" and "Unit 1" answers nothing. A number is a good identifier and a bad
  * label; showing the number where the answer should be is how internal tools end
@@ -99,13 +99,13 @@ export const ALL_UNITS = "__all__";
  */
 export interface TeamConfig {
   id: string;
-  /** Full name, e.g. "Drilling & Workover Operational Support Team". */
+  /** The team's full name. */
   name: string;
-  /** What fits in a sidebar header, e.g. "D&W Operational Support". */
+  /** What fits in a sidebar header — an abbreviated team name. */
   shortName: string;
-  /** e.g. "Exploration & Drilling" */
+  /** The parent directorate. Identity, not a link. */
   directorate: string;
-  /** e.g. "Drilling & Workover Engineering" */
+  /** The parent group. Identity, not a link. */
   group: string;
   units: Unit[];
   /**
