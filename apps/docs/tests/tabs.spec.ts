@@ -97,4 +97,40 @@ test.describe("tabs indicator", () => {
 
     expect(worst, "indicator escaped the tabs list during the transition").toBeLessThan(1);
   });
+
+  test("sits evenly inside the list, with concentric corners", async ({ page }) => {
+    await gotoSection(page, "Detail view");
+
+    const geometry = await page
+      .locator('[data-slot="tabs-list"]')
+      .first()
+      .evaluate((el) => {
+        const ind = el.querySelector<HTMLElement>('[data-slot="tabs-indicator"]')!;
+        const l = el.getBoundingClientRect();
+        const i = ind.getBoundingClientRect();
+        const pad = parseFloat(getComputedStyle(el).paddingTop);
+        return {
+          pad,
+          top: i.top - l.top,
+          bottom: l.bottom - i.bottom,
+          left: i.left - l.left,
+          outerRadius: parseFloat(getComputedStyle(el).borderRadius),
+          innerRadius: parseFloat(getComputedStyle(ind).borderRadius),
+        };
+      });
+
+    // Every inset equals the list's padding. shadcn's h-[calc(100%-1px)] left the
+    // trigger 1px short of the content box, and centring split the remainder as
+    // 4px above / 3px below — visible, and wrong against 3px of padding.
+    expect(geometry.top, "inset above").toBeCloseTo(geometry.pad, 1);
+    expect(geometry.bottom, "inset below").toBeCloseTo(geometry.pad, 1);
+    expect(geometry.left, "inset left").toBeCloseTo(geometry.pad, 1);
+
+    // Concentric corners: the inner radius must be the outer minus the gap, or
+    // the corners read as pinched even though the edges are parallel.
+    expect(
+      geometry.outerRadius - geometry.innerRadius,
+      "inner radius should be outer minus the padding",
+    ).toBeCloseTo(geometry.pad, 1);
+  });
 });

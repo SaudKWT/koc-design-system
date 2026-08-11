@@ -123,10 +123,12 @@ function TabsList({
       {...props}
     >
       {/*
-       * `ease-spring` — cubic-bezier(0.34, 1.56, 0.64, 1) — is the overshoot
+       * `ease-spring` — cubic-bezier(0.34, 1.2, 0.64, 1) — is the overshoot
        * curve foundation.ts describes as "for elements that should feel
        * physical". A tab indicator is exactly that: a real object moving to a
-       * new position, not a colour fading in.
+       * new position, not a colour fading in. The control point is 1.2 rather
+       * than the conventional 1.56 because an indicator sliding inside a
+       * container has nowhere to put a 9.8% overshoot — see foundation.ts.
        *
        * `left-0 top-0` is load-bearing. An absolutely positioned box with no
        * inset uses its STATIC position as the origin — for the first child of a
@@ -145,7 +147,11 @@ function TabsList({
           aria-hidden
           data-slot="tabs-indicator"
           className={cn(
-            "absolute left-0 top-0 rounded-md bg-background shadow-sm",
+            // Concentric radius, not a fixed step. The list is rounded-lg (12px) with
+            // 3px of padding, so an inner corner only looks parallel to the outer
+            // one at 12 - 3 = 9px. rounded-md (8px) is close enough to pass unnoticed
+            // and wrong enough to read as pinched corners.
+            "absolute left-0 top-0 rounded-[calc(var(--radius-lg)-3px)] bg-background shadow-sm",
             "transition-[transform,width,height] duration-slow ease-spring",
             !ready && "transition-none",
           )}
@@ -169,8 +175,14 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
+        // `h-full`, not shadcn's `h-[calc(100%-1px)]`. That 1px leaves the
+        // trigger 29px inside a 30px content box, and `items-center` splits the
+        // remainder unevenly — measured 4px above the indicator and 3px below,
+        // against 3px of padding on every side. Filling the box makes all four
+        // insets equal.
+        //
         // `relative z-10` so the label sits above the sliding indicator.
-        "relative z-10 inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors duration-fast ease-out group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "relative z-10 inline-flex h-full flex-1 items-center justify-center gap-1.5 rounded-[calc(var(--radius-lg)-3px)] border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap text-foreground/60 transition-colors duration-fast ease-out group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         // The active background is the indicator's job now — a trigger that
         // paints its own background cannot slide.
         "data-[state=active]:text-foreground",
