@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 import { palette, chartSeries, type PaletteName } from "./palette.js";
 import { light, dark, type SemanticTheme } from "./semantic.js";
 import { foundation } from "./foundation.js";
+import { baseLayer, motionUtilities, renderCss } from "./base-css.js";
 import { toOklchCss, describe, STEPS } from "./color.js";
 import { KOC_PRIMARY, KOC_LOGO, KOC_LEGACY_STACK } from "./brand.js";
 import { figmaTokens, aliasStats } from "./figma.js";
@@ -146,62 +147,10 @@ ${Object.entries(foundation.easing)
  * entrance/exit classes (animate-in, fade-in-0, zoom-in-95) are CSS animations,
  * not transitions — a transition-only duration would silently do nothing to them.
  */
-${Object.entries(foundation.duration)
-  .map(([k, v]) => {
-    const name = k === "DEFAULT" ? "base" : k;
-    return `@utility duration-${name} {
-  transition-duration: ${v};
-  animation-duration: ${v};
-}`;
-  })
-  .join("\n\n")}
+${renderCss(motionUtilities)}
 
-/* ── Base layer ─────────────────────────────────────────────────────────────*/
-@layer base {
-  * {
-    border-color: var(--border);
-  }
-
-  body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-family: var(--font-sans);
-    font-size: ${foundation.fontSize.base};
-    line-height: ${foundation.lineHeight.normal};
-    /* Inter's defaults leave gaps at UI sizes; contextual alternates close them. */
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* Numbers in dashboards must align on the decimal. Without tabular figures a
-   * column of production volumes shimmies by digit and can't be scanned. */
-  .tabular,
-  table tbody td,
-  [data-slot="kpi-value"] {
-    font-variant-numeric: tabular-nums;
-    font-feature-settings: "tnum";
-  }
-
-  /* A single visible focus style, everywhere. Keyboard users are the whole
-   * reason this exists — never remove it without a replacement. */
-  :focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
-  }
-
-  /* Respect the OS-level reduced-motion setting. Vestibular disorders are real
-   * and this is a tool people use all day. */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
-  }
-}
+/* ── Base layer ─────────────────────────────────────*/
+${renderCss(baseLayer)}
 `;
 
 writeFileSync(join(DIST, "koc-tokens.css"), css);

@@ -387,66 +387,54 @@
   transition-duration: 0ms;
   animation-duration: 0ms;
 }
-
 @utility duration-fast {
   transition-duration: 120ms;
   animation-duration: 120ms;
 }
-
 @utility duration-base {
   transition-duration: 180ms;
   animation-duration: 180ms;
 }
-
 @utility duration-slow {
   transition-duration: 240ms;
   animation-duration: 240ms;
 }
-
 @utility duration-slower {
   transition-duration: 300ms;
   animation-duration: 300ms;
 }
 
-/* ── Base layer ─────────────────────────────────────────────────────────────*/
+/* ── Base layer ─────────────────────────────────────*/
 @layer base {
   * {
     border-color: var(--border);
   }
-
+  /* Inter's defaults leave gaps at UI sizes; contextual alternates close them. */
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
     font-size: 0.875rem;
     line-height: 1.5;
-    /* Inter's defaults leave gaps at UI sizes; contextual alternates close them. */
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
   }
-
   /* Numbers in dashboards must align on the decimal. Without tabular figures a
-   * column of production volumes shimmies by digit and can't be scanned. */
-  .tabular,
-  table tbody td,
-  [data-slot="kpi-value"] {
+   * column of production volumes shimmies by digit and cannot be scanned. */
+  .tabular, table tbody td, [data-slot="kpi-value"] {
     font-variant-numeric: tabular-nums;
     font-feature-settings: "tnum";
   }
-
   /* A single visible focus style, everywhere. Keyboard users are the whole
    * reason this exists — never remove it without a replacement. */
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
-
   /* Respect the OS-level reduced-motion setting. Vestibular disorders are real
    * and this is a tool people use all day. */
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    *, *::before, *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
