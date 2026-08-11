@@ -42,6 +42,7 @@ import { fileURLToPath } from "node:url";
 import { light, dark } from "../../../packages/tokens/src/semantic.js";
 import { toOklchCss } from "../../../packages/tokens/src/color.js";
 import { foundation } from "../../../packages/tokens/src/foundation.js";
+import { registryCss } from "../../../packages/tokens/src/base-css.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, "..", "..", "..");
@@ -494,64 +495,6 @@ const themeScales: Record<string, string> = {
   ),
 };
 
-/**
- * The @utility rules and the base layer, in the shape the CLI writes verbatim.
- *
- * The @utility rules are not decoration. Tailwind v4 emits a custom property
- * for anything in `@theme`, but it only generates a *utility class* for
- * namespaces it knows, and `--duration-*` is not one of them. Without these,
- * `--duration-fast` exists and `.duration-fast` does not.
- */
-const themeCss: Record<string, unknown> = {
-  ...Object.fromEntries(
-    Object.entries(foundation.duration).map(([k, v]) => [
-      `@utility duration-${k === "DEFAULT" ? "base" : k}`,
-      { "transition-duration": v, "animation-duration": v },
-    ]),
-  ),
-
-  "@layer base": {
-    // Tailwind v4 defaults `border` to currentColor, so without this every
-    // bare `border` in a component draws in the TEXT colour. It is the single
-    // most visible line of the base layer.
-    "*": { "border-color": "var(--border)" },
-
-    body: {
-      "background-color": "var(--background)",
-      color: "var(--foreground)",
-      "font-family": "var(--font-sans)",
-      "font-size": foundation.fontSize.base,
-      "line-height": foundation.lineHeight.normal,
-      // Inter's defaults leave gaps at UI sizes; contextual alternates close them.
-      "font-feature-settings": '"cv02", "cv03", "cv04", "cv11"',
-      "-webkit-font-smoothing": "antialiased",
-    },
-
-    // Numbers in dashboards must align on the decimal. Without tabular figures
-    // a column of production volumes shimmies by digit and cannot be scanned.
-    '.tabular, table tbody td, [data-slot="kpi-value"]': {
-      "font-variant-numeric": "tabular-nums",
-      "font-feature-settings": '"tnum"',
-    },
-
-    // A single visible focus style, everywhere. Keyboard users are the whole
-    // reason this exists — never remove it without a replacement.
-    ":focus-visible": {
-      outline: "2px solid var(--ring)",
-      "outline-offset": "2px",
-    },
-
-    "@media (prefers-reduced-motion: reduce)": {
-      "*, *::before, *::after": {
-        "animation-duration": "0.01ms !important",
-        "animation-iteration-count": "1 !important",
-        "transition-duration": "0.01ms !important",
-        "scroll-behavior": "auto !important",
-      },
-    },
-  },
-};
-
 const themeItem: RegistryItem = {
   $schema: "https://ui.shadcn.com/schema/registry-item.json",
   name: "theme",
@@ -564,7 +507,10 @@ const themeItem: RegistryItem = {
     light: mapVars(light),
     dark: mapVars(dark),
   },
-  css: themeCss,
+  // The @utility rules and the base layer come from packages/tokens/src/base-css.ts,
+  // the same source koc-tokens.css renders. Restating them here would fix today's
+  // bug and guarantee tomorrow's divergence.
+  css: registryCss,
   docs: "Requires Inter — add https://rsms.me/inter/inter.css to your index.html, or install the `inter` package. Without it --font-sans falls through to the system stack and the app is a different typeface. Ships the colour tokens, the radius/shadow/duration/easing scales, the duration-* utilities and the base layer (border colour, body type, tabular figures, focus ring, reduced motion). Every colour pair is asserted against WCAG 2.1 AA in CI.",
 };
 
