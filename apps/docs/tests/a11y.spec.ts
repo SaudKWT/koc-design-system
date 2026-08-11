@@ -30,6 +30,7 @@ const SECTIONS: SectionLabel[] = [
   "Data table",
   "List view",
   "KPI dashboard",
+  "Detail view",
   "Accessibility",
   "Staging ledger",
 ];

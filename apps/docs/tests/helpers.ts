@@ -34,6 +34,7 @@ export type SectionLabel =
   | "Accessibility"
   | "List view"
   | "KPI dashboard"
+  | "Detail view"
   | "shadcn-space audit"
   | "Staging ledger"
   | "Sidebar bake-off";

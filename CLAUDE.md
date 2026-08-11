@@ -112,10 +112,11 @@ description field, and Figma variants map 1:1 to real props.
   `DataTable` is TanStack Table v9 with loading, empty and filtered-empty as distinct states
   and numeric alignment declared via column `meta`.
 - **41 registry items.** Dialog, tabs, combobox, date-range, page header, page nav, confirm
-  dialog, notification menu, user menu, toast and chart wrappers all exist. The **list view**
-  and **KPI dashboard** patterns are built.
-- **Still missing:** the **detail view** pattern, form layout (deliberately deferred — it is
-  case-by-case until real forms exist), the real DWOS app lists, and governance.
+  dialog, notification menu, user menu, toast and chart wrappers all exist. The **list view**,
+  **detail view** and **KPI dashboard** patterns are built — list, detail, dashboard covers
+  almost every screen a KOC unit app needs.
+- **Still missing:** form layout (deliberately deferred — case-by-case until real forms
+  exist), the real DWOS app lists, and governance.
 - **Every third-party component is logged** in `apps/docs/src/bakeoff/ledger.ts` and rendered
   on Evaluation → Staging ledger, with what the rewrite had to fix. Read it before installing
   anything new: nothing has ever crossed from `bakeoff/` to `@koc/ui` unchanged.
