@@ -388,6 +388,43 @@ because twelve of them went missing exactly that way.
   process.exit(1);
 }
 
+/**
+ * The same check in the other direction: registry item ⇒ package export.
+ *
+ * The gap above is the one that hurts a consuming team. This is the one that
+ * hurts everyone else — a component published to the registry but absent from
+ * `index.ts` is installable from outside the monorepo and unimportable from
+ * inside it. Four had drifted that way (dropdown-menu, separator, sheet,
+ * tooltip), all of them components that existed only to be used *by* another
+ * component, so nothing here ever imported them by name and nothing complained.
+ *
+ * It surfaced the way these always do: writing a real screen, reaching for
+ * `Separator`, and having the build fail on a component that demonstrably
+ * exists and demonstrably ships.
+ */
+const indexSrc = readFileSync(join(UI_SRC, "index.ts"), "utf8");
+const unexported = componentFiles
+  .map((f) => f.replace(/\.tsx$/, ""))
+  .filter((n) => !indexSrc.includes(`./components/${n}"`));
+
+if (unexported.length) {
+  console.error(
+    `\n✗ EXPORT GAP — ${unexported.length} registry component(s) not exported from @koc/ui:\n`,
+  );
+  for (const n of unexported) console.error(`    ${n}`);
+  console.error(
+    `
+Add each to packages/ui/src/index.ts.
+
+The registry and the package index are two views of one library. When they
+disagree, a component is installable by a KOC team and unimportable by this
+repo's own docs — and the docs are the only place the component is ever
+exercised before someone else installs it.
+`,
+  );
+  process.exit(1);
+}
+
 // ── build ───────────────────────────────────────────────────────────────────
 
 const mapVars = (t: Record<string, string>) =>

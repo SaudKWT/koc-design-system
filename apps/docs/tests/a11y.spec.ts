@@ -22,6 +22,7 @@ import { gotoSection, type SectionLabel } from "./helpers";
 
 const SECTIONS: SectionLabel[] = [
   "Overview",
+  "Full application",
   "Colour",
   "Typography",
   "Components",

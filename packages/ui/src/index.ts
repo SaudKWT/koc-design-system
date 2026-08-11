@@ -88,6 +88,48 @@ export {
   SelectSeparator,
 } from "./components/select";
 export { Checkbox } from "./components/checkbox";
+
+/**
+ * Primitives that exist mainly to be composed *by* other components — the
+ * sidebar's tooltip and sheet, the app shell's dropdown menu, the separator in a
+ * filter bar.
+ *
+ * They were published to the registry from the start and missing here until a
+ * real screen reached for `Separator` and the build failed on a component that
+ * demonstrably ships. Nothing imported them by name, so nothing noticed.
+ * build-registry.ts now fails if the two views disagree again.
+ */
+export {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "./components/dropdown-menu";
+export { Separator } from "./components/separator";
+export {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./components/sheet";
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./components/tooltip";
 export { Skeleton } from "./components/skeleton";
 export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./components/tabs";
 

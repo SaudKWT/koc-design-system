@@ -25,6 +25,7 @@ const DELEGATING_ROLES = new Set([
 /** The docs sections, by their sidebar label. */
 export type SectionLabel =
   | "Overview"
+  | "Full application"
   | "Colour"
   | "Typography"
   | "Components"

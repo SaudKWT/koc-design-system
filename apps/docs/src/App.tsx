@@ -3,6 +3,7 @@ import { Moon, Sun } from "lucide-react";
 
 import { Toaster, cn } from "@koc/ui";
 import { Overview } from "./sections/Overview";
+import { Mockup } from "./sections/Mockup";
 import { Colour } from "./sections/Colour";
 import { Typography } from "./sections/Typography";
 import { Components } from "./sections/Components";
@@ -19,6 +20,7 @@ import { DetailViewPattern } from "./sections/DetailViewPattern";
 
 const SECTIONS = [
   { id: "overview", label: "Overview", group: "Start", el: Overview },
+  { id: "mockup", label: "Full application", group: "Application", el: Mockup },
   { id: "colour", label: "Colour", group: "Foundations", el: Colour },
   { id: "typography", label: "Typography", group: "Foundations", el: Typography },
   { id: "components", label: "Components", group: "Library", el: Components },
