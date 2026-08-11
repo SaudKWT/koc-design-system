@@ -14,7 +14,7 @@
     "build:tokens": "npm run build --workspace=@koc/tokens",
     "test:tokens": "npm run test --workspace=@koc/tokens",
     "check:drift": "tsx packages/tokens/src/check-drift.ts apps/docs/src/styles.css",
-    "check:motion": "tsx packages/tokens/src/check-motion.ts packages/ui/src",
+    "check:motion": "tsx packages/tokens/src/check-motion.ts packages/ui/src apps/docs/src",
     "test": "npm run test:tokens && npm run check:drift && npm run check:motion && npm run test:a11y",
     "dev": "npm run dev --workspace=@koc/docs",
     "dev:clean": "rm -rf apps/docs/node_modules/.vite && npm run dev",

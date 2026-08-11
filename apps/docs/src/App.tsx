@@ -82,7 +82,7 @@ export default function App() {
                   onClick={() => setActive(s.id)}
                   aria-current={active === s.id ? "page" : undefined}
                   className={cn(
-                    "block w-full rounded px-2 py-1.5 text-left text-sm transition-colors",
+                    "block w-full rounded px-2 py-1.5 text-left text-sm transition-colors duration-fast ease-out",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                     active === s.id
                       ? "bg-sidebar-accent font-medium text-sidebar-accent-foreground"
@@ -101,7 +101,7 @@ export default function App() {
             onClick={() => setDark((d) => !d)}
             className={cn(
               "flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm",
-              "text-sidebar-foreground transition-colors hover:bg-sidebar-accent/50",
+              "text-sidebar-foreground transition-colors duration-fast ease-out hover:bg-sidebar-accent/50",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
             )}
           >

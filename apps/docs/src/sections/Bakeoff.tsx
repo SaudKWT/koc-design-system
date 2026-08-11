@@ -57,7 +57,7 @@ export function Bakeoff() {
               onClick={() => setActiveId(c.id)}
               aria-pressed={c.id === activeId}
               className={cn(
-                "rounded-md border px-3 py-2 text-sm transition-colors",
+                "rounded-md border px-3 py-2 text-sm transition-colors duration-fast ease-out",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 c.id === activeId
                   ? "border-primary bg-primary text-primary-foreground"
@@ -136,7 +136,7 @@ export function Bakeoff() {
         <button
           onClick={() => setFull(true)}
           className={cn(
-            "mb-3 rounded-md border border-input px-3 py-1.5 text-sm transition-colors",
+            "mb-3 rounded-md border border-input px-3 py-1.5 text-sm transition-colors duration-fast ease-out",
             "hover:bg-accent hover:text-accent-foreground",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           )}

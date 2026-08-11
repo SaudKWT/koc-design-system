@@ -54,8 +54,19 @@ export interface MotionViolation {
   file: string;
   line: number;
   token: string;
-  kind: "duration" | "easing";
+  kind: "duration" | "easing" | "unpinned";
 }
+
+/**
+ * Transition-property utilities that start a transition and therefore need a
+ * duration alongside them.
+ *
+ * `transition-none` is excluded because it *stops* one, and Tailwind v4's
+ * `transition-discrete` / `-normal` set transition-behavior rather than
+ * property, so neither implies a timing.
+ */
+const TRANSITION_PROPERTY =
+  /\btransition(?:-(?:all|colors|opacity|shadow|transform|\[[^\]]+\]))?(?![-\w])/g;
 
 /**
  * Bare-number durations (`duration-200`), arbitrary values (`duration-[250ms]`,
@@ -63,15 +74,39 @@ export interface MotionViolation {
  * off-scale. Anything matching a key in `foundation.duration` / `.easing` is
  * fine — that IS the scale.
  */
-export function findMotionViolations(file: string, source: string): MotionViolation[] {
+export interface MotionScanResult {
+  violations: MotionViolation[];
+  /** Lines silenced with `motion-ok`. Reported, so the marker cannot hide. */
+  exempted: number;
+}
+
+export function findMotionViolations(file: string, source: string): MotionScanResult {
   const { durations, easings } = allowedSuffixes();
   const out: MotionViolation[] = [];
+  let exempted = 0;
 
   source.split("\n").forEach((text, i) => {
     // Skip comment lines — this file's own prose names the literals it forbids,
     // and so do the explanatory comments in the components.
     const trimmed = text.trim();
     if (trimmed.startsWith("*") || trimmed.startsWith("//") || trimmed.startsWith("/*")) return;
+
+    /**
+     * `motion-ok` — for a line that NAMES a class rather than applying one.
+     *
+     * The staging ledger and the third-party audit pages exist to record which
+     * candidate shipped which off-scale literal, so their prose necessarily
+     * contains `duration-300` and friends as data. Without an opt-out, the only
+     * way to document a violation would be to commit one.
+     *
+     * Deliberately narrow and greppable: it must be written on the line, and
+     * every use is counted in the pass summary, so a marker can never quietly
+     * become the way people silence this check.
+     */
+    if (/\bmotion-ok\b/.test(text)) {
+      exempted++;
+      return;
+    }
 
     for (const m of text.matchAll(/\bduration-(\[[^\]]+\]|[A-Za-z0-9]+)/g)) {
       const suffix = m[1];
@@ -86,14 +121,49 @@ export function findMotionViolations(file: string, source: string): MotionViolat
         out.push({ file, line: i + 1, token: m[0], kind: "easing" });
       }
     }
+
+    /**
+     * A transition with NO duration at all.
+     *
+     * This is the hole the first version of this check left open, and it was
+     * found from outside — a KOC app built on the registry reported that
+     * `@koc/navigation-menu` shipped a bare `transition-all`. It did, and so did
+     * ten other places.
+     *
+     * The literal checks above only catch a duration that is off-scale. A bare
+     * `transition-colors` names no duration, so there is no literal to catch —
+     * and Tailwind quietly applies its own 150ms default, which is not a step on
+     * this scale. The result is the exact failure this file was written to
+     * prevent, arriving through the one route the file did not watch: the scale
+     * is bypassed by omission rather than by contradiction.
+     *
+     * Line-level rather than class-level, deliberately: these are single
+     * className strings, and the same granularity the literal checks use.
+     */
+    if (!/\bduration-/.test(text)) {
+      for (const m of text.matchAll(TRANSITION_PROPERTY)) {
+        out.push({ file, line: i + 1, token: m[0], kind: "unpinned" });
+      }
+    }
   });
 
-  return out;
+  return { violations: out, exempted };
 }
+
+/**
+ * `bakeoff/` is skipped, and that is the point of it.
+ *
+ * It holds third-party candidates kept byte-for-byte as installed, so the
+ * ledger's "what the rewrite had to fix" column means something. Holding it to
+ * the motion scale would mean editing the one code in this repo whose entire
+ * value is being unedited — and the 40-odd off-scale literals in there are
+ * evidence, not debt.
+ */
+const SKIP_DIRS = new Set(["node_modules", "dist", "bakeoff"]);
 
 function walk(dir: string, out: string[] = []): string[] {
   for (const entry of readdirSync(dir)) {
-    if (entry === "node_modules" || entry === "dist" || entry.startsWith(".")) continue;
+    if (SKIP_DIRS.has(entry) || entry.startsWith(".")) continue;
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) walk(full, out);
     else if (/\.tsx?$/.test(full)) out.push(full);
@@ -111,26 +181,50 @@ if (roots.length === 0) {
 }
 
 const files = roots.flatMap((r) => walk(r));
-const violations = files.flatMap((f) =>
+const scans = files.map((f) =>
   findMotionViolations(relative(process.cwd(), f), readFileSync(f, "utf8")),
 );
+const violations = scans.flatMap((s) => s.violations);
+const exempted = scans.reduce((n, s) => n + s.exempted, 0);
 
 const scale = allowedSuffixes();
 
 if (violations.length === 0) {
   console.log(
-    `✓ motion on-scale — ${files.length} file(s), ${scale.durations.size} durations / ${scale.easings.size} easings`,
+    `✓ motion on-scale — ${files.length} file(s), ${scale.durations.size} durations / ${scale.easings.size} easings` +
+      // Never let the marker count go unsaid: a check that silently permits
+      // exemptions reads exactly like one that found nothing to permit.
+      (exempted ? `, ${exempted} line(s) exempt via motion-ok` : ""),
   );
   process.exit(0);
 }
 
-console.error(`\n✗ OFF-SCALE MOTION — ${violations.length} literal(s)\n`);
-for (const v of violations) {
-  console.error(`  ${v.file}:${v.line}  ${v.token}`);
+const offScale = violations.filter((v) => v.kind !== "unpinned");
+const unpinned = violations.filter((v) => v.kind === "unpinned");
+
+console.error(`\n✗ OFF-SCALE MOTION — ${violations.length} problem(s)\n`);
+
+if (offScale.length) {
+  console.error(`  Off-scale literals (${offScale.length}):`);
+  for (const v of offScale) console.error(`    ${v.file}:${v.line}  ${v.token}`);
+  console.error("");
 }
+
+if (unpinned.length) {
+  console.error(`  Transitions with no duration (${unpinned.length}):`);
+  for (const v of unpinned) console.error(`    ${v.file}:${v.line}  ${v.token}`);
+  console.error(
+    `
+  A transition with no duration is not "unstyled" — Tailwind applies its own
+  150ms, which is not a step on this scale. Add one, e.g. 'duration-fast
+  ease-out' for hover and focus. Use 'transition-none' if you mean no
+  transition at all.
+`,
+  );
+}
+
 console.error(
-  `
-Motion belongs to the token scale, not to the animation library's defaults.
+  `Motion belongs to the token scale, not to the animation library's defaults.
 
   durations  ${[...scale.durations].join(", ")}
   easings    ${[...scale.easings].join(", ")}

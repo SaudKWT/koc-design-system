@@ -122,7 +122,7 @@ import { DWOS } from "./teams/dwos";
         <button
           onClick={() => setFull(true)}
           className={cn(
-            "mb-3 mt-5 rounded-md border border-input px-3 py-1.5 text-sm transition-colors",
+            "mb-3 mt-5 rounded-md border border-input px-3 py-1.5 text-sm transition-colors duration-fast ease-out",
             "hover:bg-accent hover:text-accent-foreground",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           )}

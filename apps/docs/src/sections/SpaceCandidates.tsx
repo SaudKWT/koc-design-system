@@ -181,7 +181,7 @@ export function SpaceCandidates() {
             "Centred icon, plain question, two equal-weight buttons.",
           ]}
           left={[
-            "Two duration-300 literals, replaced with the motion scale.",
+            "Two duration-300 literals, replaced with the motion scale.", // motion-ok: quoted as data
             'The hardcoded "Delete Item". `subject` is a required prop, so it reads "Void report BG-1042?" and a mistake is catchable.',
             "Confirm-button autofocus. Cancel takes initial focus — a stray Enter must not destroy a record.",
           ]}
@@ -203,7 +203,7 @@ export function SpaceCandidates() {
           ]}
           left={[
             "The time-range half (start/end times, 1h/2h/4h presets). Good, but it belongs to scheduling rather than filtering, and no such screen exists yet.",
-            "Two duration-200 literals.",
+            "Two duration-200 literals.", // motion-ok: quoted as data
           ]}
         />
 
@@ -295,7 +295,7 @@ export function SpaceCandidates() {
             "The language switcher — dead weight under ADR 0001.",
             'A literal "5 New" badge that can disagree with its own list.',
             "The SaaS profile items — Billing, Subscription, Team. No KOC app has those.",
-            "One duration-400 literal, which is not on Tailwind's scale either.",
+            "One duration-400 literal, which is not on Tailwind's scale either.", // motion-ok: quoted as data
           ]}
         />
       </Section>
