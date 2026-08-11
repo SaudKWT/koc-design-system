@@ -65,7 +65,36 @@ test.describe("tabs indicator", () => {
       });
 
     // ease-spring / duration-slow from foundation.ts.
-    expect(style.easing).toBe("cubic-bezier(0.34, 1.56, 0.64, 1)");
+    expect(style.easing).toBe("cubic-bezier(0.34, 1.2, 0.64, 1)");
     expect(style.duration).toBe("0.24s");
+  });
+
+  test("never overshoots outside its own container, mid-flight", async ({ page }) => {
+    // The bug this pins: ease-spring at the conventional 1.56 overshoots ~9.8%,
+    // which on the asset tabs' ~150px travel is nearly 15px — and the list only
+    // carries 3px of padding, so the pill visibly escaped on the outermost tab.
+    // Sampling only the resting position would have missed it entirely.
+    await gotoSection(page, "Data table");
+
+    const list = page.locator('[data-slot="tabs-list"]').first();
+    await expect(list.locator('[data-slot="tabs-indicator"]')).toBeVisible();
+
+    // Jump to the far tab, which is the longest travel and the worst case.
+    await page.getByRole("tab", { name: /Heavy Oil/ }).click();
+
+    // Sample throughout the transition rather than after it settles.
+    const worst = await list.evaluate(async (el) => {
+      const ind = el.querySelector<HTMLElement>('[data-slot="tabs-indicator"]')!;
+      let escape = 0;
+      for (let i = 0; i < 40; i++) {
+        const l = el.getBoundingClientRect();
+        const b = ind.getBoundingClientRect();
+        escape = Math.max(escape, b.right - l.right, l.left - b.left);
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      return escape;
+    });
+
+    expect(worst, "indicator escaped the tabs list during the transition").toBeLessThan(1);
   });
 });

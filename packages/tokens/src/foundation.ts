@@ -179,9 +179,28 @@ export const easing = {
   in: "cubic-bezier(0.4, 0, 1, 1)",
   out: "cubic-bezier(0, 0, 0.2, 1)",
   inOut: "cubic-bezier(0.4, 0, 0.2, 1)",
-  /** Slight overshoot, for elements that should feel physical (toasts, switches).
-   *  Used sparingly — never on anything safety-critical. */
-  spring: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+  /**
+   * Slight overshoot, for elements that should feel physical (a sliding tab
+   * indicator, a toast, a switch). Used sparingly — never on anything
+   * safety-critical.
+   *
+   * The control point is 1.20, not the conventional 1.56. Measured peak
+   * overshoot:
+   *
+   *   1.56 -> 9.8%   14.7px past target on a 150px travel
+   *   1.30 -> 3.0%    4.5px
+   *   1.20 -> 1.3%    1.9px
+   *
+   * 1.56 is the standard "back" curve and it is too much here for two reasons.
+   * It reads as a bounce rather than a settle, which is wrong for an operations
+   * UI people use all day. And an indicator sliding inside a container has
+   * nowhere to put the overshoot: the tabs list carries 3px of padding, so at
+   * 9.8% the pill visibly escaped its own container on the outermost tab.
+   *
+   * 1.20 stays inside that 3px on any realistic travel while still reading as
+   * physical rather than linear.
+   */
+  spring: "cubic-bezier(0.34, 1.2, 0.64, 1)",
 } as const;
 
 /** BREAKPOINTS. `3xl` exists because control rooms run 1440p+ wall displays and
