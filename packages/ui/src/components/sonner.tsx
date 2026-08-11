@@ -15,11 +15,19 @@ import { Toaster as Sonner, toast, type ToasterProps } from "sonner";
  *
  * Two changes from the stock shadcn wrapper.
  *
- * NO next-themes. The original reads the theme from `next-themes`, which is a
- * Next.js library; KOC apps are Vite and Next and plain SharePoint-hosted
- * bundles, and this system already decided dark mode is a `.dark` class on the
- * root. Taking a framework dependency for one boolean would make the toaster
- * unusable in two of the three.
+ * NO next-themes -- but not for the reason first given here.
+ *
+ * An earlier version of this comment claimed next-themes is a Next.js library
+ * that would not work in Vite. That is wrong: next-themes@0.4.6 peers only on
+ * react and react-dom and imports nothing from `next/*`. It is framework
+ * agnostic despite the name.
+ *
+ * The real reason is smaller and still holds: this app already owns its theme
+ * state -- App.tsx toggles a `.dark` class, which is what the entire token layer
+ * keys off. Adding a theme-management library to read one boolean would mean
+ * either two sources of truth for the theme, or migrating the existing toggle to
+ * it, for no gain. Consumers already on next-themes can pass `theme` through --
+ * the prop is forwarded.
  *
  * SEVERITY COLOURS COME FROM KOC TOKENS. Sonner ships its own green and red,
  * which are not the tested ones — `success` and `destructive` here have been

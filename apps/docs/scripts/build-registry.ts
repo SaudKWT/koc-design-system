@@ -116,7 +116,7 @@ const META: Record<string, Meta> = {
     description:
       "Transient confirmation of an action the user just took. Mount once at the app root; call `toast` from anywhere.",
     categories: ["koc"],
-    docs: "Never the only notification of an operational event — a toast is gone in four seconds. An NPT threshold or a well going critical belongs in @koc/notification-menu, where it persists until acknowledged. Rewritten without next-themes: it follows the `.dark` class, so it works in Vite and Next alike.",
+    docs: "Never the only notification of an operational event — a toast is gone in four seconds. An NPT threshold or a well going critical belongs in @koc/notification-menu, where it persists until acknowledged. Diverges from canonical @shadcn/sonner twice: severity colours come from the tested KOC tokens rather than sonner's own, and it reads the `.dark` class instead of next-themes. Not because next-themes needs Next (it does not, despite the name) but because this system already owns theme state as a class, and a second source of truth would be worse than none. Pass `theme` to override.",
   },
   "notification-menu": {
     title: "Notification Menu",

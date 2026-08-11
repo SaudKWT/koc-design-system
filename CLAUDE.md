@@ -72,9 +72,14 @@ strictly, over pairs no page happens to render.
   `data-[state=open]`); Base UI is `1.0.0-rc.0`, pre-stable; Radix 1.6.7 shipped
   more recently than Base UI did and has 1.7 in flight; adoption is ~28× wider.
   Migrating now would *break* invariant 5, which is defined against shadcn
-  upstream. **Revisit when shadcn canonical moves** — that is the trigger, not
-  when an individual kit does. Some kits (shadcn-space) have already moved and
-  their components will not compile here; port the design, not the code.
+  upstream. Some kits (shadcn-space) have already moved and their components
+  will not compile here; port the design, not the code.
+  **The revisit trigger is now concrete.** shadcn has namespaced its docs by
+  primitive: `/docs/components/radix/*` returns 200, `/base-ui/*` and
+  `/react-aria/*` 404, and the unprefixed URL 307-redirects to Radix. The
+  default registry item still ships `radix-ui` with `asChild`. So the signal to
+  re-open this is a `/base-ui/` track appearing **and** the unprefixed path
+  redirecting there instead. Checked 2026-08-11.
 - **Paper (paper.design) considered and declined** as the standard — technically closer to
   this architecture, but too new to bet an org standard on, and KOC vendors all have Figma.
 
@@ -106,11 +111,14 @@ description field, and Figma variants map 1:1 to real props.
   (Directorate → Group → Team → Unit); adding a KOC team is a config file, never a component.
   `DataTable` is TanStack Table v9 with loading, empty and filtered-empty as distinct states
   and numeric alignment declared via column `meta`.
-- **39 registry items.** Dialog, tabs, combobox, date-range, page header, page nav, confirm
-  dialog, notification menu and user menu all exist. The **list view** pattern is built.
-- **Still missing:** toast, form layout, chart wrappers — plus the **detail view** and
-  **KPI dashboard** patterns. Some of this is an *install* from the shadcn ecosystem rather
-  than a build, because of invariant 5.
+- **41 registry items.** Dialog, tabs, combobox, date-range, page header, page nav, confirm
+  dialog, notification menu, user menu, toast and chart wrappers all exist. The **list view**
+  and **KPI dashboard** patterns are built.
+- **Still missing:** the **detail view** pattern, form layout (deliberately deferred — it is
+  case-by-case until real forms exist), the real DWOS app lists, and governance.
+- **Every third-party component is logged** in `apps/docs/src/bakeoff/ledger.ts` and rendered
+  on Evaluation → Staging ledger, with what the rewrite had to fix. Read it before installing
+  anything new: nothing has ever crossed from `bakeoff/` to `@koc/ui` unchanged.
 - **There is no data table in the shadcn registry.** `@shadcn/data-table` is named as a
   registry dependency but never published; only a `registry:example` exists, which the CLI
   will not install. Don't go looking for it again.
