@@ -33,10 +33,13 @@ silently is the worst outcome in this repo.
 5. **Semantic token names follow the shadcn contract exactly.** This is load-bearing, not
    cosmetic: it means any component from ui.shadcn.com, Origin UI, or Kibo UI is on-brand
    with no restyling. Renaming a token to something "clearer" breaks that for free.
-6. **Motion comes from the scale, never from a literal.** `duration-fast` / `-base` / `-slow`
-   / `-slower` and `ease-out` / `-in` / `-spring`, defined in `foundation.ts`. Never
-   `duration-200`, never `ease-linear`, never an arbitrary value. `npm run check:motion`
-   fails the build on any off-scale literal.
+6. **Motion comes from the scale, never from a literal — and never by omission.**
+   `duration-fast` / `-base` / `-slow` / `-slower` and `ease-out` / `-in` / `-spring`,
+   defined in `foundation.ts`. Never `duration-200`, never `ease-linear`, never an
+   arbitrary value. **A `transition-*` with no duration is equally off-scale** — Tailwind
+   silently supplies 150ms, which is not a step here. `npm run check:motion` fails on both.
+   `bakeoff/` is exempt by design; `motion-ok` exempts a line that *names* a class as prose
+   rather than applying one, and every use is counted in the pass line.
 
 ## The build gates
 
@@ -46,9 +49,9 @@ Each one exists because documentation already failed to hold the line:
 | --- | --- | --- |
 | `test:tokens` | contrast regressions | 63 assertions; a guideline drifts the first time someone is in a hurry |
 | `check:drift` | redefinition of KOC tokens | `shadcn add` appends stock theme blocks that silently de-brand the app — it appended one *directly beneath the warning comment telling it not to* |
-| `check:motion` | off-scale duration/easing | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed |
+| `check:motion` | off-scale duration/easing, **and transitions that name no duration at all** | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed; a bare `transition-all` was then reported from a consuming KOC app, and 11 such sites existed |
 | `test:a11y` | broken ARIA, unreachable controls, invisible focus, unannounced state | Playwright + axe in a real browser. Found a `Tabs` with no `TabsContent` — `aria-controls` pointing at an id that didn't exist — on its first run |
-| `registry` (in `build`) | components missing from the registry | 12 had gone missing, uninstallable, silently |
+| `registry` (in `build`) | components missing from the registry **and** registry items missing from `index.ts` | 12 had gone missing, uninstallable, silently; later 4 more were installable from outside the repo and unimportable inside it |
 
 Behaviour tests live in `apps/docs/tests/`. Chromium only, deliberately: KOC is a
 Windows/Edge organisation, and WebKit would be testing a browser no KOC user has.
@@ -111,6 +114,10 @@ description field, and Figma variants map 1:1 to real props.
   (Directorate → Group → Team → Unit); adding a KOC team is a config file, never a component.
   `DataTable` is TanStack Table v9 with loading, empty and filtered-empty as distinct states
   and numeric alignment declared via column `meta`.
+- **The full-application mockup is the artefact to show a KOC team.** Docs → Application →
+  Full application: a navigable DWOS unit app inside `AppShell` composing the whole library.
+  Five screens are real; the rest of the nav resolves to an explicit **not built** state, and
+  every figure is derived from the one DDR sample set so the screens cannot disagree.
 - **41 registry items.** Dialog, tabs, combobox, date-range, page header, page nav, confirm
   dialog, notification menu, user menu, toast and chart wrappers all exist. The **list view**,
   **detail view** and **KPI dashboard** patterns are built — list, detail, dashboard covers
