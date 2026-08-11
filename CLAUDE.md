@@ -127,7 +127,14 @@ description field, and Figma variants map 1:1 to real props.
   packages, `@tabler/icons-react` (a second icon library beside lucide), `next-themes`,
   `sonner`, `vaul`, `zod` — and silently bumped **recharts 2.15 → 3.8**. Check
   `git diff package.json` after every block install.
-- **The registry hostname is aspirational.** `design.kockw.com` is a placeholder.
+- **The registry is served from the private repo via the GitHub Contents API**, authenticated
+  with a per-person fine-grained token — see [docs/CONSUMING.md](docs/CONSUMING.md). Verified
+  end to end 2026-08-11: a fresh project installed the theme and 20 component files, compiled
+  clean, and `--primary` arrived byte-exact at #0060A9. Nothing is published; access is granted
+  by adding a repo collaborator. GitHub Pages was rejected because a published site is
+  world-readable on every plan below Enterprise Cloud.
+- **`design.kockw.com` in `build-registry.ts` is still a placeholder** — it appears only in the
+  generated `homepage` field and the console hint, not in how anyone installs.
 - **All DWOS app lists and the DDR column shape are placeholder.** The org structure is real;
   the workflows under each unit are invented. Replace before showing a KOC team.
 - **Behaviour is tested in Chromium; no screen reader has been run.** The harness proves
