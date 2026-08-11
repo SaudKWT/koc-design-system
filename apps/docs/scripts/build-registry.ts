@@ -68,6 +68,12 @@ interface RegistryItem {
   registryDependencies?: string[];
   files?: RegistryFile[];
   cssVars?: Record<string, Record<string, string>>;
+  /**
+   * Raw CSS the CLI writes into the consumer's stylesheet — at-rules and
+   * selectors that `cssVars` cannot express. Nested objects become nested
+   * blocks, so `{"@layer base": {"body": {...}}}` emits a real base layer.
+   */
+  css?: Record<string, unknown>;
   docs?: string;
   categories?: string[];
 }
@@ -430,6 +436,122 @@ exercised before someone else installs it.
 const mapVars = (t: Record<string, string>) =>
   Object.fromEntries(Object.entries(t).map(([k, v]) => [k, toOklchCss(v)]));
 
+/**
+ * The non-colour half of the theme.
+ *
+ * This exists because shipping only `cssVars.light/dark` shipped only the
+ * COLOURS, and a consuming app then looked like a different design system:
+ * plausibly close, wrong everywhere. Found on 2026-08-11 in the first real
+ * consumer (the DWOS dashboard), where the app had every KOC colour and none of
+ * the rest of the system.
+ *
+ * The monorepo could not see it. `apps/docs` imports
+ * `packages/tokens/dist/koc-tokens.css` by relative path and therefore gets the
+ * whole generated file — the ramps, the scales, the @utility rules, the base
+ * layer. A registry consumer got 79 variables. Everything below is the
+ * difference, and each line of it was silently missing:
+ *
+ *   radius   — the CLI invents `--radius-md: calc(var(--radius) * 0.8)` when we
+ *              do not say otherwise. KOC's is 0.5rem; that formula yields
+ *              0.3rem. Every `rounded-md` corner in a consuming app was 40%
+ *              too tight, and `rounded-lg` half the radius it should be.
+ *   shadow   — absent entirely, so `shadow-sm` fell back to Tailwind's stock
+ *              grey instead of KOC's oklch-tinted elevation.
+ *   duration
+ *   easing   — absent, which is worse than wrong: `duration-fast` and
+ *              `ease-spring` are then classes that resolve to no CSS at all.
+ *              The motion scale that check:motion enforces in this repo did
+ *              not exist in the consumer.
+ */
+const themeScales: Record<string, string> = {
+  "font-sans": foundation.fontFamily.sans.join(", "),
+  "font-mono": foundation.fontFamily.mono.join(", "),
+  radius: foundation.radius.DEFAULT,
+
+  ...Object.fromEntries(
+    Object.entries(foundation.radius).map(([k, v]) => [
+      k === "DEFAULT" ? "radius" : `radius-${k}`,
+      v,
+    ]),
+  ),
+  ...Object.fromEntries(
+    Object.entries(foundation.shadow).map(([k, v]) => [
+      k === "DEFAULT" ? "shadow" : `shadow-${k}`,
+      v,
+    ]),
+  ),
+  ...Object.fromEntries(
+    Object.entries(foundation.duration).map(([k, v]) => [
+      k === "DEFAULT" ? "duration" : `duration-${k}`,
+      v,
+    ]),
+  ),
+  ...Object.fromEntries(
+    Object.entries(foundation.easing).map(([k, v]) => [
+      k === "DEFAULT" ? "ease" : `ease-${k === "inOut" ? "in-out" : k}`,
+      v,
+    ]),
+  ),
+};
+
+/**
+ * The @utility rules and the base layer, in the shape the CLI writes verbatim.
+ *
+ * The @utility rules are not decoration. Tailwind v4 emits a custom property
+ * for anything in `@theme`, but it only generates a *utility class* for
+ * namespaces it knows, and `--duration-*` is not one of them. Without these,
+ * `--duration-fast` exists and `.duration-fast` does not.
+ */
+const themeCss: Record<string, unknown> = {
+  ...Object.fromEntries(
+    Object.entries(foundation.duration).map(([k, v]) => [
+      `@utility duration-${k === "DEFAULT" ? "base" : k}`,
+      { "transition-duration": v, "animation-duration": v },
+    ]),
+  ),
+
+  "@layer base": {
+    // Tailwind v4 defaults `border` to currentColor, so without this every
+    // bare `border` in a component draws in the TEXT colour. It is the single
+    // most visible line of the base layer.
+    "*": { "border-color": "var(--border)" },
+
+    body: {
+      "background-color": "var(--background)",
+      color: "var(--foreground)",
+      "font-family": "var(--font-sans)",
+      "font-size": foundation.fontSize.base,
+      "line-height": foundation.lineHeight.normal,
+      // Inter's defaults leave gaps at UI sizes; contextual alternates close them.
+      "font-feature-settings": '"cv02", "cv03", "cv04", "cv11"',
+      "-webkit-font-smoothing": "antialiased",
+    },
+
+    // Numbers in dashboards must align on the decimal. Without tabular figures
+    // a column of production volumes shimmies by digit and cannot be scanned.
+    '.tabular, table tbody td, [data-slot="kpi-value"]': {
+      "font-variant-numeric": "tabular-nums",
+      "font-feature-settings": '"tnum"',
+    },
+
+    // A single visible focus style, everywhere. Keyboard users are the whole
+    // reason this exists — never remove it without a replacement.
+    ":focus-visible": {
+      outline: "2px solid var(--ring)",
+      "outline-offset": "2px",
+    },
+
+    "@media (prefers-reduced-motion: reduce)": {
+      "*, *::before, *::after": {
+        "animation-duration": "0.01ms !important",
+        "animation-iteration-count": "1 !important",
+        "transition-duration": "0.01ms !important",
+        "scroll-behavior": "auto !important",
+      },
+    },
+  },
+};
+
 const themeItem: RegistryItem = {
   $schema: "https://ui.shadcn.com/schema/registry-item.json",
   name: "theme",
@@ -438,15 +560,12 @@ const themeItem: RegistryItem = {
   description:
     "Kuwait Oil Company brand tokens for light and dark. Anchored to #0060A9, recovered from KOC's own stylesheets. Install this first — it re-skins a stock shadcn app into a KOC app.",
   cssVars: {
-    theme: {
-      "font-sans": foundation.fontFamily.sans.join(", "),
-      "font-mono": foundation.fontFamily.mono.join(", "),
-      radius: foundation.radius.DEFAULT,
-    },
+    theme: themeScales,
     light: mapVars(light),
     dark: mapVars(dark),
   },
-  docs: "Requires Inter. Add https://rsms.me/inter/inter.css, or install the `inter` font package. Every colour pair here is asserted against WCAG 2.1 AA in CI.",
+  css: themeCss,
+  docs: "Requires Inter — add https://rsms.me/inter/inter.css to your index.html, or install the `inter` package. Without it --font-sans falls through to the system stack and the app is a different typeface. Ships the colour tokens, the radius/shadow/duration/easing scales, the duration-* utilities and the base layer (border colour, body type, tabular figures, focus ring, reduced motion). Every colour pair is asserted against WCAG 2.1 AA in CI.",
 };
 
 const libItems: RegistryItem[] = libFiles.map((file) => {
