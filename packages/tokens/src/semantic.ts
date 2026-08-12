@@ -52,31 +52,37 @@ export const light: SemanticTheme = {
 
   // Hover and active surfaces.
   //
-  // This was primary[50] (#EFF6FE), which against a white card is a ~1.06:1
-  // step — technically a colour change, visually almost nothing. A hover state
-  // you have to look for is not a hover state; on a dense operations screen it
-  // means people cannot tell what is under the cursor, and keyboard users lose
-  // the only non-focus-ring cue that a control is interactive.
+  // NEUTRAL, NOT A BLUE TINT — changed 2026-08-12 after seeing it in the app.
   //
-  // Measured against white, across the ramp:
+  // This was primary[100], a pale blue. On a nav list it read as a second brand
+  // statement: hover tinted blue, selected tinted blue harder, and with a
+  // dozen rows on screen the sidebar became the loudest thing on the page.
+  // Saud's note was that the blue highlights were distracting "especially on
+  // the hover effects", and that blue should be selective.
   //
-  //   step  vs white   label on it   ΔE2000 vs #E0F2FE
-  //   50    1.09:1     7.70:1        4.22   <- was here; a change you hunt for
-  //   100   1.20:1     6.97:1        2.48   <- here now
-  //   200   1.42:1     5.92:1        8.57   <- tried; read as too heavy
-  //   300   1.77:1     4.73:1               <- label 0.23 above the AA floor
+  // The move is hue only. Measured against white:
   //
-  // Landed on 100 after 200 was judged too deep in use. It is ΔE 2.48 from the
-  // #E0F2FE that was asked for — under the ~3 threshold where a difference is
-  // noticeable at all — so it is that colour, expressed as a ramp step rather
-  // than a hand-written hex (invariant 1). It also sits marginally further from
-  // white than the target did, 1.20:1 against 1.15:1.
+  //   primary[100]  1.204:1   <- was here
+  //   neutral[100]  1.205:1   <- here now
+  //
+  // A thousandth apart, so the pill is exactly as findable as it was; what
+  // changed is that it no longer competes with the brand. The label on it went
+  // from 6.97:1 to 11.83:1 as a side effect, because neutral[900] on a grey is
+  // a stronger pairing than primary[700] on a blue.
+  //
+  // WITH HUE GONE, WEIGHT CARRIES THE ACTIVE STATE. sidebar.tsx steps resting
+  // font-medium to selected font-semibold, and hover fills at 60% rather than
+  // the full accent — previously hover and selected were the SAME fill, which
+  // is why a passing cursor looked like a selection.
+  //
+  // Blue now appears in the chrome only where it is doing work: the logo tile,
+  // the focus ring, primary buttons, links, and chart-1.
   //
   // WCAG has nothing to say about the surface itself — a hover background
   // carries no information a sighted user must *read* — so the tested
   // constraint is the label on top of it.
-  accent: primary[100],
-  "accent-foreground": primary[700],
+  accent: neutral[100],
+  "accent-foreground": neutral[900],
 
   destructive: danger[600],
   "destructive-foreground": "#FFFFFF",
@@ -134,14 +140,14 @@ export const light: SemanticTheme = {
   // tile (see the docs sidebar header) rather than dropping it straight onto
   // `bg-sidebar`. That is a real constraint the old dark slab was hiding.
   sidebar: "#FFFFFF",
-  "sidebar-foreground": neutral[700],
+  "sidebar-foreground": neutral[800],
   "sidebar-primary": primary[600],
   "sidebar-primary-foreground": "#FFFFFF",
   // Active item: a blue wash with the label in brand blue — enough to locate
   // yourself at a glance, far short of a slab. Moves with `accent`, because a
   // current nav item and a hovered button should read as the same idea.
-  "sidebar-accent": primary[100],
-  "sidebar-accent-foreground": primary[700],
+  "sidebar-accent": neutral[100],
+  "sidebar-accent-foreground": neutral[900],
   "sidebar-border": neutral[200],
   "sidebar-ring": primary[600],
 };
@@ -181,8 +187,8 @@ export const dark: SemanticTheme = {
   // sunlight. 300 clears it at 6.27:1.
   "muted-foreground": neutral[300],
 
-  accent: primary[900],
-  "accent-foreground": primary[100],
+  accent: neutral[800],
+  "accent-foreground": neutral[50],
 
   // Status hues also lift on dark — a 600 red on a 950 surface is muddy and,
   // worse, reads as less urgent than it is.
@@ -217,8 +223,8 @@ export const dark: SemanticTheme = {
   "sidebar-foreground": neutral[100],
   "sidebar-primary": primary[400],
   "sidebar-primary-foreground": neutral[950],
-  "sidebar-accent": primary[950],
-  "sidebar-accent-foreground": primary[300],
+  "sidebar-accent": neutral[800],
+  "sidebar-accent-foreground": neutral[50],
   "sidebar-border": neutral[800],
   "sidebar-ring": primary[400],
 };
