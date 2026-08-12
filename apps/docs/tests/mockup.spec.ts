@@ -70,11 +70,16 @@ test.describe("full application", () => {
     // belonging to a unit you have left.
     await switchUnit(page, "Unit 5");
 
-    await expect(page.locator(`${FRAME} h1`).first()).toHaveText("Water well register");
+    // Lands on Unit 5's HOME, not its first workflow. Before every unit had a
+    // home screen this fell through to "Water well register" — whichever item
+    // happened to be first in the config, which is an arbitrary place to put
+    // someone. Home is the right destination when the screen you were on does
+    // not exist here, and it is the same answer for every unit.
+    await expect(page.locator(`${FRAME} h1`).first()).toHaveText("Unit 5 — Water Well");
 
     const active = page.locator(`${FRAME} [data-active="true"]`);
     await expect(active).toHaveCount(1);
-    await expect(active).toHaveText("Water well register");
+    await expect(active).toHaveText("Unit home");
   });
 
   test("unbuilt screens say so rather than faking it", async ({ page }) => {

@@ -96,3 +96,48 @@ export const TOTALS = {
 
 /** The most severe open item, for the page-level alert. */
 export const CRITICAL = DDR_ROWS.find((r) => r.status === "critical");
+
+// ── Unit home ───────────────────────────────────────────────────────────────
+
+/**
+ * What needs a person's attention, derived rather than curated.
+ *
+ * A hand-written "attention" list is a list that goes stale the first time the
+ * data moves and nobody notices, because nothing connects the two. These are
+ * the reports whose own status says something is wrong, ordered worst first —
+ * so the home screen cannot claim things are fine while the DDR table shows a
+ * stuck pipe.
+ */
+const SEVERITY: Record<string, number> = { critical: 0, warning: 1, maintenance: 2 };
+
+export const NEEDS_ATTENTION = DDR_ROWS.filter((r) => r.status in SEVERITY).sort(
+  (a, b) => SEVERITY[a.status] - SEVERITY[b.status] || b.date.localeCompare(a.date),
+);
+
+export interface UnitTask {
+  id: string;
+  label: string;
+  /** What it is about — a well, a rig, an invoice. Shown as quiet context. */
+  context?: string;
+  due?: string;
+  done?: boolean;
+}
+
+/**
+ * ⚠️ PLACEHOLDER, and a different KIND of placeholder from the rest of this file.
+ *
+ * Everything else here is derived from the DDR sample set. These are invented
+ * outright, because a personal task list has no source in the reports — it would
+ * come from whatever assigns work at KOC, and nobody has told us what that is.
+ *
+ * They are written as things a drilling operational-support engineer would
+ * plausibly owe someone by end of day, so the shape is arguable even though the
+ * content is fiction. Replace wholesale.
+ */
+export const MY_TASKS: UnitTask[] = [
+  { id: "t1", label: "Approve DDR", context: "MN-118 · 08 Aug", due: "Today" },
+  { id: "t2", label: "Chase mud losses report", context: "RA-207", due: "Today" },
+  { id: "t3", label: "Review casing programme", context: "BG-1201", due: "Tomorrow" },
+  { id: "t4", label: "Sign off materials request", context: "MR-2291", due: "Thu" },
+  { id: "t5", label: "Update rig move schedule", context: "KDC-19", done: true },
+];

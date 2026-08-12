@@ -19,6 +19,7 @@
 
 import {
   Boxes,
+  LayoutDashboard,
   ClipboardList,
   Drill,
   FileBarChart,
@@ -48,6 +49,25 @@ import type { TeamConfig, NavGroup } from "@koc/ui";
  */
 function drillingUnitGroups(unitId: string): NavGroup[] {
   return [
+    /**
+     * The unit's landing screen — a summary plus whatever is personally waiting
+     * for you. Its own group rather than the first item under Operations,
+     * because it is not an operation: it is the answer to "what should I look
+     * at first today", which is a different question from "which workflow do I
+     * need".
+     */
+    {
+      id: "overview",
+      label: "Overview",
+      items: [
+        {
+          id: `${unitId}-home`,
+          label: "Unit home",
+          href: `/${unitId}`,
+          icon: LayoutDashboard,
+        },
+      ],
+    },
     {
       id: "operations",
       label: "Operations",
@@ -158,6 +178,13 @@ export const DWOS: TeamConfig = {
       name: "Water Well",
       groups: [
         {
+          id: "overview",
+          label: "Overview",
+          items: [
+            { id: "u5-home", label: "Unit home", href: "/unit-5", icon: LayoutDashboard },
+          ],
+        },
+        {
           id: "operations",
           label: "Operations",
           items: [
@@ -174,6 +201,13 @@ export const DWOS: TeamConfig = {
       name: "Well Intervention",
       groups: [
         {
+          id: "overview",
+          label: "Overview",
+          items: [
+            { id: "u6-home", label: "Unit home", href: "/unit-6", icon: LayoutDashboard },
+          ],
+        },
+        {
           id: "operations",
           label: "Operations",
           items: [
@@ -189,6 +223,13 @@ export const DWOS: TeamConfig = {
       label: "Unit 7",
       name: "Support",
       groups: [
+        {
+          id: "overview",
+          label: "Overview",
+          items: [
+            { id: "u7-home", label: "Unit home", href: "/unit-7", icon: LayoutDashboard },
+          ],
+        },
         {
           id: "operations",
           label: "Operations",

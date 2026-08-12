@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   ArrowLeft,
+  ArrowRight,
+  CalendarClock,
   ClipboardList,
   Download,
   Drill,
@@ -69,6 +71,8 @@ import { DWOS } from "../examples/dwos";
 import { DDR_ROWS, RIGS, WELLS, DEMO_TODAY, type DdrRow } from "../examples/ddr-data";
 import {
   CRITICAL,
+  MY_TASKS,
+  NEEDS_ATTENTION,
   NPT_ROWS,
   RIG_STATE,
   TOTALS,
@@ -124,10 +128,11 @@ function fmtDate(iso: string) {
  * and would silently fall out of date the first time a unit is added — which is
  * the exact failure the TeamConfig indirection exists to prevent.
  */
-type ScreenKind = "kpi" | "ddr" | "npt" | "rigs" | "unbuilt";
+type ScreenKind = "home" | "kpi" | "ddr" | "npt" | "rigs" | "unbuilt";
 
 function screenOf(itemId: string | undefined): ScreenKind {
   if (!itemId) return "unbuilt";
+  if (itemId.endsWith("-home")) return "home";
   if (itemId.endsWith("-kpi")) return "kpi";
   if (itemId.endsWith("-ddr") || itemId.endsWith("-reports")) return "ddr";
   if (itemId.endsWith("-npt")) return "npt";
@@ -246,7 +251,7 @@ export function Mockup() {
 
 function UnitApp() {
   const [unitId, setUnitId] = useState("unit-1");
-  const [activeItemId, setActiveItemId] = useState("unit-1-kpi");
+  const [activeItemId, setActiveItemId] = useState("unit-1-home");
   /** The open record, if any. Null means we are on the list, not the detail. */
   const [record, setRecord] = useState<DdrRow | null>(null);
 
@@ -312,6 +317,12 @@ function UnitApp() {
         </a>
       )}
     >
+      {screen === "home" && (
+        <UnitHomeScreen
+          unitName={unitLabel(unitId)}
+          onNavigate={(kind) => gotoKind(kind, unitId, navigate)}
+        />
+      )}
       {screen === "kpi" && <KpiScreen unitName={unitLabel(unitId)} onOpenNpt={() => gotoKind("npt", unitId, navigate)} />}
       {screen === "ddr" && !record && (
         <DdrScreen unitName={unitLabel(unitId)} onOpen={setRecord} onNav={(id) => navigate(id)} />
@@ -373,7 +384,7 @@ const FOOTAGE = [...new Set(DDR_ROWS.map((r) => r.date))].sort().map((date) => (
 }));
 
 function Screen({ children }: { children: ReactNode }) {
-  return <div className="mx-auto max-w-7xl p-6">{children}</div>;
+  return <div className="@container mx-auto max-w-7xl p-6">{children}</div>;
 }
 
 /** The alert a unit head should see before anything else on the screen. */
@@ -404,6 +415,253 @@ function CriticalAlert({ onOpen }: { onOpen?: () => void }) {
         )}
       </AlertDescription>
     </Alert>
+  );
+}
+
+/**
+ * Unit home — the landing screen.
+ *
+ * Answers "what should I look at first today", which is a different question
+ * from the KPI dashboard's "how are we doing" and the list view's "show me the
+ * records". It is the only screen here that mixes UNIT state with PERSONAL
+ * state, and that split is what the two columns are for.
+ *
+ * WHY THE RAIL IS PAGE CONTENT AND NOT A SECOND SIDEBAR
+ * ----------------------------------------------------
+ * `Sidebar` takes `side="right"`, so a second one was available and would have
+ * given collapse and mobile-sheet behaviour for free. It is the wrong shape
+ * anyway: a Sidebar is app chrome and persists across every screen, and this
+ * rail is specific to the landing page. Making it chrome would put an empty
+ * "My tasks" panel beside the DDR table on every other route, and hand every
+ * consuming team a collapse control for something that is not navigation.
+ *
+ * As a grid column it stacks under the main column on narrow screens, which is
+ * also the correct reading order — unit state first, personal state second.
+ */
+function UnitHomeScreen({
+  unitName,
+  onNavigate,
+}: {
+  unitName: string;
+  onNavigate: (kind: ScreenKind) => void;
+}) {
+  const [done, setDone] = useState<string[]>(MY_TASKS.filter((t) => t.done).map((t) => t.id));
+  const open = MY_TASKS.filter((t) => !done.includes(t.id));
+
+  return (
+    <Screen>
+      <PageHeader
+        title={unitName}
+        description="Where the unit stands today, and what is waiting for you."
+        meta={
+          <span className="text-xs text-muted-foreground">
+            {TOTALS.reports} reports · {TOTALS.rigs} rigs · updated 06:00
+          </span>
+        }
+        actions={
+          <Button variant="outline" size="sm" onClick={() => onNavigate("kpi")}>
+            Full KPIs
+            <ArrowRight aria-hidden className="ml-1.5 size-3.5" />
+          </Button>
+        }
+      />
+
+      {/*
+       * 1fr + a fixed rail, not two fractions. The rail holds a task list and
+       * short cards whose width should not grow with the viewport — at 1920px a
+       * fractional rail becomes a column of very wide checkboxes. The main
+       * column takes the slack instead, which is where tables and charts want it.
+       */}
+      <div className="@container mt-5 grid items-start gap-6 @4xl:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="@container min-w-0 space-y-6">
+          <CriticalAlert onOpen={() => onNavigate("npt")} />
+
+          {/*
+           * CONTAINER queries, not viewport ones.
+           *
+           * `xl:grid-cols-4` was true at a 1600px viewport while this column was
+           * ~600px wide, because the rail takes 20rem out of it and a media
+           * query cannot see that. Four stat cards were forced into the space
+           * for two and every label truncated — "PRODUCT…", "3,20".
+           *
+           * Any component that can sit in a narrowed column has this problem,
+           * and it is invisible until something is placed beside it. That is the
+           * same class of bug as the whole mockup: it only appears once things
+           * are composed.
+           */}
+          <div className="grid gap-4 @md:grid-cols-2 @3xl:grid-cols-4">
+            <StatCard label="Production" value="9,105" unit="bbl/d" delta={2.1} intent="higher-is-better" />
+            <StatCard
+              label="NPT this period"
+              value={TOTALS.npt.toFixed(1)}
+              unit="hrs"
+              delta={18.4}
+              intent="lower-is-better"
+            />
+            <StatCard
+              label="Footage"
+              value={num(TOTALS.footage)}
+              unit="ft"
+              delta={4.2}
+              intent="higher-is-better"
+            />
+            <StatCard label="Active rigs" value={TOTALS.rigs} delta={0} intent="neutral" />
+          </div>
+
+          {/* Derived from the reports' own status, so this cannot claim things
+              are fine while the DDR table shows a stuck pipe. */}
+          <Card>
+            <CardHeader className="flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle className="text-sm">Needs attention</CardTitle>
+                <CardDescription>
+                  {NEEDS_ATTENTION.length} report{NEEDS_ATTENTION.length === 1 ? "" : "s"} not in a
+                  normal state
+                </CardDescription>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => onNavigate("ddr")}>
+                All reports
+              </Button>
+            </CardHeader>
+            <CardContent className="divide-y divide-border">
+              {NEEDS_ATTENTION.slice(0, 5).map((r) => (
+                <div key={r.id} className="flex items-start gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <StatusBadge status={r.status} className="mt-0.5 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium">
+                      {r.well} <span className="font-normal text-muted-foreground">· {r.rig}</span>
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">{r.summary}</p>
+                  </div>
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    {r.npt.toFixed(1)} hrs
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Footage drilled</CardTitle>
+              <CardDescription>ft per day, all rigs</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <VolumeChart
+                data={FOOTAGE}
+                xKey="day"
+                caption="Footage drilled per day in feet, across all rigs"
+                valueFormat={num}
+                height={180}
+                series={[{ key: "footage", label: "Footage" }]}
+              />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* `aside` with a name: it is genuinely complementary content, and a
+            screen reader user landing here should be able to skip past unit
+            state to their own without reading it all. */}
+        <aside aria-label="Your work" className="space-y-6">
+          <Card>
+            <CardHeader className="space-y-0">
+              <CardTitle className="text-sm">My tasks</CardTitle>
+              <CardDescription>
+                {open.length} open · {done.length} done
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {MY_TASKS.map((t) => {
+                const isDone = done.includes(t.id);
+                return (
+                  <div key={t.id} className="flex items-start gap-2.5">
+                    <Checkbox
+                      id={t.id}
+                      checked={isDone}
+                      className="mt-0.5"
+                      onCheckedChange={(v) =>
+                        setDone((d) => (v === true ? [...d, t.id] : d.filter((x) => x !== t.id)))
+                      }
+                    />
+                    <div className="min-w-0 flex-1">
+                      <Label
+                        htmlFor={t.id}
+                        className={cn(
+                          "block text-sm font-normal leading-snug",
+                          // Struck through AND muted. Strike-through alone is
+                          // invisible to anyone who cannot see it, and colour
+                          // alone is invisible in greyscale; the checkbox state
+                          // is what actually carries it to a screen reader.
+                          isDone && "text-muted-foreground line-through",
+                        )}
+                      >
+                        {t.label}
+                      </Label>
+                      {t.context && (
+                        <p className="truncate text-xs text-muted-foreground">{t.context}</p>
+                      )}
+                    </div>
+                    {t.due && !isDone && (
+                      <span className="shrink-0 text-2xs text-muted-foreground">{t.due}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="space-y-0">
+              <CardTitle className="flex items-center gap-1.5 text-sm">
+                <CalendarClock aria-hidden className="size-3.5" />
+                This shift
+              </CardTitle>
+              <CardDescription>06:00 – 18:00</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="space-y-2 text-sm">
+                {[
+                  ["Reports due", `${TOTALS.rigs}`],
+                  ["Received", `${TOTALS.rigs - 1}`],
+                  ["Handover", "17:30"],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-2">
+                    <dt className="text-muted-foreground">{k}</dt>
+                    <dd className="font-medium tabular-nums">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            </CardContent>
+          </Card>
+
+          {/* Shortcuts to this unit's own screens. Not a second navigation —
+              these are the two or three destinations a landing page should
+              short-circuit to, and they duplicate the sidebar on purpose. */}
+          <Card>
+            <CardHeader className="space-y-0">
+              <CardTitle className="text-sm">Jump to</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-1">
+              {([
+                ["Daily drilling reports", "ddr"],
+                ["NPT tracking", "npt"],
+                ["Rig status", "rigs"],
+              ] as [string, ScreenKind][]).map(([label, kind]) => (
+                <Button
+                  key={kind}
+                  variant="ghost"
+                  size="sm"
+                  className="justify-start px-2"
+                  onClick={() => onNavigate(kind)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </CardContent>
+          </Card>
+        </aside>
+      </div>
+    </Screen>
   );
 }
 
@@ -812,7 +1070,7 @@ function DdrScreen({
  */
 function activeUnitItem(kind: ScreenKind): string {
   const match = itemsOf("unit-1").find((i) => screenOf(i.id) === kind);
-  return match?.id ?? "unit-1-kpi";
+  return match?.id ?? "unit-1-home";
 }
 
 function DetailScreen({

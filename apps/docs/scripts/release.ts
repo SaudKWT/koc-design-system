@@ -253,6 +253,63 @@ for (const f of oldFiles) {
   }
 }
 
+/**
+ * Tokens that BECAME identical to another token in this release.
+ *
+ * v0.1.4 moved --accent onto neutral[100], where --secondary and --muted
+ * already sat. The DWOS app had a Nil/Reportable toggle distinguishing its two
+ * halves with `bg-secondary` for selected and `hover:bg-accent` for the other —
+ * two different colours until that release, one colour after it. Hovering the
+ * unselected half rendered it pixel-identical to the selected half: precisely
+ * the fault the release set out to FIX in the sidebar, reproduced in a form
+ * control as a side effect of fixing it.
+ *
+ * Nothing caught it. The diff said nine variables changed and every one was
+ * intended; what it did not say was that one had landed on top of a neighbour.
+ * That is the missing fact, and this is the moment to state it — before the tag,
+ * while the change is still a decision.
+ *
+ * Collisions are NOT failures. card/popover/sidebar are all white on purpose,
+ * primary/ring/chart-1 are one brand blue on purpose, and shadcn's own theme
+ * collapses secondary and muted — they were already equal here before v0.1.4.
+ * The rule this system follows is the other one: never distinguish two states by
+ * reaching for two semantic tokens; vary alpha or weight within one, the way
+ * @koc/table does with muted/50 against accent. So this warns and does not fail.
+ */
+function equivalenceClasses(vars: Record<string, string>): Map<string, string[]> {
+  const byValue = new Map<string, string[]>();
+  for (const [k, v] of Object.entries(vars)) {
+    if (k.endsWith("-foreground")) continue;
+    byValue.set(v, [...(byValue.get(v) ?? []), k]);
+  }
+  return byValue;
+}
+
+const collisions: string[] = [];
+{
+  const beforeTheme = readAt(tag, "theme.json");
+  const afterTheme = readNow("theme.json");
+  if (beforeTheme && afterTheme) {
+    for (const scope of ["light", "dark"] as const) {
+      const wasTogether = new Set<string>();
+      for (const [, keys] of equivalenceClasses(beforeTheme.cssVars?.[scope] ?? {})) {
+        for (const a of keys) for (const b of keys) if (a < b) wasTogether.add(`${a}|${b}`);
+      }
+      for (const [value, keys] of equivalenceClasses(afterTheme.cssVars?.[scope] ?? {})) {
+        if (keys.length < 2) continue;
+        const sorted = [...keys].sort();
+        for (const a of sorted) {
+          for (const b of sorted) {
+            if (a >= b || wasTogether.has(`${a}|${b}`)) continue;
+            collisions.push(`${scope}: --${a} and --${b} are now one value (${value})`);
+          }
+        }
+      }
+    }
+  }
+}
+
+
 // ── report ──────────────────────────────────────────────────────────────────
 
 const bar = "─".repeat(72);
@@ -308,4 +365,21 @@ if (fileChanges.length) {
   console.log(`  ${fileChanges.length} component file(s) changed — these need that component re-added`);
   console.log(`  individually, with --overwrite. They do nothing until then.\n`);
 }
+if (collisions.length) {
+  console.log(`${bar}\n  ⚠ TOKENS THAT COLLAPSED ONTO EACH OTHER\n${bar}\n`);
+  for (const c of collisions) console.log(`  ${c}`);
+  console.log(
+    `
+  Not necessarily wrong — card/popover/sidebar share white on purpose. But a
+  consumer distinguishing two states with these two tokens now has one colour
+  for both, and nothing in their app will error.
+
+  The rule: never distinguish two states with two semantic tokens. Vary alpha or
+  weight within one, as @koc/table does (muted/50 against accent). If this
+  collision is intended, say so in the release note so consumers can check their
+  own components before re-adding.
+`,
+  );
+}
+
 console.log(`  To release:  npm test && git push origin main && git tag <v> && git push origin <v>\n`);

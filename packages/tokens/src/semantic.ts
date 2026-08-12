@@ -52,6 +52,35 @@ export const light: SemanticTheme = {
 
   // Hover and active surfaces.
   //
+  // ── SEMANTIC TOKENS MAY SHARE A VALUE. STATES MAY NOT SHARE A TOKEN. ──────
+  //
+  // `accent`, `secondary` and `muted` are all one neutral here, and `border`
+  // joins them in dark. That is not a mistake and it is not unusual — shadcn's
+  // own theme collapses secondary and muted, and those two were already equal
+  // here before accent joined them in v0.1.4. Distinct NAMES mean distinct
+  // ROLES; they have never meant distinct values.
+  //
+  // The DWOS app found out the hard way. Its Nil/Reportable toggle marked the
+  // selected half with `bg-secondary` and hovered the other with
+  // `hover:bg-accent` — two colours until v0.1.4, one colour after it, so
+  // hovering the unselected half made it pixel-identical to the selected one.
+  // The exact fault that release existed to fix, reproduced by fixing it.
+  //
+  // THE RULE, for anyone building on this system:
+  //
+  //   Never distinguish two states of one control by reaching for two semantic
+  //   tokens. Vary alpha or weight WITHIN one.
+  //
+  // `@koc/table` is the model: `hover:bg-muted/50` against
+  // `data-[state=selected]:bg-accent`. Those two survived the collapse because
+  // the difference was never the hue — it was the alpha. `@koc/sidebar` does
+  // the same, hover at 60% of the selected fill.
+  //
+  // A colour change cannot break that pattern. It can always break the other one,
+  // which is why `npm run release:status` now reports every pair of tokens that
+  // becomes identical in a release, so the decision is visible before the tag
+  // rather than discovered in someone's app after it.
+  //
   // NEUTRAL, NOT A BLUE TINT — changed 2026-08-12 after seeing it in the app.
   //
   // This was primary[100], a pale blue. On a nav list it read as a second brand
