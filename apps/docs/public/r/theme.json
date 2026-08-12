@@ -4,6 +4,9 @@
   "type": "registry:theme",
   "title": "KOC Theme",
   "description": "Kuwait Oil Company brand tokens for light and dark. Anchored to #0060A9, recovered from KOC's own stylesheets. Install this first — it re-skins a stock shadcn app into a KOC app.",
+  "dependencies": [
+    "tw-animate-css"
+  ],
   "cssVars": {
     "theme": {
       "font-sans": "Inter var, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial, sans-serif",
@@ -167,5 +170,5 @@
       }
     }
   },
-  "docs": "Requires Inter — add https://rsms.me/inter/inter.css to your index.html, or install the `inter` package. Without it --font-sans falls through to the system stack and the app is a different typeface. Ships the colour tokens, the radius/shadow/duration/easing scales, the duration-* utilities and the base layer (border colour, body type, tabular figures, focus ring, reduced motion). Every colour pair is asserted against WCAG 2.1 AA in CI."
+  "docs": "Ships the colour tokens, the radius/shadow/duration/easing scales, the duration-* utilities and the base layer (border colour, body type, tabular figures, focus ring, reduced motion). Every colour pair is asserted against WCAG 2.1 AA in CI. TWO MANUAL STEPS, both silent if you skip them — the app renders, wrong. 1. Put `@import \"tw-animate-css\";` directly under `@import \"tailwindcss\";` in your CSS entry. The package installs with this item, but @import must precede every other rule and this item's CSS is appended, so the CLI cannot place it for you. Without the import, animate-in / fade-in-0 / zoom-in-95 are inert and every tooltip, dropdown and sheet pops. 2. Load Inter: `<link rel=\"stylesheet\" href=\"https://rsms.me/inter/inter.css\" />`, or install the `inter` package. --font-sans names it first and falls through to the system stack without it, and the base layer asks for contextual alternates (cv02/03/04/11) that only exist in Inter."
 }

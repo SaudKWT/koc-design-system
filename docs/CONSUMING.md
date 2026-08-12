@@ -74,6 +74,30 @@ npx shadcn@latest add @koc/theme
 every component assumes those variables exist. Installing a component first will
 render it unstyled or, worse, plausibly wrong.
 
+### Then two things the CLI cannot do for you
+
+Both are silent. Skip either one and the app builds, runs, and is wrong in a way
+that looks like a slightly different design system rather than like a bug.
+
+**1. Import `tw-animate-css` yourself.** Installing the theme adds the package,
+but the import has to be the second line of your CSS entry — `@import` must
+precede every other rule, and the CLI appends. Without it, `animate-in`,
+`fade-in-0` and `zoom-in-95` are inert classes and every tooltip, dropdown,
+dialog and sheet pops into place.
+
+```css
+@import "tailwindcss";
+@import "tw-animate-css";   /* must be here, not further down */
+```
+
+**2. Load Inter.** `--font-sans` names it first and falls through to the system
+stack without it, so the app renders in the wrong typeface and asks for
+contextual alternates (`cv02`, `cv03`, `cv04`, `cv11`) that only exist in Inter.
+
+```html
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+```
+
 Then take what you need:
 
 ```bash

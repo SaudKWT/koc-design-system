@@ -502,6 +502,17 @@ const themeItem: RegistryItem = {
   title: "KOC Theme",
   description:
     "Kuwait Oil Company brand tokens for light and dark. Anchored to #0060A9, recovered from KOC's own stylesheets. Install this first — it re-skins a stock shadcn app into a KOC app.",
+  /**
+   * Components across this registry carry `animate-in`, `fade-in-0`,
+   * `zoom-in-95` and `slide-in-from-*`. Those classes come from tw-animate-css,
+   * not from Tailwind, and without the plugin they are inert — every tooltip,
+   * dropdown, sheet and dialog pops instead of animating, and nothing errors.
+   *
+   * Declaring it here installs the package. It does NOT add the import: the CLI
+   * appends to the CSS entry and `@import` has to come before every other rule,
+   * so the consumer places that line themselves. See `docs`.
+   */
+  dependencies: ["tw-animate-css"],
   cssVars: {
     theme: themeScales,
     light: mapVars(light),
@@ -511,7 +522,12 @@ const themeItem: RegistryItem = {
   // the same source koc-tokens.css renders. Restating them here would fix today's
   // bug and guarantee tomorrow's divergence.
   css: registryCss,
-  docs: "Requires Inter — add https://rsms.me/inter/inter.css to your index.html, or install the `inter` package. Without it --font-sans falls through to the system stack and the app is a different typeface. Ships the colour tokens, the radius/shadow/duration/easing scales, the duration-* utilities and the base layer (border colour, body type, tabular figures, focus ring, reduced motion). Every colour pair is asserted against WCAG 2.1 AA in CI.",
+  docs: [
+    "Ships the colour tokens, the radius/shadow/duration/easing scales, the duration-* utilities and the base layer (border colour, body type, tabular figures, focus ring, reduced motion). Every colour pair is asserted against WCAG 2.1 AA in CI.",
+    "TWO MANUAL STEPS, both silent if you skip them — the app renders, wrong.",
+    "1. Put `@import \"tw-animate-css\";` directly under `@import \"tailwindcss\";` in your CSS entry. The package installs with this item, but @import must precede every other rule and this item's CSS is appended, so the CLI cannot place it for you. Without the import, animate-in / fade-in-0 / zoom-in-95 are inert and every tooltip, dropdown and sheet pops.",
+    "2. Load Inter: `<link rel=\"stylesheet\" href=\"https://rsms.me/inter/inter.css\" />`, or install the `inter` package. --font-sans names it first and falls through to the system stack without it, and the base layer asks for contextual alternates (cv02/03/04/11) that only exist in Inter.",
+  ].join(" "),
 };
 
 const libItems: RegistryItem[] = libFiles.map((file) => {
