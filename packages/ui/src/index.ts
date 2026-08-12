@@ -88,6 +88,11 @@ export {
   SelectSeparator,
 } from "./components/select";
 export { Checkbox } from "./components/checkbox";
+export {
+  FilterTabs,
+  type FilterTabsProps,
+  type FilterTabsOption,
+} from "./components/filter-tabs";
 
 /**
  * Primitives that exist mainly to be composed *by* other components — the

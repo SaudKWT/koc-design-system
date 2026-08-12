@@ -143,6 +143,13 @@ const META: Record<string, Meta> = {
     title: "Avatar",
     description: "User image with initials fallback. Two letters is the most that stays legible at 32px.",
   },
+  "filter-tabs": {
+    title: "Filter Tabs",
+    description:
+      "A segmented control that filters a view, with a count on each option. Takes `renderPanel` rather than children, so it is not possible to build one whose tabs control nothing.",
+    categories: ["data", "koc"],
+    docs: "A Tabs with no TabsContent is an accessibility defect that looks like working code: Radix wires aria-controls from every trigger to its panel, and with no panel that attribute points at an id which does not exist. axe rates it critical and it was the first thing this repo's a11y harness ever found. `renderPanel` makes the panel structural instead of remembered — the same move as ConfirmDialog's required `subject`. Counts are shown so an empty filter is visibly empty rather than a tab you click and find nothing behind; 0 renders as 0, because a missing badge reads as 'unknown' rather than 'none'. `label` is required: 'tab list, North, selected' tells a screen-reader user nothing about what is being filtered.",
+  },
   "confirm-dialog": {
     title: "Confirm Dialog",
     description:

@@ -1,14 +1,10 @@
 import { useState } from "react";
 
 import {
-  Badge,
   Button,
   DataTable,
   StatusBadge,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
+  FilterTabs,
   cn,
   kocColumnHelper,
   type OperationalStatus,
@@ -176,37 +172,28 @@ export function DataTableSection() {
          * switching, and so an empty asset is visibly empty rather than a tab
          * you click and find nothing behind.
          */}
-        <Tabs value={asset} onValueChange={(v) => setAsset(v as Asset)}>
-          <TabsList className="mb-3">
-            {ASSETS.map((a) => (
-              <TabsTrigger key={a} value={a} className="gap-1.5">
-                {a}
-                <Badge variant="secondary" shape="count">
-                  {countFor(a)}
-                </Badge>
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {ASSETS.map((a) => (
-            <TabsContent key={a} value={a}>
-              <DataTable
-                caption={`Wells in the ${a} asset, by rig, depth, non-productive time and operational status`}
-                columns={COLUMNS}
-                data={demo === "empty" ? [] : ROWS.filter((r) => r.asset === a)}
-                loading={demo === "loading"}
-                filterColumn="well"
-                filterPlaceholder="Search wells…"
-                pageSize={10}
-                empty={{
-                  title: `No wells in ${a}`,
-                  description: "Wells appear here once they're assigned to this asset.",
-                  action: <Button size="sm">Assign a well</Button>,
-                }}
-              />
-            </TabsContent>
-          ))}
-        </Tabs>
+        <FilterTabs
+          label="Filter by asset"
+          options={ASSETS.map((a) => ({ value: a, label: a, count: countFor(a) }))}
+          value={asset}
+          onChange={setAsset}
+          renderPanel={(value) => (
+            <DataTable
+                  caption={`Wells in the ${value} asset, by rig, depth, non-productive time and operational status`}
+                  columns={COLUMNS}
+                  data={demo === "empty" ? [] : ROWS.filter((r) => r.asset === value)}
+                  loading={demo === "loading"}
+                  filterColumn="well"
+                  filterPlaceholder="Search wells…"
+                  pageSize={10}
+                  empty={{
+                    title: `No wells in ${value}`,
+                    description: "Wells appear here once they're assigned to this asset.",
+                    action: <Button size="sm">Assign a well</Button>,
+                  }}
+                />
+          )}
+        />
       </Section>
 
       <Section
