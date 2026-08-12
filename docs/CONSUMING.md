@@ -133,13 +133,105 @@ of a specific failure, and removing them re-introduces it:
 - `StatusBadge` takes a status, not a colour — it derives colour, icon and label
   together, so colour alone can never be the only signal.
 
+## No GitHub access? Vendor the registry
+
+The setup above needs `api.github.com` reachable and a per-person token that
+expires. Inside KOC that is not a safe assumption, and a build agent on a locked
+-down network cannot use it at all.
+
+The alternative is to copy the registry into your own repo. This is what the DWOS
+platform does, and it is the recommended shape for anything being handed to KOC
+for deployment.
+
+**First, understand what is and isn't affected.** `shadcn add` is a one-shot
+build-time operation — component source is copied into your repo and committed.
+**Building and deploying never touch the registry or the network either way.**
+Vendoring only changes where the CLI looks when you *add* a component.
+
+**Copy the registry in:**
+
+```bash
+mkdir -p vendor/koc-registry
+# from a checkout of this repo, at the tag you want
+git -C <design-system> ls-tree --name-only v0.1.2:apps/docs/public/r \
+  | xargs -I{} sh -c 'git -C <design-system> show v0.1.2:apps/docs/public/r/{} > vendor/koc-registry/{}'
+echo v0.1.2 > vendor/koc-registry/VERSION
+```
+
+Read them at a **tag**, via `git show` rather than out of a working tree, so an
+uncommitted experiment here cannot end up in someone's handoff.
+
+**Point `components.json` at loopback, and serve the folder for the length of the
+command:**
+
+```json
+{ "registries": { "@koc": "http://127.0.0.1:4183/{name}.json" } }
+```
+
+You cannot point the CLI at the folder directly. A relative path resolves against
+`https://ui.shadcn.com/r/`, and a `file://` URL returns *"not implemented...
+yet..."* — both verified against the CLI on 2026-08-12. Serving over loopback is
+the workaround, and it keeps the real CLI in the loop, so `registryDependencies`,
+import rewriting and overwrite behaviour all stay exactly as documented rather
+than being reimplemented.
+
+Any static server over `vendor/koc-registry/` on that port will do. The DWOS
+platform's `web/scripts/koc-registry.mjs` does it in about fifty lines and wraps
+`add` so the server's lifetime is one command; copy it rather than writing your
+own.
+
+**The tradeoff:** the vendored copy is a snapshot. It goes stale until someone
+re-copies it. In exchange, a design-system update reaches you as a reviewable
+diff in your own repo instead of a silent fetch, which is the better story when
+the person deploying is not the person who changed the design system.
+
 ## Updating
 
 There is no automatic update. Re-run `add` for a component to take the newer
 version, and read the diff — you may have local edits.
 
-Pin `?ref=v0.1.0` in `components.json` if you want a fixed version rather than
-whatever is on `main`.
+Pin `?ref=v0.1.2` in `components.json` if you want a fixed version rather than
+whatever is on `main`. A production app should.
+
+### Three things that will cost you an afternoon
+
+All three found in a real consumer, none of them obvious:
+
+**`--overwrite` is required to refresh a file that already exists.** Without it
+the CLI prompts, and in a script it simply stops with no error.
+
+**One item per invocation.** Passing many items to a single `shadcn add` joins
+them into one argument and 404s. Verified with 36.
+
+**After a version bump, re-add *everything*, not just the theme.** This is the
+one that actually bit. A consumer on `v0.1.0` bumped the pin to `v0.1.1` and
+re-added only `@koc/theme`; twelve components then sat on the old version for a
+day, carrying bugs this repo had already fixed. Nothing failed — they simply
+weren't the current components.
+
+```bash
+# upgrade the whole app
+for i in $(ls src/components/ui/*.tsx | xargs -n1 basename | sed 's/.tsx//'); do
+  npx shadcn@latest add "@koc/$i" --yes --overwrite
+done
+npx tsx <design-system>/packages/tokens/src/check-motion.ts src
+```
+
+### What changes when you upgrade the type scale
+
+`v0.1.2` shipped the KOC type scale for the first time. It is not additive —
+KOC's steps differ from Tailwind's defaults, so text sizes move app-wide:
+
+| | Tailwind default | KOC |
+|---|---|---|
+| `text-sm` | 0.875rem (14px) | **0.8125rem (13px)** |
+| `text-base` | 1rem (16px) | **0.875rem (14px)** |
+| `text-2xs` | *does not exist* | 0.6875rem (11px) |
+| `text-md` | *does not exist* | 1rem (16px) |
+
+Expect the whole app to re-flow slightly on that upgrade. Before it, `text-2xs`
+and `text-md` matched no rule at all and the text silently inherited its parent
+size — so badges, timestamps and `size="lg"` buttons were rendering too large.
 
 ## Troubleshooting
 
