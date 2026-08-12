@@ -24,6 +24,7 @@ import {
   AppShell,
   Button,
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -48,6 +49,7 @@ import {
   SelectTrigger,
   SelectValue,
   Separator,
+  Sidebar,
   StatCard,
   StatusBadge,
   Tabs,
@@ -426,17 +428,40 @@ function CriticalAlert({ onOpen }: { onOpen?: () => void }) {
  * records". It is the only screen here that mixes UNIT state with PERSONAL
  * state, and that split is what the two columns are for.
  *
- * WHY THE RAIL IS PAGE CONTENT AND NOT A SECOND SIDEBAR
- * ----------------------------------------------------
- * `Sidebar` takes `side="right"`, so a second one was available and would have
- * given collapse and mobile-sheet behaviour for free. It is the wrong shape
- * anyway: a Sidebar is app chrome and persists across every screen, and this
- * rail is specific to the landing page. Making it chrome would put an empty
- * "My tasks" panel beside the DDR table on every other route, and hand every
- * consuming team a collapse control for something that is not navigation.
+ * THE RAIL: A SIDEBAR'S LOOK, A PAGE COLUMN'S BEHAVIOUR
+ * -----------------------------------------------------
+ * This was a grid of Cards, on the reasoning that a Sidebar is app chrome and
+ * would persist across every screen — an empty "My tasks" panel beside the DDR
+ * table on every other route. That reasoning still holds and is why the rail is
+ * still a grid column, stacking under the main column on narrow screens, which
+ * is also the correct reading order: unit state first, personal state second.
  *
- * As a grid column it stacks under the main column on narrow screens, which is
- * also the correct reading order — unit state first, personal state second.
+ * What changed is the surface. Saud asked for it to match the left sidebar, so
+ * it now renders `<Sidebar collapsible="none">` and gets bg-sidebar,
+ * SidebarGroup, SidebarMenu and real visual parity.
+ *
+ * `collapsible="none"` is the whole trick, and it is what shadcn's own
+ * sidebar-15 (left AND right sidebars) does. It hits an early return in
+ * sidebar.tsx that renders a plain styled div and NEVER READS PROVIDER STATE.
+ * That matters because SidebarProvider holds exactly one `open` boolean, one
+ * `openMobile`, one Cmd/Ctrl+B listener and one cookie — two collapsible
+ * sidebars under it would toggle in lockstep, and below 768px would open two
+ * Sheets with two focus traps at once. A second provider does not help: both
+ * keydown handlers fire on the same keypress.
+ *
+ * So this is a styled div wearing sidebar tokens, not chrome. Real chrome parity
+ * — its own trigger, its own collapse, its own mobile sheet — needs per-sidebar
+ * identity in the provider, which is a refactor of a component KOC teams already
+ * consume. Worth doing deliberately, not as a side effect of a styling request.
+ *
+ * `role="complementary"` and the label are passed explicitly because Sidebar
+ * renders a div, not an aside — without them the landmark is simply lost.
+ *
+ * DO NOT make this collapsible in place. Its container would be
+ * `fixed inset-y-0 right-0`, escaping SidebarInset — and the docs frame would
+ * HIDE that from you, because `[data-shell-frame] { transform: translateZ(0) }`
+ * creates a containing block for fixed positioning. It would look right here and
+ * pin to the viewport in a real consumer app.
  */
 function UnitHomeScreen({
   unitName,
@@ -511,17 +536,20 @@ function UnitHomeScreen({
           {/* Derived from the reports' own status, so this cannot claim things
               are fine while the DDR table shows a stuck pipe. */}
           <Card>
-            <CardHeader className="flex-row items-center justify-between space-y-0">
-              <div>
-                <CardTitle className="text-sm">Needs attention</CardTitle>
-                <CardDescription>
-                  {NEEDS_ATTENTION.length} report{NEEDS_ATTENTION.length === 1 ? "" : "s"} not in a
-                  normal state
-                </CardDescription>
-              </div>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate("ddr")}>
-                All reports
-              </Button>
+            <CardHeader>
+              <CardTitle className="text-sm">Needs attention</CardTitle>
+              <CardDescription>
+                {NEEDS_ATTENTION.length} report{NEEDS_ATTENTION.length === 1 ? "" : "s"} not in a
+                normal state
+              </CardDescription>
+              {/* CardAction, not a wrapper div plus flex-row. CardHeader is a
+                  grid now, so `flex-row justify-between` is inert — the button
+                  simply fell under the title. */}
+              <CardAction>
+                <Button variant="ghost" size="sm" onClick={() => onNavigate("ddr")}>
+                  All reports
+                </Button>
+              </CardAction>
             </CardHeader>
             <CardContent className="divide-y divide-border">
               {NEEDS_ATTENTION.slice(0, 5).map((r) => (
@@ -562,9 +590,14 @@ function UnitHomeScreen({
         {/* `aside` with a name: it is genuinely complementary content, and a
             screen reader user landing here should be able to skip past unit
             state to their own without reading it all. */}
-        <aside aria-label="Your work" className="space-y-6">
+        <Sidebar
+          collapsible="none"
+          role="complementary"
+          aria-label="Your work"
+          className="h-fit gap-6 rounded-lg border border-border bg-sidebar p-4"
+        >
           <Card>
-            <CardHeader className="space-y-0">
+            <CardHeader>
               <CardTitle className="text-sm">My tasks</CardTitle>
               <CardDescription>
                 {open.length} open · {done.length} done
@@ -611,7 +644,7 @@ function UnitHomeScreen({
           </Card>
 
           <Card>
-            <CardHeader className="space-y-0">
+            <CardHeader>
               <CardTitle className="flex items-center gap-1.5 text-sm">
                 <CalendarClock aria-hidden className="size-3.5" />
                 This shift
@@ -638,7 +671,7 @@ function UnitHomeScreen({
               these are the two or three destinations a landing page should
               short-circuit to, and they duplicate the sidebar on purpose. */}
           <Card>
-            <CardHeader className="space-y-0">
+            <CardHeader>
               <CardTitle className="text-sm">Jump to</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-1">
@@ -659,7 +692,7 @@ function UnitHomeScreen({
               ))}
             </CardContent>
           </Card>
-        </aside>
+        </Sidebar>
       </div>
     </Screen>
   );

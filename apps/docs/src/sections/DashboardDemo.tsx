@@ -13,6 +13,7 @@ import {
 import {
   Button,
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
@@ -112,14 +113,14 @@ export function DashboardDemo() {
 
         {/* Trend */}
         <Card>
-          <CardHeader className="flex-row items-start justify-between space-y-0">
-            <div>
-              <CardTitle>Production by field</CardTitle>
-              <CardDescription>Thousand barrels per day · last six months</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              Export
-            </Button>
+          <CardHeader>
+            <CardTitle>Production by field</CardTitle>
+            <CardDescription>Thousand barrels per day · last six months</CardDescription>
+            <CardAction>
+              <Button variant="outline" size="sm">
+                Export
+              </Button>
+            </CardAction>
           </CardHeader>
           <CardContent>
             <div className="h-64 w-full">

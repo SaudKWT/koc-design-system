@@ -78,7 +78,23 @@ that hole by asserting the shell's landmark shape directly.
   2026-08-09 against the wider org-standard scope, with the retrofit cost stated. Settled.
 - **npm workspaces, not pnpm.** KOC teams will have npm.
 - **Code is the source of truth; Figma is the sketching and handoff surface.**
-- **Radix, not Base UI — for now.** Checked 2026-08-10, not assumed:
+- **Radix, not Base UI — ACTIVELY WATCHED, no longer settled.** Re-checked 2026-08-12.
+  **The recorded revisit trigger has fired.** `ui.shadcn.com/docs/components/base/dialog`
+  returns 200 and documents `@base-ui/react` (`render=` ×12, `asChild` ×0), and the
+  unprefixed `/docs/components/dialog` now **307-redirects to `/base/`** — where on
+  2026-08-11 it redirected to Radix. The predicted path was `/base-ui/` and the delivered
+  one is `/base/`; the page content settles it.
+  **Do not migrate yet, and the reason is precise:** the shipped registry has not moved.
+  `ui.shadcn.com/r/styles/new-york-v4/dialog.json` still declares `radix-ui` and ships
+  `asChild`. Invariant 5 is defined against **what the registry ships**, not what the docs
+  document, so migrating today would break the invariant it protects.
+  **The new trigger is registry-level:** `ui.shadcn.com/r/styles/*/dialog.json` shipping
+  `@base-ui/react` instead of `radix-ui`. Re-check on a schedule — one claim in this bullet
+  stopped being true within 24 hours of being verified.
+  Also corrected: shadcn-space now serves **two tracks**, `/r/radix/<item>.json` (uses
+  `asChild`, compiles here) and `/r/<item>.json` (Base UI `render=`). The old claim that
+  their components "will not compile here" is wrong for the radix track.
+  <details><summary>Original 2026-08-10 reasoning, kept for the record</summary>
   shadcn's canonical registry still ships Radix (`radix-ui`, `asChild`,
   `data-[state=open]`); Base UI is `1.0.0-rc.0`, pre-stable; Radix 1.6.7 shipped
   more recently than Base UI did and has 1.7 in flight; adoption is ~28× wider.
@@ -91,6 +107,7 @@ that hole by asserting the shell's landmark shape directly.
   default registry item still ships `radix-ui` with `asChild`. So the signal to
   re-open this is a `/base-ui/` track appearing **and** the unprefixed path
   redirecting there instead. Checked 2026-08-11.
+  </details>
 - **Paper (paper.design) considered and declined** as the standard — technically closer to
   this architecture, but too new to bet an org standard on, and KOC vendors all have Figma.
 
