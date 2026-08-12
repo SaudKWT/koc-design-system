@@ -110,7 +110,10 @@ export function ListViewPattern() {
         }),
         col.display({
           id: "open",
-          header: "",
+          // A display column still needs a header NAME even when it shows none —
+          // an empty `th` is an unlabelled column to anyone navigating a table
+          // by header. Visually hidden, still announced.
+          header: () => <span className="sr-only">Actions</span>,
           cell: ({ row }) => (
             <Button
               variant="ghost"

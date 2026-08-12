@@ -178,3 +178,42 @@ test.describe("data table", () => {
     expect((await caption.textContent())?.trim().length).toBeGreaterThan(10);
   });
 });
+
+/**
+ * The guard behind a11y.spec.ts's landmark exemptions.
+ *
+ * Three landmark rules are disabled there because embedding AppShell inside a
+ * docs page nests the shell's `main` in the page's own — an artifact that cannot
+ * happen in a consuming app, where the shell IS the page. Disabling them without
+ * this would mean a genuine landmark regression in the shell goes unreported,
+ * which is exactly how an allowlist rots.
+ *
+ * So the shell's own landmark shape is asserted directly instead.
+ */
+test.describe("app shell landmarks", () => {
+  test("the sidebar is a labelled navigation landmark", async ({ page }) => {
+    await gotoSection(page, "Team dashboard shell");
+
+    const frame = page.locator("[data-shell-frame]");
+    const nav = frame.getByRole("navigation", { name: /navigation$/i });
+    await expect(nav).toHaveCount(1);
+
+    // The point of the fix: the sidebar's links must be reachable through the
+    // nav landmark. Before it, getByRole('navigation') found the BREADCRUMB and
+    // a consumer writing this exact query got three links and a wrong diagnosis.
+    const links = nav.getByRole("link");
+    expect(await links.count()).toBeGreaterThan(5);
+
+    // Two navs on a page — this and the breadcrumb — so the name is load-bearing.
+    const allNavs = frame.getByRole("navigation");
+    for (let i = 0; i < (await allNavs.count()); i++) {
+      const name = await allNavs.nth(i).getAttribute("aria-label");
+      expect(name, "every navigation landmark must be named").toBeTruthy();
+    }
+  });
+
+  test("the shell renders exactly one main landmark", async ({ page }) => {
+    await gotoSection(page, "Team dashboard shell");
+    await expect(page.locator('[data-shell-frame] main')).toHaveCount(1);
+  });
+});

@@ -126,7 +126,7 @@ export function KpiDashboard() {
 
           <div className="mt-6 grid gap-6 lg:grid-cols-2">
             <div className="rounded-lg border border-border bg-card p-4">
-              <h3 className="text-sm font-medium">Production by unit</h3>
+              <h2 className="text-sm font-medium">Production by unit</h2>
               <p className="mb-3 text-xs text-muted-foreground">bbl/d, last 7 days</p>
               <TrendChart
                 data={PRODUCTION}
@@ -143,7 +143,7 @@ export function KpiDashboard() {
             </div>
 
             <div className="rounded-lg border border-border bg-card p-4">
-              <h3 className="text-sm font-medium">Non-productive time by rig</h3>
+              <h2 className="text-sm font-medium">Non-productive time by rig</h2>
               <p className="mb-3 text-xs text-muted-foreground">hours, split planned vs unplanned</p>
               <ComparisonChart
                 data={NPT_BY_RIG}
@@ -158,7 +158,7 @@ export function KpiDashboard() {
             </div>
 
             <div className="rounded-lg border border-border bg-card p-4 lg:col-span-2">
-              <h3 className="text-sm font-medium">Footage drilled</h3>
+              <h2 className="text-sm font-medium">Footage drilled</h2>
               <p className="mb-3 text-xs text-muted-foreground">
                 ft per day — the table below is the chart's text alternative, shown here on purpose
               </p>
