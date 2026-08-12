@@ -6,6 +6,14 @@
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "strict": true,
+
+    // On by default in Vite's react-ts template and set NOWHERE here, which is
+    // exactly the blind spot that let two components ship an unused React import:
+    // tsc could not fail in this repo and did fail in every consumer scaffolded
+    // from that template. Reported from the DWOS app, which had patched it by
+    // hand four times because every re-add reinstated it.
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "noEmit": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,

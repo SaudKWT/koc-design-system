@@ -49,8 +49,9 @@ Each one exists because documentation already failed to hold the line:
 | --- | --- | --- |
 | `test:tokens` | contrast regressions | 63 assertions; a guideline drifts the first time someone is in a hurry |
 | `check:drift` | redefinition of KOC tokens | `shadcn add` appends stock theme blocks that silently de-brand the app — it appended one *directly beneath the warning comment telling it not to* |
-| `check:motion` | off-scale duration/easing, **and transitions that name no duration at all** | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed; a bare `transition-all` was then reported from a consuming KOC app, and 11 such sites existed |
+| `check:motion` | off-scale duration/easing, transitions that name no duration, **and `animate-in` that names no easing or duration** | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed; a bare `transition-all` was then reported from a consuming KOC app, and 11 such sites existed |
 | `test:a11y` | broken ARIA, unreachable controls, invisible focus, unannounced state | Playwright + axe in a real browser. Found a `Tabs` with no `TabsContent` — `aria-controls` pointing at an id that didn't exist — on its first run |
+| `typecheck` | anything `tsc` catches — the build was `vite build` alone, which type-checks nothing | two components shipped an unused `React` import; `noUnusedLocals` is on by default in Vite's react-ts template and was set nowhere here, so it could not fail at origin and failed in every consumer |
 | `check:parity` | anything the docs app has that a **consumer** would not receive | the docs app imports the generated stylesheet by relative path and always gets all of it, so no other gate can see a distribution gap. First run found 5 shipped components using `text-2xs`/`text-md`, KOC-only steps that resolved to nothing in a consuming app |
 | `registry` (in `build`) | components missing from the registry **and** registry items missing from `index.ts` | 12 had gone missing, uninstallable, silently; later 4 more were installable from outside the repo and unimportable inside it |
 
@@ -125,6 +126,9 @@ description field, and Figma variants map 1:1 to real props.
   almost every screen a KOC unit app needs.
 - **Still missing:** form layout (deliberately deferred — case-by-case until real forms
   exist), the real DWOS app lists, and governance.
+- **Consumer reports live in `docs/consumer-reports/`.** Written by the session building a
+  real app against the registry, because that is the only place a distribution bug is
+  visible. The 2026-08-12 DWOS report is the template: measured in a built app, not inferred.
 - **Every third-party component is logged** in `apps/docs/src/bakeoff/ledger.ts` and rendered
   on Evaluation → Staging ledger, with what the rewrite had to fix. Read it before installing
   anything new: nothing has ever crossed from `bakeoff/` to `@koc/ui` unchanged.

@@ -92,6 +92,66 @@ export interface MotionScanResult {
   exempted: number;
 }
 
+/**
+ * Every `cn(...)` / `cva(...)` call in a file, as one string each.
+ *
+ * Animations need call-level scope rather than the line-level scope the
+ * transition rules use. A component's class list is routinely split across a
+ * dozen lines of one `cn()`, with `animate-in` on one line and `ease-out` on
+ * another — line-level would report every such component and be wrong about all
+ * of them. Paren balancing is the cheapest thing that gets it right.
+ */
+function classExpressions(source: string): { text: string; line: number }[] {
+  const out: { text: string; line: number }[] = [];
+  const re = /\b(?:cn|cva)\(/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(source))) {
+    let depth = 0;
+    let i = m.index + m[0].length - 1;
+    for (; i < source.length; i++) {
+      if (source[i] === "(") depth++;
+      else if (source[i] === ")" && --depth === 0) break;
+    }
+    out.push({
+      text: source.slice(m.index, i + 1),
+      line: source.slice(0, m.index).split("\n").length,
+    });
+  }
+  return out;
+}
+
+/**
+ * An entrance/exit animation with no easing or no duration.
+ *
+ * `check:motion` guarded transitions and ignored animations entirely, which is a
+ * real gap rather than a technicality: tw-animate-css resolves its timing from
+ * `var(--tw-ease, ease)` and `var(--tw-duration, .15s)`, so an `animate-in` that
+ * names neither runs on the browser's `ease` at 150ms — off the scale in both
+ * dimensions, and invisible because it still animates.
+ *
+ * Reported from the DWOS app, which noticed `@koc/popover` was the only overlay
+ * whose entrance named no curve while every sibling did. It was not the only
+ * one; six sites qualified.
+ */
+function findAnimationViolations(file: string, source: string): MotionViolation[] {
+  const out: MotionViolation[] = [];
+  for (const expr of classExpressions(source)) {
+    if (!/\banimate-(?:in|out)\b/.test(expr.text)) continue;
+    if (/\bmotion-ok\b/.test(expr.text)) continue;
+    const hasEase = /\bease-[a-z-]+/.test(expr.text);
+    const hasDuration = /\bduration-[a-z-]+/.test(expr.text);
+    if (!hasEase || !hasDuration) {
+      out.push({
+        file,
+        line: expr.line,
+        token: `animate-in without ${!hasEase && !hasDuration ? "ease-* or duration-*" : !hasEase ? "ease-*" : "duration-*"}`,
+        kind: "unpinned",
+      });
+    }
+  }
+  return out;
+}
+
 export function findMotionViolations(file: string, source: string): MotionScanResult {
   const { durations, easings } = allowedSuffixes();
   const out: MotionViolation[] = [];
@@ -158,6 +218,8 @@ export function findMotionViolations(file: string, source: string): MotionScanRe
       }
     }
   });
+
+  out.push(...findAnimationViolations(file, source));
 
   return { violations: out, exempted };
 }

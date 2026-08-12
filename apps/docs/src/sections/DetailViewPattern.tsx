@@ -16,7 +16,7 @@ import {
   toast,
 } from "@koc/ui";
 
-import { DDR_ROWS, type DdrRow } from "../examples/ddr-data";
+import { DDR_ROWS } from "../examples/ddr-data";
 import { PageHead, Section, Note } from "./parts";
 
 /**

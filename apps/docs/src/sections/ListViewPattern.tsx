@@ -3,12 +3,10 @@ import {
   ClipboardList,
   Download,
   Drill,
-  FileBarChart,
   Gauge,
   Maximize2,
   Package,
   Plus,
-  Timer,
   Trash2,
 } from "lucide-react";
 

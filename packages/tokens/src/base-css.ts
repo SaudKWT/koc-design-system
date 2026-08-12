@@ -39,6 +39,23 @@ export type CssObject = { [key: string]: string | CssObject };
  * separate properties and shadcn's entrance/exit classes (`animate-in`,
  * `fade-in-0`, `zoom-in-95`) are CSS animations, not transitions — a
  * transition-only duration would silently do nothing to them.
+ *
+ * ORDER IS LOAD-BEARING, AND THIS IS THE PLACE SOMEONE WOULD BREAK IT.
+ *
+ * tw-animate-css sets `animation` as a SHORTHAND; these rules set
+ * `animation-duration` as a LONGHAND. A shorthand resets every longhand it
+ * contains, so the longhand only wins by landing later in the cascade — which it
+ * does, because the plugin is imported at the top of the CSS entry and this is
+ * appended after it.
+ *
+ * Measured in a real consumer: `animate-in fade-in-0 zoom-in-95 duration-slow`
+ * computes to `animation: enter 0.24s`. Correct. But move the
+ * `@import "tw-animate-css"` below the theme — which looks like a harmless
+ * tidy-up — and every entrance animation in the system silently reverts to the
+ * shorthand's 150ms fallback. Nothing errors and nothing looks broken; the
+ * timings just quietly stop being KOC's.
+ *
+ * Reported from the DWOS app, 2026-08-12, which measured it rather than assuming.
  */
 export const motionUtilities: CssObject = Object.fromEntries(
   Object.entries(foundation.duration).map(([k, v]) => [
