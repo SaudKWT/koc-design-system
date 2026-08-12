@@ -16,6 +16,7 @@
     "check:drift": "tsx packages/tokens/src/check-drift.ts apps/docs/src/styles.css",
     "check:motion": "tsx packages/tokens/src/check-motion.ts packages/ui/src apps/docs/src",
     "check:parity": "tsx apps/docs/scripts/check-parity.ts",
+    "release:status": "tsx apps/docs/scripts/release.ts",
     "typecheck": "tsc -p apps/docs/tsconfig.json --noEmit",
     "test": "npm run test:tokens && npm run check:drift && npm run check:motion && npm run typecheck && npm run registry && npm run check:parity && npm run test:a11y",
     "dev": "npm run dev --workspace=@koc/docs",
