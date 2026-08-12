@@ -7,10 +7,36 @@ person, by adding them as a collaborator on the repo — which is exactly the
 control we wanted and could not get from GitHub Pages, where a published site is
 world-readable on every plan below Enterprise Cloud.
 
-Verified working end to end on 2026-08-11: a fresh project installed
-`@koc/theme`, `@koc/app-shell` and `@koc/data-table`, pulled 20 component files
-and their whole transitive graph, compiled with zero errors, and the brand token
-arrived byte-exact at `#0060A9`.
+## What has actually been verified, and what has not
+
+This section is deliberately precise, because an earlier version of it said
+"verified working end to end" and that was broader than the evidence.
+
+**Verified 2026-08-11** — a fresh project installed `@koc/theme`,
+`@koc/app-shell` and `@koc/data-table`, pulled 20 component files and their whole
+transitive graph, compiled with zero errors, and the brand token arrived
+byte-exact at `#0060A9`.
+
+**Verified 2026-08-12** — the transport itself, against the live private repo at
+tag `v0.1.2`: the exact Contents API URL below, with the documented `Accept`
+header, returns the correct `theme.json` — `tw-animate-css` declared, the `css`
+block present, `--primary` at the KOC oklch.
+
+**NOT verified: the fine-grained-token path in steps 2–4.** `KOC_REGISTRY_TOKEN`
+has never been set on the machine this system is built on, and appears in no
+shell profile here. The 2026-08-12 check above authenticated with an existing
+`gh` login, not with a scoped personal access token expanded by the shadcn CLI
+from `${KOC_REGISTRY_TOKEN}`.
+
+So the URL, the tag pinning and the payload are known good. What no one has run
+is a fine-grained token, scoped to Contents:read on this one repo, being expanded
+into the `Authorization` header by the CLI. **The KOC developer would be the
+first person to try it.**
+
+If you are that developer and it fails, it is not you — jump to
+[§ No GitHub access? Vendor the registry](#no-github-access-vendor-the-registry),
+which is the path that has been exercised, and tell Saud so this note can be
+retired.
 
 ## One-time setup
 
