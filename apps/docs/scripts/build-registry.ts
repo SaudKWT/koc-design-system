@@ -493,6 +493,32 @@ const themeScales: Record<string, string> = {
       v,
     ]),
   ),
+
+  /**
+   * The type scale, and the reason check:parity was worth writing.
+   *
+   * `text-2xs` and `text-md` are KOC steps that DO NOT EXIST in Tailwind —
+   * there is no `md` between `sm` and `lg` in the stock scale, and nothing
+   * below `xs`. Five shipped components use them: badge, status-badge,
+   * notification-menu, date-range-filter, and button's `lg` size. In a
+   * consuming app those classes matched no rule at all, so the text simply
+   * inherited its parent's size. Every badge and every timestamp rendered too
+   * large, and the only symptom available to the person looking at it was
+   * "some components were not the same".
+   */
+  ...Object.fromEntries(
+    Object.entries(foundation.fontSize).map(([k, v]) => [`text-${k}`, v]),
+  ),
+
+  /**
+   * Breakpoints, for `--breakpoint-3xl` specifically. It exists because control
+   * rooms run 1440p+ wall displays and a dashboard that stops scaling at 1536px
+   * wastes half of one. Nothing uses `3xl:` yet — but shipping a system whose
+   * documented breakpoint silently does not exist is how it never gets used.
+   */
+  ...Object.fromEntries(
+    Object.entries(foundation.screens).map(([k, v]) => [`breakpoint-${k}`, v]),
+  ),
 };
 
 const themeItem: RegistryItem = {

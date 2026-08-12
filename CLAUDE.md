@@ -10,7 +10,7 @@ this repo — other KOC teams and that developer — over internal convenience.
 
 ```bash
 npm run build:tokens   # regenerate CSS / DTCG JSON / Figma JSON / report
-npm test               # contrast + token drift + motion scale. All three gate the build.
+npm test               # contrast + drift + motion + consumer parity + behaviour. All gate the build.
 npm run dev            # docs site → http://localhost:4180
 npm run registry       # regenerate the @koc shadcn registry
 ```
@@ -51,6 +51,7 @@ Each one exists because documentation already failed to hold the line:
 | `check:drift` | redefinition of KOC tokens | `shadcn add` appends stock theme blocks that silently de-brand the app — it appended one *directly beneath the warning comment telling it not to* |
 | `check:motion` | off-scale duration/easing, **and transitions that name no duration at all** | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed; a bare `transition-all` was then reported from a consuming KOC app, and 11 such sites existed |
 | `test:a11y` | broken ARIA, unreachable controls, invisible focus, unannounced state | Playwright + axe in a real browser. Found a `Tabs` with no `TabsContent` — `aria-controls` pointing at an id that didn't exist — on its first run |
+| `check:parity` | anything the docs app has that a **consumer** would not receive | the docs app imports the generated stylesheet by relative path and always gets all of it, so no other gate can see a distribution gap. First run found 5 shipped components using `text-2xs`/`text-md`, KOC-only steps that resolved to nothing in a consuming app |
 | `registry` (in `build`) | components missing from the registry **and** registry items missing from `index.ts` | 12 had gone missing, uninstallable, silently; later 4 more were installable from outside the repo and unimportable inside it |
 
 Behaviour tests live in `apps/docs/tests/`. Chromium only, deliberately: KOC is a
@@ -153,6 +154,24 @@ description field, and Figma variants map 1:1 to real props.
   theme blocks into your CSS entry. `@shadcn-space` items landed in `src/components/` despite
   `components.json` mapping components to `@/bakeoff`. Argument for `@koc` being the sanctioned
   registry, and for checking `git status` after any third-party install.
+
+## The docs site cannot fail the way a consumer fails
+
+This is the single most important thing to internalise about this repo. `apps/docs`
+imports `packages/tokens/dist/koc-tokens.css` **by relative path**, so it receives the
+whole generated stylesheet — ramps, scales, `@utility` rules, base layer. A team running
+`npx shadcn add @koc/theme` receives **only what the registry item declares**.
+
+Every green gate can be green while what KOC installs is broken. Five distribution gaps
+have been found so far and **not one was visible from inside the repo**: the missing
+`@theme` scales (the CLI invents `--radius-md: calc(var(--radius) * 0.8)`, 0.3rem against
+KOC's 0.5rem), the missing base layer and `duration-*` utilities, a bare `transition-all`
+in `@koc/navigation-menu`, four components published but never exported from `index.ts`,
+and the type scale — `text-2xs` and `text-md` are KOC steps Tailwind does not have, used
+by five shipped components, resolving to nothing in a consuming app.
+
+`check:parity` now catches this class. Treat "it looks right on the docs site" as **no
+evidence at all** about consumers, and ask the session building a real app when unsure.
 
 ## Traps that have already cost time
 

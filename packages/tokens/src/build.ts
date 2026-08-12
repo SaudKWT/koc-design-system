@@ -59,6 +59,22 @@ const paletteNames = Object.keys(palette) as PaletteName[];
 // expect it, and it means a consumer can nudge lightness with a colour-mix()
 // without the hue drifting the way it does in sRGB.
 
+/**
+ * Tailwind's naming for a scale's default step is the BARE namespace — `--radius`,
+ * not `--radius-DEFAULT` — and it hyphenates, so `inOut` is `in-out`.
+ *
+ * The previous expression here was `k === "DEFAULT" ? "DEFAULT" : k`, a ternary
+ * that returns its input either way, so the file emitted `--radius-DEFAULT`,
+ * `--shadow-DEFAULT`, `--duration-DEFAULT`, `--ease-DEFAULT` and `--ease-inOut`.
+ * Five variables that resolve to no utility anyone would write. Harmless in
+ * isolation, except that check:motion listed `ease-base` as on-scale while no
+ * such class could exist — a trap set for whoever wrote it first.
+ *
+ * Found by check:parity, which compared these names against the registry's and
+ * noticed the registry had them right.
+ */
+const scaleKey = (k: string) => (k === "DEFAULT" ? "" : `-${k === "inOut" ? "in-out" : k}`);
+
 const css = `${BANNER}
 
 /* ── Raw palette ────────────────────────────────────────────────────────────
@@ -115,11 +131,11 @@ ${Object.entries(foundation.fontSize)
   .join("\n")}
 
 ${Object.entries(foundation.radius)
-  .map(([k, v]) => `  --radius-${k === "DEFAULT" ? "DEFAULT" : k}: ${v};`)
+  .map(([k, v]) => `  --radius${scaleKey(k)}: ${v};`)
   .join("\n")}
 
 ${Object.entries(foundation.shadow)
-  .map(([k, v]) => `  --shadow-${k === "DEFAULT" ? "DEFAULT" : k}: ${v};`)
+  .map(([k, v]) => `  --shadow${scaleKey(k)}: ${v};`)
   .join("\n")}
 
 ${Object.entries(foundation.screens)
@@ -127,11 +143,11 @@ ${Object.entries(foundation.screens)
   .join("\n")}
 
 ${Object.entries(foundation.duration)
-  .map(([k, v]) => `  --duration-${k === "DEFAULT" ? "DEFAULT" : k}: ${v};`)
+  .map(([k, v]) => `  --duration${scaleKey(k)}: ${v};`)
   .join("\n")}
 
 ${Object.entries(foundation.easing)
-  .map(([k, v]) => `  --ease-${k === "DEFAULT" ? "DEFAULT" : k}: ${v};`)
+  .map(([k, v]) => `  --ease${scaleKey(k)}: ${v};`)
   .join("\n")}
 }
 

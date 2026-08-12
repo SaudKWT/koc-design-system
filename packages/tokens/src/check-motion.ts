@@ -44,8 +44,20 @@ function allowedSuffixes(): { durations: Set<string>; easings: Set<string> } {
     durations: new Set(
       Object.keys(foundation.duration).map((k) => (k === "DEFAULT" ? "base" : k)),
     ),
+    /**
+     * Easings resolve through `--ease-*` in @theme, so the allowed suffixes are
+     * Tailwind's names for them: `in-out`, not `inOut`, and no `base` at all —
+     * the default step is the bare `ease` class, which this regex never sees.
+     *
+     * This previously listed `base` and `inOut`, neither of which could resolve
+     * to a rule. The check was declaring two classes on-scale that did nothing
+     * — a trap for whoever wrote one first. check:parity found it by noticing
+     * the stylesheet and the registry disagreed about the same names.
+     */
     easings: new Set(
-      Object.keys(foundation.easing).map((k) => (k === "DEFAULT" ? "base" : k)),
+      Object.keys(foundation.easing)
+        .filter((k) => k !== "DEFAULT")
+        .map((k) => (k === "inOut" ? "in-out" : k)),
     ),
   };
 }

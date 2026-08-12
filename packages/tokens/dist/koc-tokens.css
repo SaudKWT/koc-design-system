@@ -336,7 +336,7 @@
 
   --radius-none: 0;
   --radius-sm: 0.25rem;
-  --radius-DEFAULT: 0.375rem;
+  --radius: 0.375rem;
   --radius-md: 0.5rem;
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
@@ -345,7 +345,7 @@
   --shadow-none: none;
   --shadow-xs: 0 1px 2px 0 oklch(0.28 0.02 250 / 0.05);
   --shadow-sm: 0 1px 3px 0 oklch(0.28 0.02 250 / 0.08), 0 1px 2px -1px oklch(0.28 0.02 250 / 0.06);
-  --shadow-DEFAULT: 0 2px 4px -1px oklch(0.28 0.02 250 / 0.08), 0 1px 2px -1px oklch(0.28 0.02 250 / 0.06);
+  --shadow: 0 2px 4px -1px oklch(0.28 0.02 250 / 0.08), 0 1px 2px -1px oklch(0.28 0.02 250 / 0.06);
   --shadow-md: 0 4px 8px -2px oklch(0.28 0.02 250 / 0.10), 0 2px 4px -2px oklch(0.28 0.02 250 / 0.06);
   --shadow-lg: 0 12px 20px -4px oklch(0.28 0.02 250 / 0.12), 0 4px 8px -4px oklch(0.28 0.02 250 / 0.08);
   --shadow-xl: 0 24px 32px -8px oklch(0.28 0.02 250 / 0.16), 0 8px 12px -6px oklch(0.28 0.02 250 / 0.10);
@@ -360,14 +360,14 @@
 
   --duration-instant: 0ms;
   --duration-fast: 120ms;
-  --duration-DEFAULT: 180ms;
+  --duration: 180ms;
   --duration-slow: 240ms;
   --duration-slower: 300ms;
 
-  --ease-DEFAULT: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-inOut: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-spring: cubic-bezier(0.34, 1.2, 0.64, 1);
 }
 
