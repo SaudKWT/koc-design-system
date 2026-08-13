@@ -78,7 +78,15 @@ that hole by asserting the shell's landmark shape directly.
   2026-08-09 against the wider org-standard scope, with the retrofit cost stated. Settled.
 - **npm workspaces, not pnpm.** KOC teams will have npm.
 - **Code is the source of truth; Figma is the sketching and handoff surface.**
-- **Radix, not Base UI — ACTIVELY WATCHED, no longer settled.** Re-checked 2026-08-12.
+- **Radix, not Base UI — ACTIVELY WATCHED, no longer settled.** Re-checked 2026-08-13.
+  **Exposure is measured: [docs/MIGRATION.md](docs/MIGRATION.md).** 24 of 38 components have
+  no Radix import; application code has *zero*. The work is 14 files, ~198 data-attribute
+  selectors, 38 `asChild` sites, 13 `--radix-*` variables and **5 divergences that must be
+  re-solved rather than re-typed**.
+  **CORRECTION: Base UI is NOT pre-stable.** This file said `1.0.0-rc.0` for three days; that
+  is `@base-ui-components/react`, the *old* package name. `@base-ui/react` — the one shadcn's
+  base track imports — is **1.7.0, stable**. The maturity objection is retired. The timing one
+  is not.
   **The recorded revisit trigger has fired.** `ui.shadcn.com/docs/components/base/dialog`
   returns 200 and documents `@base-ui/react` (`render=` ×12, `asChild` ×0), and the
   unprefixed `/docs/components/dialog` now **307-redirects to `/base/`** — where on
@@ -98,6 +106,8 @@ that hole by asserting the shell's landmark shape directly.
   shadcn's canonical registry still ships Radix (`radix-ui`, `asChild`,
   `data-[state=open]`); Base UI is `1.0.0-rc.0`, pre-stable; Radix 1.6.7 shipped
   more recently than Base UI did and has 1.7 in flight; adoption is ~28× wider.
+  (The "Base UI is 1.0.0-rc.0" claim in this paragraph was checked against the wrong
+  package name and is superseded above.)
   Migrating now would *break* invariant 5, which is defined against shadcn
   upstream. Some kits (shadcn-space) have already moved and their components
   will not compile here; port the design, not the code.
