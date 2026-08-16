@@ -334,6 +334,24 @@ const META: Record<string, Meta> = {
 const PEER = new Set(["react", "react-dom"]);
 
 /**
+ * Versions come from @koc/ui's own manifest. A caret range stays a bare name —
+ * the consumer resolving a compatible version is the normal npm contract. An
+ * EXACT pin is carried through as `name@version`, because a pin in this repo
+ * that arrives unpinned in a consumer is not a pin at all: the shadcn CLI
+ * installs an unqualified name at whatever is latest that day. Today the only
+ * exact pin is `@base-ui/react` — the freeze discipline of
+ * BASE-UI-MIGRATION.md starts at the registry boundary, not at approval.
+ */
+const UI_MANIFEST = JSON.parse(
+  readFileSync(join(UI_SRC, "..", "package.json"), "utf8"),
+) as { dependencies?: Record<string, string> };
+
+function withPin(pkg: string): string {
+  const declared = UI_MANIFEST.dependencies?.[pkg];
+  return declared && /^\d/.test(declared) ? `${pkg}@${declared}` : pkg;
+}
+
+/**
  * Pull the real imports out of a source file.
  *
  * Deriving this rather than hand-writing it matters more than it looks: a stale
@@ -355,7 +373,7 @@ function analyse(src: string): { deps: string[]; registryDeps: string[] } {
     } else if (!spec.startsWith(".")) {
       // Bare specifier → npm package. Scoped names keep two segments.
       const pkg = spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0];
-      if (!PEER.has(pkg)) deps.add(pkg);
+      if (!PEER.has(pkg)) deps.add(withPin(pkg));
     }
   }
 
