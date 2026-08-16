@@ -122,11 +122,10 @@ that assumed trigger→content adjacency get a third element.
   `--radix-navigation-menu-viewport-*` has no confirmed mapping yet, and
   whether Sheet ports onto Dialog-styled-as-panel or a Base drawer primitive
   is a Phase 3 question.
-- Closed/exit attributes (`data-closed`, `data-starting-style`,
+- ~~Closed/exit attributes (`data-closed`, `data-starting-style`,
   `data-ending-style`): popups unmount when closed, so exit-state attrs only
-  exist mid-transition. The pilot verifies them with real transitions — the
-  animation model is where `tw-animate-css` keyframes meet Base's
-  starting/ending-style convention, and `check:motion` guards the result.
+  exist mid-transition.~~ **Verified by the pilot** — full measured timeline
+  in the Phase 1 results below.
 
 ### Phase 1 — pilot: `dialog` + `confirm-dialog`
 
@@ -140,6 +139,95 @@ The pilot's deliverable is not two components — it is the **verified porting
 recipe** (attribute map, `render` mechanics, animation-class mapping) written
 into this file, so the remaining twelve coupled files are execution, not
 research.
+
+### Phase 1 results — green everywhere, and the recipe (2026-08-16)
+
+`dialog` and `confirm-dialog` are ported and all seven DoD points are met:
+gates green in this repo (including a new five-test `tests/dialog.spec.ts`
+in the a11y gate), registry rebuilt with `@base-ui/react@1.7.0` declared, and
+consumer-proven in dwos-platform (its commit `e565bc5`: tsc, build, the
+9-test a11y suite against the live API, and the installed component exercised
+in that app's own runtime). Everything below is measured, not assumed.
+
+**The animation model, measured** (probe timeline; rendering browser, real
+gestures; times relative to each phase's first event):
+
+| t | popup + backdrop |
+|---|---|
+| open | mount with `data-open data-starting-style` already set; trigger gains `data-popup-open` |
+| +7ms | `data-starting-style` removed — one frame, for CSS transitions only |
+| +20ms | `animationstart enter` — `data-open:animate-in` attached at mount |
+| +~300ms | `animationend enter` — `duration-slower` / `ease-out` applied |
+| close | atomic flip to `data-closed data-ending-style`, `data-open` removed; trigger loses `data-popup-open` |
+| +23ms | `animationstart exit` |
+| +236ms | **unmount, exactly at animation end** — Base waits on `element.getAnimations()` |
+
+The tw-animate-css entrance/exit model therefore ports 1:1 — swap the variant
+key, keep every class. `data-closed` and `data-ending-style` both persist for
+the whole exit. No `keepMounted` needed anywhere.
+
+**The recipe:**
+
+1. `import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"` —
+   subpath import; the registry derives the `@base-ui/react` dependency from
+   it and now carries the exact pin through (`@1.7.0`).
+2. Part renames stay internal: Overlay→`Backdrop`, Content→`Popup`.
+   **Exported names do not change** — consumers keep `DialogOverlay` and
+   `DialogContent`.
+3. `data-[state=open]:` → `data-open:`, `data-[state=closed]:` →
+   `data-closed:` — on popup and backdrop only. A trigger carries
+   `data-popup-open`, and Base's `Close` carries **no state attribute at all**.
+4. `asChild` → `render`: `<Close render={<Button variant="outline" />}>Close
+   </Close>` — children stay children of the part; props (incl. ref) merge
+   into the rendered element.
+5. Base Roots type `children` as `ReactNode | PayloadChildRenderFunction`.
+   Any wrapper that re-parents children (CommandDialog) must
+   `Omit<…, "children">` and redeclare `children?: React.ReactNode`, or tsc
+   fails — in every consumer too.
+6. `onOpenChange` gains an `eventDetails` second parameter. `(open) => void`
+   handlers remain assignable; no consumer change.
+7. Dismissal defaults match Radix (outside press and Escape close). The
+   opt-out prop is `disablePointerDismissal` — there is **no `dismissible`
+   prop** in 1.7.0.
+8. Dead code does not get translated. The close-X's
+   `data-[state=open]:bg-accent` pair never matched under Radix (its `Close`
+   emits no `data-state` — checked in dist source) and has nothing to key on
+   under Base. Dropped, with this note as the record.
+
+**Divergence #2, re-solved rather than re-typed.** Base's default initial
+focus is the first tabbable element — verified: ordering alone lands on
+Cancel (probe A) — and the popup itself when opened by touch, which is
+equally safe. The port pins the intent structurally anyway:
+`initialFocus={cancelRef}` flows through `DialogContent` to the Popup
+(probe B), so reordering the footer can never move focus onto the destructive
+action. The guarded scenario is now a test: Enter immediately after open
+cancels, and nothing is voided.
+
+**Also verified in `tests/dialog.spec.ts`:** focus returns to the
+previously-focused control when a controlled dialog (no Trigger part) closes;
+Escape closes only the top-most of a nested pair; backdrop click dismisses;
+the exit animation demonstrably runs before unmount.
+
+**Consumer findings (dwos-platform):**
+
+- **Re-adding a ported component forcibly re-adds its importers.** dwos's
+  vendored `command.tsx` failed tsc (recipe #5's error, surfacing in the
+  consumer first) until `@koc/command` was re-added. Phases 2–3 must re-add
+  dependents, not just the ported item.
+- The shadcn CLI honours the registry's `@base-ui/react@1.7.0` and installs
+  1.7.0, but npm writes `^1.7.0` to the consumer manifest; it was re-pinned
+  exact by hand there. Expect to repeat that on every consumer install until
+  the freeze.
+- The consumer's Tailwind generates the `data-open:` / `data-closed:`
+  variants from the vendored source — the parity class of bug did not appear.
+
+**Probe-page gotchas recorded for later phases** (`BaseUiProbe.tsx`):
+always-open *modal* popups (dialog, menu, select) render a page-wide inert
+layer that dead-locks the interactive probes — mount them `modal={false}`.
+And rAF-based recording sees nothing while the driving pane is hidden — the
+recorder is MutationObserver + animation events for that reason; CSS
+animations themselves also pause while hidden, so unmount-timing claims need
+a rendering context (Playwright).
 
 ### Phase 2 — mechanical singles
 

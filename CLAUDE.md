@@ -86,7 +86,15 @@ that hole by asserting the shell's landmark shape directly.
   argument, since a frozen library never consumes the registry flip we were
   waiting for. Until the port completes, do not add new Radix coupling
   (no new `asChild`, `data-[state=`, or `--radix-*` sites), and third-party
-  components are ports, not installs. The history below is kept as written.
+  components are ports, not installs.
+  **Phase 1 (pilot) is DONE and consumer-proven — 2026-08-16.** `dialog` and
+  `confirm-dialog` are on Base UI (`@base-ui/react@1.7.0`, exact, carried
+  through the registry); the verified porting recipe is the plan doc's
+  "Phase 1 results" section, and the DWOS take is
+  [2026-08-16-dwos-base-ui-pilot.md](docs/consumer-reports/2026-08-16-dwos-base-ui-pilot.md).
+  One rule the pilot added: re-adding a ported component in a consumer must
+  re-add its importers (`command` broke first). The history below is kept as
+  written.
   **Exposure is measured: [docs/MIGRATION.md](docs/MIGRATION.md).** 24 of 38 components have
   no Radix import; application code has *zero*. The work is 14 files, ~198 data-attribute
   selectors, 38 `asChild` sites, 13 `--radix-*` variables and **5 divergences that must be
