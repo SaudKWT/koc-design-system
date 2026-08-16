@@ -80,6 +80,54 @@ at fewer than all seven:
   Tooltip open/closed; read the **actual** data attributes and CSS variables
   off the DOM. That table goes in this file and drives every later phase.
 
+### Phase 0 results — the verified attribute model (2026-08-16)
+
+Read off the live DOM of `@base-ui/react@1.7.0` via the bakeoff probe
+(`apps/docs/src/bakeoff/BaseUiProbe.tsx`), not from documentation. This table is
+the porting key for every later phase.
+
+| Radix convention | Base UI, as rendered | notes |
+|---|---|---|
+| `data-[state=open]` on popup/panel | `data-open` (bare attribute) | Tailwind: `data-open:` |
+| `data-[state=open]` on a **trigger** | `data-popup-open` | different from the popup's own attr |
+| `data-[state=open]` on Collapsible trigger | `data-panel-open` | trigger vs panel again |
+| `data-[state=checked]` | `data-checked` / `data-unchecked` | both sides explicit |
+| `data-[state=active]` (tabs) | `data-active` | |
+| `data-[highlighted]` (menu/select item) | `data-highlighted`, selected item also `data-selected` | |
+| `data-[disabled]` | `data-disabled` | **unchanged** — 10 sites port as-is |
+| `data-[side=…]` / align | `data-side` / `data-align` | **same shape** — most of the 31 sites port as-is; Select reports `side="none"` when item-aligned |
+| `data-[orientation=…]` | `data-orientation` | unchanged |
+| `--radix-*-trigger-width/-height` | `--anchor-width` / `--anchor-height` | on the **Positioner** |
+| `--radix-*-content-available-height` | `--available-height` (+ `--available-width`) | Positioner |
+| `--radix-*-content-transform-origin` | `--transform-origin` | Positioner and Popup |
+| *(no Radix equivalent)* | `--nested-dialogs` on Dialog popup | |
+
+**Divergence #1 likely evaporates.** Base's `Tabs.Indicator` ships
+`--active-tab-left/-right/-top/-bottom/-width/-height` as live inline variables
+— the entire `TabsValueContext` measurement workaround (four failed attempts
+before it worked under Radix) is superseded by positioning against these. The
+pilot for tabs is therefore *deletion*, not porting. Verify the sliding
+behaviour, then remove the context.
+
+**Structural note:** Base inserts a **Positioner** element between Portal and
+Popup for anchored components (menu, select, popover, tooltip). Radix had no
+such node; width/height/origin variables land there, so selectors and styles
+that assumed trigger→content adjacency get a third element.
+
+**Internal markers, never style against:** `data-base-ui-click-trigger`,
+`data-base-ui-focusable`, `data-base-ui-inert`, `data-rootownerid`.
+
+**Still unverified, deliberately flagged rather than guessed:**
+- `navigation-menu` and a Sheet/Drawer equivalent were not probed —
+  `--radix-navigation-menu-viewport-*` has no confirmed mapping yet, and
+  whether Sheet ports onto Dialog-styled-as-panel or a Base drawer primitive
+  is a Phase 3 question.
+- Closed/exit attributes (`data-closed`, `data-starting-style`,
+  `data-ending-style`): popups unmount when closed, so exit-state attrs only
+  exist mid-transition. The pilot verifies them with real transitions — the
+  animation model is where `tw-animate-css` keyframes meet Base's
+  starting/ending-style convention, and `check:motion` guards the result.
+
 ### Phase 1 — pilot: `dialog` + `confirm-dialog`
 
 Dialog is the canonical hard case: 20 `data-[state=` selectors, portal + focus

@@ -17,6 +17,7 @@ import { DataTableSection } from "./sections/DataTableSection";
 import { ListViewPattern } from "./sections/ListViewPattern";
 import { KpiDashboard } from "./sections/KpiDashboard";
 import { DetailViewPattern } from "./sections/DetailViewPattern";
+import BaseUiProbe from "./bakeoff/BaseUiProbe";
 
 const SECTIONS = [
   { id: "overview", label: "Overview", group: "Start", el: Overview },
@@ -35,6 +36,7 @@ const SECTIONS = [
   { id: "ledger", label: "Staging ledger", group: "Evaluation", el: Ledger },
   { id: "bakeoff", label: "Sidebar bake-off", group: "Evaluation", el: Bakeoff },
   { id: "space", label: "shadcn-space audit", group: "Evaluation", el: SpaceCandidates },
+  { id: "base-probe", label: "Base UI probe", group: "Evaluation", el: BaseUiProbe },
 ] as const;
 
 type SectionId = (typeof SECTIONS)[number]["id"];
