@@ -78,7 +78,15 @@ that hole by asserting the shell's landmark shape directly.
   2026-08-09 against the wider org-standard scope, with the retrofit cost stated. Settled.
 - **npm workspaces, not pnpm.** KOC teams will have npm.
 - **Code is the source of truth; Figma is the sketching and handoff surface.**
-- **Radix, not Base UI — ACTIVELY WATCHED, no longer settled.** Re-checked 2026-08-13.
+- **MIGRATING TO BASE UI — decided 2026-08-16 by Saud.** Plan and decision
+  record: [docs/BASE-UI-MIGRATION.md](docs/BASE-UI-MIGRATION.md); exposure map:
+  [docs/MIGRATION.md](docs/MIGRATION.md). The new information that reopened the
+  settled decision: KOC approves the component library through cybersecurity
+  ONCE and it freezes at approval — which inverts the wait-for-upstream
+  argument, since a frozen library never consumes the registry flip we were
+  waiting for. Until the port completes, do not add new Radix coupling
+  (no new `asChild`, `data-[state=`, or `--radix-*` sites), and third-party
+  components are ports, not installs. The history below is kept as written.
   **Exposure is measured: [docs/MIGRATION.md](docs/MIGRATION.md).** 24 of 38 components have
   no Radix import; application code has *zero*. The work is 14 files, ~198 data-attribute
   selectors, 38 `asChild` sites, 13 `--radix-*` variables and **5 divergences that must be
@@ -92,7 +100,8 @@ that hole by asserting the shell's landmark shape directly.
   unprefixed `/docs/components/dialog` now **307-redirects to `/base/`** — where on
   2026-08-11 it redirected to Radix. The predicted path was `/base-ui/` and the delivered
   one is `/base/`; the page content settles it.
-  **Do not migrate yet, and the reason is precise:** the shipped registry has not moved.
+  **[superseded 2026-08-16 — migration decided; kept for the record]**
+  The shipped registry had not moved.
   `ui.shadcn.com/r/styles/new-york-v4/dialog.json` still declares `radix-ui` and ships
   `asChild`. Invariant 5 is defined against **what the registry ships**, not what the docs
   document, so migrating today would break the invariant it protects.
