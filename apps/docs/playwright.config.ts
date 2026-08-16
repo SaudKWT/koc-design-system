@@ -13,6 +13,15 @@ import { defineConfig, devices } from "@playwright/test";
  * legacy) and Edge is Chromium. Testing WebKit here would be testing a browser
  * no KOC user has.
  */
+/**
+ * KOC_DOCS_PORT exists for worktree sessions. `reuseExistingServer` matches by
+ * URL only — with two checkouts of this repo on one machine, a worktree running
+ * tests on the default port would silently reuse the OTHER checkout's dev
+ * server and test that checkout's code, passing or failing on files the session
+ * never touched. Setting a distinct port makes the tests hit this checkout.
+ */
+const PORT = Number(process.env.KOC_DOCS_PORT ?? 4180);
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
@@ -21,7 +30,7 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : [["list"]],
 
   use: {
-    baseURL: "http://localhost:4180",
+    baseURL: `http://localhost:${PORT}`,
     trace: "retain-on-failure",
   },
 
@@ -32,8 +41,8 @@ export default defineConfig({
   // The docs site IS the test surface — every component renders there already,
   // so there is no separate story harness to keep in sync with the components.
   webServer: {
-    command: "npm run dev",
-    url: "http://localhost:4180",
+    command: PORT === 4180 ? "npm run dev" : `npx vite --port ${PORT} --strictPort`,
+    url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 60_000,
   },

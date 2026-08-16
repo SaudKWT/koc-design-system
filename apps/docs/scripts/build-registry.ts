@@ -155,7 +155,7 @@ const META: Record<string, Meta> = {
     description:
       "A decision that cannot be undone. Takes the subject as a required prop, so the question reads 'Void report BG-1042?' rather than 'Delete Item?' — a confirmation that does not name what it destroys is how people delete the wrong thing.",
     categories: ["koc"],
-    docs: "Cancel is ordered first and takes initial focus. Radix focuses the first focusable child on open, and on a destructive dialog that must not be the destructive button — a stray Enter is a very common way to dismiss a dialog.",
+    docs: "Cancel is ordered first and initial focus is pinned to it with Base UI's `initialFocus`, so a stray Enter — a very common way to dismiss a dialog — cancels instead of destroying the record. When the dialog is opened by touch, Base focuses the popup itself, which is equally safe.",
   },
   "page-nav": {
     title: "Page Nav",
@@ -193,6 +193,7 @@ const META: Record<string, Meta> = {
   dialog: {
     title: "Dialog",
     description: "Modal surface. Use for a record you read and return from, or a short focused form.",
+    docs: "Built on Base UI, not Radix. If you style states, the popup and backdrop carry bare `data-open` / `data-closed` attributes (Tailwind `data-open:`), a trigger carries `data-popup-open`, and the exported part names are unchanged — DialogOverlay renders Base's Backdrop, DialogContent renders its Popup. Compose a custom close control with `render={<Button/>}` rather than `asChild`.",
   },
   popover: {
     title: "Popover",
