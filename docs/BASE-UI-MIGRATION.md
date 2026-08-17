@@ -236,6 +236,58 @@ breadcrumb · page-nav · combobox · data-table · user-menu · notification-me
 date-range-filter. One or two coupling sites each; the recipe applies directly.
 The 24 radix-free components are untouched by construction.
 
+### Phase 2 results — eight ported, six re-scoped by measurement (2026-08-16)
+
+**Ported and consumer-proven** (`7a30608`; dwos take `eedae4e`): separator,
+avatar, checkbox, button, breadcrumb, popover — plus combobox and
+date-range-filter, which *had* to move in the same commit: their triggers
+compose `PopoverTrigger` with the old slot prop, which stops compiling the
+moment popover's primitive flips underneath them. That is the general rule
+this phase added: **a component's port must carry every caller that passes
+the old slot prop to it, in one commit.**
+
+**Six re-scoped to Phase 3 by the same rule, not by difficulty.** The list
+above was written from per-file coupling counts; the dependency direction was
+only measured now. tooltip and collapsible have their sole external slot-prop
+callers inside `sidebar.tsx` / `app-shell.tsx` — the files fenced off until
+last — so they port with them. page-nav's two sites sit on navigation-menu
+parts; data-table, user-menu and notification-menu each have one site on a
+`DropdownMenuTrigger`. All six become one-line flips when their primitive
+ports in Phase 3.
+
+**Recipe additions (9–12):**
+
+9. Styled components that offered Radix's slot prop (Button, BreadcrumbLink)
+   move to `useRender` from `@base-ui/react/use-render`:
+   `useRender({ defaultTagName, render, ref, props })`. Pass `props` as a
+   plain object — `mergeProps<'tag'>` rejects `data-*` keys in object
+   literals and is unnecessary when `className` is already folded in;
+   useRender itself merges the render element's own props.
+10. **tailwind-merge 2.x does not classify Tailwind v4's `w-(--var)` paren
+    shorthand**, so it cannot displace a default width like `w-72` — the
+    combobox popup measured 288px on a 182px trigger. Use bracket syntax for
+    anchor variables: `w-[var(--anchor-width)]`. Asserted in
+    `tests/popover.spec.ts` (popup width tracks trigger width).
+11. Separator's `decorative` prop is gone. Base always renders
+    `role="separator"`; a `role="none"` override would strand its
+    `aria-orientation` for axe, and nothing passed the prop.
+12. Base part props win over the render element's on key collision the same
+    way the old slot merge did (`data-slot="popover-trigger"` still lands on
+    a composed Button) — DOM-selector consumers see no change.
+
+**Consumer findings:** zero ripple this round — the Phase 1 rule fired on
+nothing because Button/BreadcrumbLink changes are prop-additive and the
+removed props had no callers. `@koc/checkbox` turned out to be catalogued
+but never installed in dwos; taking this batch installed it fresh. The
+installed combobox was exercised in the consumer's runtime: `data-open`,
+entrance `enter`/240ms through its own Tailwind build, popup sized to the
+anchor rather than the 288px default.
+
+**State after Phase 2: 8 files still import Radix**, all Phase 3:
+dropdown-menu, select, navigation-menu, sheet, tabs, tooltip, collapsible,
+sidebar — plus app-shell, filter-tabs and the six one-line flips above
+riding along with them.
+
 ### Phase 3 — the heavy five, and the divergences
 
 dropdown-menu (22 selectors, 4 `--radix-*`) · select (10 + 4 vars) ·

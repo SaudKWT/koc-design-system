@@ -93,8 +93,15 @@ that hole by asserting the shell's landmark shape directly.
   "Phase 1 results" section, and the DWOS take is
   [2026-08-16-dwos-base-ui-pilot.md](docs/consumer-reports/2026-08-16-dwos-base-ui-pilot.md).
   One rule the pilot added: re-adding a ported component in a consumer must
-  re-add its importers (`command` broke first). The history below is kept as
-  written.
+  re-add its importers (`command` broke first).
+  **Phase 2 is DONE — 2026-08-16.** separator, avatar, checkbox, button,
+  breadcrumb, popover, combobox and date-range-filter are on Base UI,
+  consumer-proven; see the plan doc's "Phase 2 results". Six items re-scoped
+  to Phase 3 because their only coupling is a slot-prop site on a Phase 3
+  primitive: tooltip + collapsible (callers in sidebar/app-shell), page-nav
+  (navigation-menu), data-table, user-menu, notification-menu
+  (dropdown-menu). Radix now remains in 8 files, all Phase 3. The history
+  below is kept as written.
   **Exposure is measured: [docs/MIGRATION.md](docs/MIGRATION.md).** 24 of 38 components have
   no Radix import; application code has *zero*. The work is 14 files, ~198 data-attribute
   selectors, 38 `asChild` sites, 13 `--radix-*` variables and **5 divergences that must be
