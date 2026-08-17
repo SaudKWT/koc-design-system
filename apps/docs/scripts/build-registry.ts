@@ -198,6 +198,7 @@ const META: Record<string, Meta> = {
   popover: {
     title: "Popover",
     description: "Non-modal floating panel. Backs the date picker and combobox.",
+    docs: "Built on Base UI. A Positioner sits between Portal and Popup; anchor-derived variables (`--anchor-width`, `--transform-origin`, `--available-height`) live there and inherit into the popup — size a popup to its trigger with `w-[var(--anchor-width)]` (bracket syntax: tailwind-merge 2.x cannot displace the default width with the paren shorthand). State styling keys off bare `data-open` / `data-closed`.",
   },
   command: {
     title: "Command",
@@ -212,11 +213,13 @@ const META: Record<string, Meta> = {
     title: "Breadcrumb",
     description: "Path within an app. Used by @koc/page-header.",
     categories: ["layout"],
+    docs: "Integrate your router by passing `render` to BreadcrumbLink: `<BreadcrumbLink render={<Link to=… />}>label</BreadcrumbLink>`.",
   },
   button: {
     title: "Button",
     description: "Six variants, four sizes. Every label/background pair is contrast-tested.",
     categories: ["form"],
+    docs: "To render as another element while keeping the styling, pass Base UI's render prop — `<Button render={<a href=… />}>label</Button>` — in place of the old Radix slot pattern.",
   },
   card: {
     title: "Card",
@@ -296,8 +299,9 @@ const META: Record<string, Meta> = {
   },
   checkbox: {
     title: "Checkbox",
-    description: "Binary control built on Radix.",
+    description: "Binary control built on Base UI.",
     categories: ["form"],
+    docs: "State styling keys off `data-checked` / `data-unchecked` (both bare attributes), not a state value.",
   },
   "dropdown-menu": {
     title: "Dropdown Menu",
@@ -319,7 +323,7 @@ const META: Record<string, Meta> = {
   },
   separator: {
     title: "Separator",
-    description: "Visual divider.",
+    description: "Visual divider. Always `role=\"separator\"` — Base UI has no decorative mode, and a rule between sections legitimately is one.",
   },
   skeleton: {
     title: "Skeleton",
