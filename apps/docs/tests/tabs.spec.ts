@@ -23,7 +23,9 @@ test.describe("tabs indicator", () => {
     const drift = async () =>
       list.evaluate((el) => {
         const ind = el.querySelector<HTMLElement>('[data-slot="tabs-indicator"]')!;
-        const act = el.querySelector<HTMLElement>('[data-state="active"]')!;
+        // Base UI marks the active tab with a bare data-active attribute
+        // (Radix used data-state="active").
+        const act = el.querySelector<HTMLElement>("[data-active]")!;
         const i = ind.getBoundingClientRect();
         const a = act.getBoundingClientRect();
         return { tab: act.textContent?.trim(), dLeft: i.left - a.left, dWidth: i.width - a.width };
