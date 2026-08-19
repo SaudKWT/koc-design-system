@@ -100,8 +100,19 @@ that hole by asserting the shell's landmark shape directly.
   to Phase 3 because their only coupling is a slot-prop site on a Phase 3
   primitive: tooltip + collapsible (callers in sidebar/app-shell), page-nav
   (navigation-menu), data-table, user-menu, notification-menu
-  (dropdown-menu). Radix now remains in 8 files, all Phase 3. The history
-  below is kept as written.
+  (dropdown-menu). Radix now remains in 8 files, all Phase 3.
+  **Phase 3 is DONE — the PORT IS COMPLETE, 2026-08-16.** All 38 components
+  are on Base UI or primitive-free; every Radix package is out of
+  packages/ui's manifest and out of the DWOS consumer's tree (14 items
+  re-taken there, suites green). Divergence #1 became a deletion (Base's
+  Tabs.Indicator variables), sheet is Base Dialog styled as a panel (Base's
+  Drawer is the swipe primitive — declined), and the two traps worth
+  memorising: Base GroupLabel parts THROW without a Group ancestor and the
+  throw silently unmounts the popup; menu items fire `onClick`, never
+  `onSelect`, which still compiles and never fires. Full record: the plan
+  doc's "Phase 3 results". The standing no-new-Radix rule stays; what
+  remains is Phase 5, the freeze pack. The history below is kept as
+  written.
   **Exposure is measured: [docs/MIGRATION.md](docs/MIGRATION.md).** 24 of 38 components have
   no Radix import; application code has *zero*. The work is 14 files, ~198 data-attribute
   selectors, 38 `asChild` sites, 13 `--radix-*` variables and **5 divergences that must be

@@ -300,6 +300,69 @@ filter-tabs (divergence #3 re-check) · **sidebar and app-shell last** (16 + 7
 in this repo. Whoever migrates it reconciles with that work — do not let the
 port and the rework race each other in the same file.
 
+### Phase 3 results — the port is COMPLETE; packages/ui is Radix-free (2026-08-16)
+
+Landed in three legs (`b5926b0`, `5b19e51`, `cdd6f23`), each green through
+every gate; consumer-proven at dwos `fe5044e` + `3a5390a` (14 items re-added,
+tsc/build/suite green first pass, Radix pruned from its manifest — 45
+packages left its tree). The main-checkout race was checked before touching
+the fenced files: clean.
+
+**Divergence #1 deleted, as predicted.** Base's `Tabs.Indicator` ships
+`--active-tab-left/-top/-width/-height` as live inline variables; the
+~60-line `TabsValueContext` measure-and-suppress mechanism is now four
+utility classes. All four indicator specs pass unchanged except one selector
+(`[data-active]`, not `[data-state="active"]`).
+
+**Sheet ports onto Dialog-as-panel.** Base's Drawer was examined and
+declined: it is the swipe-to-dismiss gesture primitive (vaul's shape), wrong
+contract for a desktop side panel. The pilot's animation model applied
+verbatim; `sheet.spec.ts` proves the one real integration (the sidebar's
+mobile sheet).
+
+**navigation-menu is the one structural rework.** Content renders through
+Portal → Positioner → Popup → shared Viewport; the popup RESIZES between
+panels via live `--popup-width/-height`, so its motion is transitions
+(starting/ending-style) rather than keyframes — transitions can tween the
+resize. The `viewport` prop and `NavigationMenuIndicator` were deleted, not
+translated (no Base equivalent, no users). `page-nav.spec.ts` is the
+empirical record for the primitive Phase 0 never probed.
+
+**Two silent API divergences — the recipe's rules 13 and 14:**
+
+13. **Base's `GroupLabel` parts throw without a Group ancestor**, and the
+    throw unmounts the whole popup: the menu just never opens, nothing logs
+    to the console, and only a `pageerror` listener sees why.
+    `DropdownMenuLabel` is therefore a plain heading div (exactly Radix's
+    rendering); `SelectLabel` keeps GroupLabel because shadcn's select
+    idiom always nests it in a `SelectGroup` — the registry prose says so.
+14. **Menu items fire `onClick`, never Radix's `onSelect`** — which still
+    compiles (it is the DOM text-selection event) and silently never fires.
+    Four call sites flipped. Grep for `onSelect={` on any menu item when
+    porting.
+
+**The audit had one blind spot:** `label.tsx` imported
+`@radix-ui/react-label` directly, not the `radix-ui` umbrella the exposure
+grep counted, so it never appeared in the 14. It is a native `<label>` now.
+The correct sweep is `grep -rl 'from "radix-ui"\|from "@radix-ui'`.
+
+**Sidebar mechanics:** its five slot-based components
+(MenuButton, MenuSubButton, MenuAction, GroupLabel, GroupAction) compose via
+`useRender` with the incoming ref threaded through useRender's dedicated
+`ref` param — left inside the loose `props` object it is silently ignored,
+and a component composed as a Base trigger's render target then never
+registers its element. Divergence #4 (the upstream padding fix) survived
+untouched — the file was edited in place, not regenerated. Divergence #5's
+trap changed shape: Base's render prop forwards props through
+SidebarMenuButton's tooltip wrapper to the real button, so the composition
+that silently broke under Radix now works — the account menu still omits
+`tooltip`, deliberately (the footer never collapses to icons).
+
+**State: zero Radix anywhere.** 38 of 38 components on Base UI or
+primitive-free; all twelve Radix packages removed from `packages/ui`'s
+manifest; the consumer's manifest pruned too. What remains of the migration
+is Phase 5 — the freeze pack.
+
 ### Phase 4 — the consumer, wholesale
 
 `dwos-platform/web` re-adds every installed component at the migration tag,
