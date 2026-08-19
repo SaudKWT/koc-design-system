@@ -363,6 +363,22 @@ primitive-free; all twelve Radix packages removed from `packages/ui`'s
 manifest; the consumer's manifest pruned too. What remains of the migration
 is Phase 5 — the freeze pack.
 
+### Phase 4 results — wholesale re-take at v0.2.0, green (2026-08-16)
+
+Tag `v0.2.0` cut on the migration-complete state with **every `@koc/ui`
+dependency exact-pinned** (the registry's pin pass-through now carries all
+of them into item dependencies). dwos re-added all 42 registry-backed items
+at the tag (commit `d37e018`); the real file delta was card, stat-card and
+calendar — shell-rework catalogue updates nobody had re-taken. Its
+`textarea` is app-owned, not registry-backed, untouched. Verified there:
+tsc, build, roundtrip parity (255 reports exact), the 9-test a11y suite
+against the live API.
+
+Phase 5 progress: SBOMs, the license inventory and the evidence checklist
+live in [docs/freeze/](freeze/README.md). Two license flags recorded —
+react-leaflet is Hippocratic-2.1 (use-restricted, dwos's map, legal's call)
+— and the **NVDA + Edge pass remains the open item**.
+
 ### Phase 4 — the consumer, wholesale
 
 `dwos-platform/web` re-adds every installed component at the migration tag,

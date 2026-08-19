@@ -110,9 +110,15 @@ that hole by asserting the shell's landmark shape directly.
   memorising: Base GroupLabel parts THROW without a Group ancestor and the
   throw silently unmounts the popup; menu items fire `onClick`, never
   `onSelect`, which still compiles and never fires. Full record: the plan
-  doc's "Phase 3 results". The standing no-new-Radix rule stays; what
-  remains is Phase 5, the freeze pack. The history below is kept as
-  written.
+  doc's "Phase 3 results". The standing no-new-Radix rule stays.
+  **Phase 4 is DONE; v0.2.0 is tagged — 2026-08-16.** Every @koc/ui
+  dependency is exact-pinned and the pins flow into registry item deps;
+  dwos re-took all 42 items wholesale at the tag, gates green. The freeze
+  pack is assembled in [docs/freeze/](docs/freeze/README.md) minus two
+  things: regeneration at v1.0.0, and the **NVDA + Edge pass (still the
+  open item — it belongs in the approval evidence)**. One license flag for
+  legal before submission: dwos's react-leaflet is Hippocratic-2.1
+  (use-restricted). The history below is kept as written.
   **Exposure is measured: [docs/MIGRATION.md](docs/MIGRATION.md).** 24 of 38 components have
   no Radix import; application code has *zero*. The work is 14 files, ~198 data-attribute
   selectors, 38 `asChild` sites, 13 `--radix-*` variables and **5 divergences that must be
