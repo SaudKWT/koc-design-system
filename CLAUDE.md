@@ -199,7 +199,11 @@ description field, and Figma variants map 1:1 to real props.
   **detail view** and **KPI dashboard** patterns are built — list, detail, dashboard covers
   almost every screen a KOC unit app needs.
 - **Still missing:** form layout (deliberately deferred — case-by-case until real forms
-  exist), the real DWOS app lists, and governance.
+  exist) and the real DWOS app lists. Governance is written:
+  [docs/GOVERNANCE.md](docs/GOVERNANCE.md) — roles, the tag-only release path, the
+  freeze's three post-approval change classes, and the reopening rule. The NVDA pass
+  has a script now: [docs/freeze/NVDA-PASS.md](docs/freeze/NVDA-PASS.md), an hour of
+  follow-the-steps with expected announcements; the dated ✓ copy joins the freeze pack.
 - **Consumer reports live in `docs/consumer-reports/`.** Written by the session building a
   real app against the registry, because that is the only place a distribution bug is
   visible. The 2026-08-12 DWOS report is the template: measured in a built app, not inferred.
