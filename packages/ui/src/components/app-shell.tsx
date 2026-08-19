@@ -84,7 +84,9 @@ export interface AppShellProps {
    * any one of those makes the shell unusable for the other two, so routing is
    * the consumer's to supply and a plain `<a>` is the default.
    */
-  renderLink?: (item: NavItem, children: React.ReactNode) => React.ReactNode;
+  /** Must return an element (an `<a>`, or your router's Link) — it becomes
+   *  the rendered control via Base UI's render prop. */
+  renderLink?: (item: NavItem, children: React.ReactNode) => React.ReactElement;
   /**
    * Operational alerts. Omit to hide the bell entirely — an empty notification
    * icon that never does anything is worse than no icon.
@@ -180,14 +182,18 @@ export function AppShell({
           <SidebarMenu>
             <SidebarMenuItem>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton
-                    size="lg"
-                    /* The switcher is the one place the brand appears at full
-                       strength in the chrome — it is also the control that tells
-                       you what you are looking at, so it earns the emphasis. */
-                    className="data-[state=open]:bg-sidebar-accent"
-                  >
+                <DropdownMenuTrigger
+                  render={
+                    <SidebarMenuButton
+                      size="lg"
+                      /* The switcher is the one place the brand appears at full
+                         strength in the chrome — it is also the control that
+                         tells you what you are looking at, so it earns the
+                         emphasis. */
+                      className="data-popup-open:bg-sidebar-accent"
+                    />
+                  }
+                >
                     <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                       <PanelLeft className="size-4" />
                     </div>
@@ -206,11 +212,10 @@ export function AppShell({
                       </span>
                     </div>
                     <ChevronsUpDown className="ml-auto size-4" />
-                  </SidebarMenuButton>
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent
-                  className="w-(--radix-dropdown-menu-trigger-width) min-w-64"
+                  className="w-[var(--anchor-width)] min-w-64"
                   align="start"
                   side="bottom"
                   sideOffset={4}
@@ -226,7 +231,7 @@ export function AppShell({
                   {team.units.map((unit) => (
                     <DropdownMenuItem
                       key={unit.id}
-                      onSelect={() => selectUnit(unit.id)}
+                      onClick={() => selectUnit(unit.id)}
                       className="gap-2"
                     >
                       {/* The list keeps KOC's numbering as the primary line —
@@ -247,7 +252,7 @@ export function AppShell({
                   <DropdownMenuSeparator />
                   {/* Team leads genuinely need to see across units. Without this
                       they would be switching seven times to answer one question. */}
-                  <DropdownMenuItem onSelect={() => selectUnit(ALL_UNITS)} className="gap-2">
+                  <DropdownMenuItem onClick={() => selectUnit(ALL_UNITS)} className="gap-2">
                     <span className="flex-1">All units</span>
                     {currentUnit === ALL_UNITS && <Check className="size-4" />}
                   </DropdownMenuItem>
@@ -373,8 +378,11 @@ export function AppShell({
  * TWO TRAPS, both of which fail silently:
  *
  *   1. NO `tooltip` PROP. With one, SidebarMenuButton returns a Tooltip root
- *      rather than a button, and DropdownMenuTrigger asChild would clone a
- *      non-DOM Radix component — the menu never opens, and nothing errors.
+ *      rather than a bare button. Under Radix's slot that silently broke the
+ *      menu (props cloned onto a non-DOM component); Base's render prop
+ *      forwards props through to the real button, but the account menu still
+ *      omits the tooltip: the footer never collapses to icons, so a tooltip
+ *      here would be noise announced to every screen reader for no benefit.
  *   2. NOT the UserMenu component. It renders a Button, which has neither
  *      overflow-hidden nor any of the sidebar's icon-rail size overrides, so it
  *      overflows the collapsed rail. The markup here is the sidebar's own.
@@ -420,19 +428,21 @@ function AccountMenu({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <SidebarMenuButton
-          size="lg"
-          aria-label={`Account menu for ${user.name}`}
-          className="data-[state=open]:bg-sidebar-accent"
-        >
-          {identity}
-          <ChevronsUpDown className="ml-auto size-4 shrink-0" />
-        </SidebarMenuButton>
+      <DropdownMenuTrigger
+        render={
+          <SidebarMenuButton
+            size="lg"
+            aria-label={`Account menu for ${user.name}`}
+            className="data-popup-open:bg-sidebar-accent"
+          />
+        }
+      >
+        {identity}
+        <ChevronsUpDown className="ml-auto size-4 shrink-0" />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
-        className="w-(--radix-dropdown-menu-trigger-width) min-w-56"
+        className="w-[var(--anchor-width)] min-w-56"
         side={isMobile ? "bottom" : "right"}
         align="end"
         sideOffset={4}
@@ -455,7 +465,7 @@ function AccountMenu({
             {group.map((item) => (
               <DropdownMenuItem
                 key={item.id}
-                onSelect={() => item.onSelect?.()}
+                onClick={() => item.onSelect?.()}
                 className={cn("gap-2", item.destructive && "text-destructive")}
               >
                 {item.icon && <item.icon className="size-4" />}
@@ -493,18 +503,16 @@ function NavSection({
           ) : (
             <SidebarMenuItem key={item.id}>
               <SidebarMenuButton
-                asChild
                 isActive={item.id === activeItemId}
                 tooltip={item.label}
-              >
-                {renderLink(
+                render={renderLink(
                   item,
                   <>
                     {item.icon && <item.icon />}
                     <span>{item.label}</span>
                   </>,
                 )}
-              </SidebarMenuButton>
+              />
               {/*
                * The badge is a SIBLING of the button, not a child of it, and it
                * has to be SidebarMenuBadge rather than a span.
@@ -546,32 +554,33 @@ function CollapsibleNavItem({
   const containsActive = item.children?.some((c) => c.id === activeItemId) ?? false;
 
   return (
-    <Collapsible asChild defaultOpen={containsActive} className="group/collapsible">
-      <SidebarMenuItem>
-        <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={item.label}>
-            {item.icon && <item.icon />}
-            <span>{item.label}</span>
-            <ChevronRight
-              className={cn(
-                "ml-auto transition-transform duration-fast ease-out",
-                "group-data-[state=open]/collapsible:rotate-90",
-              )}
-            />
-          </SidebarMenuButton>
+    <Collapsible
+      render={<SidebarMenuItem />}
+      defaultOpen={containsActive}
+      className="group/collapsible"
+    >
+        <CollapsibleTrigger render={<SidebarMenuButton tooltip={item.label} />}>
+          {item.icon && <item.icon />}
+          <span>{item.label}</span>
+          <ChevronRight
+            className={cn(
+              "ml-auto transition-transform duration-fast ease-out",
+              "group-data-open/collapsible:rotate-90",
+            )}
+          />
         </CollapsibleTrigger>
         <CollapsibleContent>
           <SidebarMenuSub>
             {item.children?.map((child) => (
               <SidebarMenuSubItem key={child.id}>
-                <SidebarMenuSubButton asChild isActive={child.id === activeItemId}>
-                  {renderLink(child, <span>{child.label}</span>)}
-                </SidebarMenuSubButton>
+                <SidebarMenuSubButton
+                  isActive={child.id === activeItemId}
+                  render={renderLink(child, <span>{child.label}</span>)}
+                />
               </SidebarMenuSubItem>
             ))}
           </SidebarMenuSub>
         </CollapsibleContent>
-      </SidebarMenuItem>
     </Collapsible>
   );
 }

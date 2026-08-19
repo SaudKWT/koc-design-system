@@ -190,6 +190,60 @@ function FocusProbe() {
   );
 }
 
+function MenuComposeProbe() {
+  const popup = (label: string) => (
+    <Menu.Portal>
+      <Menu.Positioner sideOffset={4} className="z-50">
+        <Menu.Popup className="rounded-md border bg-background p-1 shadow-md">
+          <Menu.Item className="px-2 py-1 text-sm">{label} item</Menu.Item>
+        </Menu.Popup>
+      </Menu.Positioner>
+    </Menu.Portal>
+  );
+  return (
+    <div className="flex items-center gap-3">
+      <Menu.Root modal={false}>
+        <Menu.Trigger data-probe-menu="plain" className="rounded border px-2 py-1">
+          menu: plain trigger
+        </Menu.Trigger>
+        {popup("plain")}
+      </Menu.Root>
+      <Menu.Root modal={false}>
+        <Menu.Trigger
+          data-probe-menu="intrinsic"
+          render={<button className="rounded border px-2 py-1" />}
+        >
+          menu: render intrinsic
+        </Menu.Trigger>
+        {popup("intrinsic")}
+      </Menu.Root>
+      <Menu.Root modal={false}>
+        <Menu.Trigger
+          data-probe-menu="component"
+          render={<ProbeButton />}
+        >
+          menu: render component
+        </Menu.Trigger>
+        {popup("component")}
+      </Menu.Root>
+    </div>
+  );
+}
+
+/** Minimal useRender-based component, the shape Button and the sidebar use. */
+const ProbeButton = React.forwardRef<
+  HTMLButtonElement,
+  React.ComponentProps<"button"> & { render?: never }
+>(function ProbeButton({ className, ...props }, ref) {
+  return (
+    <button
+      ref={ref}
+      className={"rounded border px-2 py-1 " + (className ?? "")}
+      {...props}
+    />
+  );
+});
+
 export default function BaseUiProbe() {
   return (
     <div className="space-y-6 p-6">
@@ -202,6 +256,9 @@ export default function BaseUiProbe() {
       {/* Phase 1 — interactive probes: animation lifecycle and initial focus */}
       <AnimationProbe />
       <FocusProbe />
+
+      {/* Phase 3 — menu trigger composition: plain vs render-composed */}
+      <MenuComposeProbe />
 
       {/* Dialog — open, plus a closed trigger for the closed-state attrs.
           modal={false} so this always-open dialog does not block pointer

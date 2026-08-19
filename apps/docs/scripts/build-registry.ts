@@ -162,7 +162,7 @@ const META: Record<string, Meta> = {
     description:
       "Horizontal navigation inside an application. The sidebar answers 'which app am I in'; this answers 'which part of this app'. One level of dropdown only — deeper than that and the screen wants a sidebar.",
     categories: ["layout", "koc"],
-    docs: "Adapted from shadcn-space's topbar-05 with its sidebar coupling removed — the original calls useSidebar() and throws outside a provider. Pass `renderLink` to integrate your router.",
+    docs: "Adapted from shadcn-space's topbar-05 with its sidebar coupling removed — the original calls useSidebar() and throws outside a provider. Pass `renderLink` to integrate your router; it must return an element (it becomes the rendered link via Base UI's render prop).",
   },
   "navigation-menu": {
     title: "Navigation Menu",
@@ -286,16 +286,19 @@ const META: Record<string, Meta> = {
     description:
       "Collapsible sidebar primitives with an icon rail, mobile sheet and keyboard shortcut. Diverges from upstream: collapsed padding is scoped per size, because upstream's base `p-2!` beats `lg`'s `p-0!` on CSS source order.",
     categories: ["layout"],
+    docs: "SidebarMenuButton, SidebarMenuSubButton, SidebarMenuAction, SidebarGroupLabel and SidebarGroupAction compose via Base UI's `render` prop — `render={<a href=…/>}` or your router's Link — in place of the old slot prop.",
   },
   tabs: {
     title: "Tabs",
     description: "Switch between sibling views. Use for scope (assets, periods), not for filters.",
     categories: ["layout"],
+    docs: "The sliding indicator is Base UI's own part, positioned from its live `--active-tab-*` variables — style it, never re-measure it. The active tab carries a bare `data-active` attribute.",
   },
   select: {
     title: "Select",
-    description: "Single-choice dropdown built on Radix.",
+    description: "Single-choice dropdown built on Base UI.",
     categories: ["form"],
+    docs: "The API keeps the shadcn contract: `position` (default item-aligned) maps to Base's alignItemWithTrigger, and SelectValue keeps its `placeholder` prop. SelectLabel renders Base's GroupLabel and must sit inside a SelectGroup — standalone it throws at open. Items highlight via `data-highlighted`.",
   },
   checkbox: {
     title: "Checkbox",
@@ -305,21 +308,25 @@ const META: Record<string, Meta> = {
   },
   "dropdown-menu": {
     title: "Dropdown Menu",
-    description: "Action and option menus built on Radix.",
+    description: "Action and option menus built on Base UI.",
+    docs: "Items fire `onClick`, not Radix's `onSelect` — passing onSelect compiles (it is the DOM text-selection event) and silently never fires. Compose a custom trigger with `render={<Button/>}`; open triggers carry `data-popup-open`, items highlight via `data-highlighted`. DropdownMenuLabel is a plain heading div usable anywhere; Base's grouped label semantics come from wrapping items in DropdownMenuGroup.",
   },
   sheet: {
     title: "Sheet",
     description: "Edge-anchored panel. Backs the sidebar's mobile behaviour.",
     categories: ["layout"],
+    docs: "Base UI's Dialog styled as a side panel. Base's swipe-gesture Drawer was considered and declined — KOC is a desktop organisation. State styling keys off bare `data-open` / `data-closed`.",
   },
   tooltip: {
     title: "Tooltip",
     description:
       "Short label on hover and focus. Load-bearing in a collapsed icon rail — it is the only accessible name those buttons have.",
+    docs: "TooltipProvider keeps the shadcn `delayDuration` prop name and maps it to Base UI's `delay`. Base positions the arrow on the cross axis only — the per-side edge offsets are classes on the Arrow.",
   },
   collapsible: {
     title: "Collapsible",
     description: "Show/hide a region. Backs nested sidebar navigation.",
+    docs: "An open trigger carries `data-panel-open`; the root and panel carry bare `data-open`. Compose the trigger with `render={…}`.",
   },
   separator: {
     title: "Separator",
