@@ -24,21 +24,48 @@ correctly because they sort by period rather than by argument.
 Requires `matplotlib`, plus `openpyxl` for `extract.py`. `pillow` is optional
 and cuts the output roughly in half.
 
-## Two formats, because they cannot be one file
+## Three outputs, one per audience
+
+```
+dashboard/  Offshore_Logistics_Weekly_Dashboard.html   every week, for circulating
+email/      Offshore_Logistics_Weekly_Update_<date>.html   the newest week, for the mail
+notes/      data-queries.md                            the open questions
+```
 
 | | `email` | `dashboard` |
 | --- | --- | --- |
 | Weeks | one | all of them, behind a tab strip |
 | Layout | nested tables, inline styles | CSS, sticky header |
-| Charts | 3 PNG, base64 | 6 PNG, base64 |
+| Charts | 3 PNG, base64 | one set per week, base64 |
 | Script | none | tab behaviour only |
 | Daily logs | in the attached workbook | in the page |
-| Size | 94 KB | 314 KB at three weeks |
+| Size | 91 KB | 310 KB at three weeks |
 
 The tab strip needs CSS and script, which is exactly what an Outlook-safe email
-cannot have, so the two cannot be the same file. The email is what Bu Khaled
+cannot have, so those two cannot be the same file. The email is what Bu Khaled
 receives. The dashboard is for a browser, and because it has no attachment it
 carries the full daily port and vessel logs itself.
+
+The dashboard filename carries no date. It covers every week, the tab strip says
+which, and each rebuild replaces it rather than leaving a trail of near-copies.
+
+### Why the queries are a separate file
+
+They were an amber block inside both reports. They are questions for the report
+author, not findings about operations, so they have no place in something being
+circulated. They are also not something to lose, hence a file of their own,
+generated from the same `dataNotes` arrays the reports were reading. One source,
+so the two cannot drift apart.
+
+`notes/data-queries.md` is a checklist: 21 open items across three weeks, each
+naming the sheet and cell it came from, plus a Resolved section for the two
+counting questions that are settled but still differ from the published
+figures. Tick an item once it is answered and correct the matching
+`data/<report-date>.json`; the dashboard follows on the next build.
+
+The dashboard states one figure per metric and carries no caveats on its face.
+Where a published number differs, the reason is in the notes file's Resolved
+section rather than in a footnote on something being circulated.
 
 Outlook renders mail through the Word engine, so the email format uses no
 `<svg>`, no external CSS, no `<style>`, no media queries, no classes and no
@@ -104,7 +131,9 @@ off still gets the whole report.
    output: it reports every defect it found and every repair it made.
 2. Copy `data/2026-09-03.json` to `data/<new report date>.json`.
 3. Update the figures. Keep the `audit` arrays: they name the workbook cell each
-   count came from, which is what makes a disputed number checkable a month later.
+   count came from, which is what makes a disputed number checkable a month
+   later. Anything that needs an answer from the report author goes in
+   `dataNotes` and reaches `notes/data-queries.md` on its own.
 4. Set `showArrows` true on the new week and false on the one before it.
 5. `periodDays` must equal the length of `trucks.byDay`. The build asserts it.
 6. Run the build with the new date and the previous one.
@@ -116,17 +145,26 @@ resolved the same way: **one rule, applied to every week, with both numbers
 stated.** A dashboard whose weeks are counted differently is worse than no
 dashboard, because the arrows become fiction.
 
-| Report | Published | Counted here | Cause |
-| --- | --- | --- | --- |
-| 22 (26-08) | 46 truck moves | 41 | five trucks counted on both load and dispatch |
-| 24 (10-09) | 13 vessel trips | 8 | basis appears to have changed with the author |
+| Report | Email says | Workbook gives | Dashboard shows | Why |
+| --- | --- | --- | --- | --- |
+| 22 (26-08) | 46 truck moves | 41 | **41** | five trucks counted on both load and dispatch, proven from the cells |
+| 24 (10-09) | 13 vessel trips | 8 | **13** | the covering email supersedes, decided 10 Sep |
+
+The two are resolved differently on purpose. The truck figure is arithmetic: the
+same trucks appear twice in the same sheet, and that report's own prose repeats
+the error. The trip figure is a definition, not an error: the email appears to
+count rig calls where the workbook narrative counts port voyages, and which one
+the report means is the author's call, not the reader's. Saud settled it on
+10 Sep in favour of the email.
 
 Report 24's trip figures agree with the workbook on CA5 (0) and Charlie-3 (5)
-and differ on CA1 (6 against 2) and CA3 (2 against 1). The same rule reproduced
-report 22's published chart and report 23's email exactly, all eight vessel
-figures, so the rule is not the thing that changed. Report 24 also has a
-different sender. Both numbers appear on the trips tile, and the open question
-is in that week's data notes.
+and differ on CA1 (6 against 2) and CA3 (2 against 1). The same derivation
+reproduced report 22's published chart and report 23's email exactly, all eight
+vessel figures, so the derivation is not what changed; report 24 has a different
+sender. Because the earlier weeks agree either way, the rise from 9 trips to 13
+may carry some of the change of basis, which is worth confirming once with the
+author so later weeks stay comparable. Both figures and that caveat are in
+`notes/data-queries.md`.
 
 Report 24 needs the offload rule too. Its Port sheet re-describes arrivals as
 offloads (`E21` repeats `E19`, `E23` repeats `E24` to `E27`, `E34` and `E35`
@@ -262,11 +300,23 @@ forced, states the opposite of the truth.
 
 ## Chart notes
 
-Both two-week charts share one grammar, so the reader learns it once: the
-panel's own week is solid navy, the other week is pale and labelled "(other)".
-Bars are ordered by period and never by whose panel it is, so time reads left to
-right in both tabs. Ordering by panel put the later week on the left in the
-previous-week tab, which read as time running backwards.
+Both two-week charts share one grammar, so the reader learns it once: **this
+week is solid navy, the previous week is pale**, and the legend says which in
+words with the dates in brackets, rather than leaving two date ranges to be
+decoded. Bars are ordered by period and never by whose panel it is, so time
+reads left to right in every tab. Ordering by panel put the later week on the
+left in an older tab, which read as time running backwards.
+
+**The earliest week is the baseline and stands alone**: single-series charts in
+one colour, no arrows on the tiles, no comparison table. It has no predecessor
+in the set, and comparing it forward to a later week would draw a comparison
+backwards in time. The week its own report measured against, 06 to 12 Aug 2026,
+is not in the dashboard, so that stays a sentence under the tiles rather than
+becoming arrows to a week nobody can open.
+
+Both charts' y-axis ceilings are the 26-08 report's values used as a **floor**,
+not a cap, so the weeks stay visually comparable but nothing clips. CA1 reached
+6 trips in report 24 against a fixed ceiling of 7.
 
 The fluids chart is grouped rather than stacked, and split three fluids by two
 directions, because the interesting thing this week is a composition shift the

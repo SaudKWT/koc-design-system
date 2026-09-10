@@ -11,44 +11,154 @@
   "showArrows": true,
   "signature": {
     "name": "Rejeesh Kumar Kunjupillai",
-    "lines": ["Kuwait Oil Company (KOC)"],
-    "muted": ["RKunjupillai@kockw.com"],
+    "lines": [
+      "Kuwait Oil Company (KOC)"
+    ],
+    "muted": [
+      "RKunjupillai@kockw.com"
+    ],
     "note": "The 10-09 email carries no signature block. Title and phone need confirming."
   },
-
-  "vesselTrips": { "CA1": 2, "CA3": 1, "CA5": 0, "Charlie-3": 5 },
-  "publishedTrips": { "CA1": 6, "CA3": 2, "CA5": 0, "Charlie-3": 5 },
-  "tripRule": "One trip is one outbound voyage from Shuaiba Port to a rig or location, plus its return. A rig to rig transit is not a new trip.",
-  "vesselTripsAudit": {
-    "CA1": "2 outbound: berth 20 to OD1 on 05.09 (15:15), returning to berth 20 on 07.09 (17:15); berth 20 to OD1 then OPH on 09.09 (10:08). The 03.09 return from OPH completes the voyage counted in the previous report.",
-    "CA3": "1 outbound: berth 20 to OPH on 03.09 (18:25). STBY at OPH to 09.09, then enroute to Shuaiba (22:48).",
-    "CA5": "0. On station at OD1 all seven days; never called at Shuaiba.",
-    "Charlie-3": "5 outbound: two on 03.09 (04:05 and 07:05), 05.09 (09:15), 08.09 (07:50), 09.09 (11:25)."
+  "vesselTrips": {
+    "CA1": 6,
+    "CA3": 2,
+    "CA5": 0,
+    "Charlie-3": 5
   },
-
+  "tripRule": "Trips are as reported in the covering email, which supersedes the workbook derivation. For the two earlier weeks the email and the workbook agree exactly.",
+  "vesselTripsAudit": {
+    "CA1": "6 per the email. The workbook narrative yields 2 outbound voyages from Shuaiba (05.09 15:15 and 09.09 10:08) and 4 further rig calls at OD1 and OPH.",
+    "CA3": "2 per the email. The workbook narrative yields 1 outbound voyage from Shuaiba (03.09 18:25) plus rig calls at OPH on 07.09 and 09.09.",
+    "CA5": "0 per the email, and 0 from the workbook. On station at OD1 all seven days; never called at Shuaiba.",
+    "Charlie-3": "5 per the email, and 5 from the workbook: two on 03.09 (04:05 and 07:05), 05.09 (09:15), 08.09 (07:50), 09.09 (11:25)."
+  },
   "trucks": {
     "rule": "Count truck units per movement. A dispatch counts as out, an arrival counts as in. An offload of a truck already counted on arrival is not a second movement, and a truck loaded on one day and dispatched the next is counted on dispatch.",
     "byDay": [
-      { "label": "Thu 03", "date": "03.09.2026", "out": 6, "in": 0,
-        "audit": ["E4 out 1", "E5 out 1", "E6 out 1", "E7 out 1", "E8 out 2", "E9 baskets sent to WPS, no truck unit stated", "E10 fluid"] },
-      { "label": "Fri 04", "date": "04.09.2026", "out": 0, "in": 2,
-        "audit": ["E12 in 1 boom truck", "E13 in 1 half lorry", "E14 vessel op", "E15 E16 fluid"] },
-      { "label": "Sat 05", "date": "05.09.2026", "out": 1, "in": 4,
-        "audit": ["E18 out 1", "E19 in 4", "E20 vessel op", "E21 offload of the E19 trucks, not counted again"] },
-      { "label": "Sun 06", "date": "06.09.2026", "out": 0, "in": 4,
-        "audit": ["E24 in 1", "E25 in 1", "E26 in 1", "E27 in 1", "E23 offload of those four, not counted again"] },
-      { "label": "Mon 07", "date": "07.09.2026", "out": 1, "in": 6,
-        "audit": ["E29 out 1", "E30 in 1", "E31 in 3", "E32 in 1", "E33 in 1", "E34 offload of E31 and E32, not counted again", "E35 offload of E30 and E33, not counted again", "E36 the E29 truck, not counted again", "E37 fluid"] },
-      { "label": "Tue 08", "date": "08.09.2026", "out": 2, "in": 7,
-        "audit": ["E39 out 1", "E40 out 1", "E41 in 1", "E42 in 1", "E43 in 1", "E44 in 1", "E45 in 1", "E46 in 2", "E49 offload of E42 and E43", "E50 offload of E46", "E47 E48 fluid", "E51 vessel op"] },
-      { "label": "Wed 09", "date": "09.09.2026", "out": 2, "in": 9,
-        "audit": ["E54 out 1", "E56 out 1", "E55 in 1", "E57 in 1", "E58 in 1", "E59 in 1", "E60 in 1", "E61 in 1", "E62 in 1", "E63 in 1", "E64 in 1", "E53 vessel op", "E65 offload, no truck unit stated", "E66 E67 fluid"] }
+      {
+        "label": "Thu 03",
+        "date": "03.09.2026",
+        "out": 6,
+        "in": 0,
+        "audit": [
+          "E4 out 1",
+          "E5 out 1",
+          "E6 out 1",
+          "E7 out 1",
+          "E8 out 2",
+          "E9 baskets sent to WPS, no truck unit stated",
+          "E10 fluid"
+        ]
+      },
+      {
+        "label": "Fri 04",
+        "date": "04.09.2026",
+        "out": 0,
+        "in": 2,
+        "audit": [
+          "E12 in 1 boom truck",
+          "E13 in 1 half lorry",
+          "E14 vessel op",
+          "E15 E16 fluid"
+        ]
+      },
+      {
+        "label": "Sat 05",
+        "date": "05.09.2026",
+        "out": 1,
+        "in": 4,
+        "audit": [
+          "E18 out 1",
+          "E19 in 4",
+          "E20 vessel op",
+          "E21 offload of the E19 trucks, not counted again"
+        ]
+      },
+      {
+        "label": "Sun 06",
+        "date": "06.09.2026",
+        "out": 0,
+        "in": 4,
+        "audit": [
+          "E24 in 1",
+          "E25 in 1",
+          "E26 in 1",
+          "E27 in 1",
+          "E23 offload of those four, not counted again"
+        ]
+      },
+      {
+        "label": "Mon 07",
+        "date": "07.09.2026",
+        "out": 1,
+        "in": 6,
+        "audit": [
+          "E29 out 1",
+          "E30 in 1",
+          "E31 in 3",
+          "E32 in 1",
+          "E33 in 1",
+          "E34 offload of E31 and E32, not counted again",
+          "E35 offload of E30 and E33, not counted again",
+          "E36 the E29 truck, not counted again",
+          "E37 fluid"
+        ]
+      },
+      {
+        "label": "Tue 08",
+        "date": "08.09.2026",
+        "out": 2,
+        "in": 7,
+        "audit": [
+          "E39 out 1",
+          "E40 out 1",
+          "E41 in 1",
+          "E42 in 1",
+          "E43 in 1",
+          "E44 in 1",
+          "E45 in 1",
+          "E46 in 2",
+          "E49 offload of E42 and E43",
+          "E50 offload of E46",
+          "E47 E48 fluid",
+          "E51 vessel op"
+        ]
+      },
+      {
+        "label": "Wed 09",
+        "date": "09.09.2026",
+        "out": 2,
+        "in": 9,
+        "audit": [
+          "E54 out 1",
+          "E56 out 1",
+          "E55 in 1",
+          "E57 in 1",
+          "E58 in 1",
+          "E59 in 1",
+          "E60 in 1",
+          "E61 in 1",
+          "E62 in 1",
+          "E63 in 1",
+          "E64 in 1",
+          "E53 vessel op",
+          "E65 offload, no truck unit stated",
+          "E66 E67 fluid"
+        ]
+      }
     ]
   },
-
   "fluids": {
-    "bunkered": { "Fresh water": 700, "Fuel": 216, "Drill water": 72 },
-    "delivered": { "Fresh water": 400, "Fuel": 394, "Drill water": 0 },
+    "bunkered": {
+      "Fresh water": 700,
+      "Fuel": 216,
+      "Drill water": 72
+    },
+    "delivered": {
+      "Fresh water": 400,
+      "Fuel": 394,
+      "Drill water": 0
+    },
     "audit": {
       "Fresh water bunkered": "Vessel E5 144 CA3; E8 180 CA1; E11 16 Charlie-3; E12 108 CA1; E24 216 CA1; E28 36 CA1",
       "Drill water bunkered": "Vessel E5 72 CA3",
@@ -57,8 +167,11 @@
       "Fuel delivered": "Vessel E14 100 CA5 to OD1; E16 260.2 CA1; E20 34 CA1 to OPH"
     }
   },
-  "slops": { "receivedBbl": 0, "dischargedBbl": 0, "note": "No slops movement recorded this week." },
-
+  "slops": {
+    "receivedBbl": 0,
+    "dischargedBbl": 0,
+    "note": "No slops movement recorded this week."
+  },
   "activeRigs": 1,
   "rigs": {
     "OD1": {
@@ -66,7 +179,11 @@
       "lastWeek": "Nil",
       "personnelOnboard": 79,
       "visaHolders": 57,
-      "overstay": { "KOC": 0, "HLB": 0, "COSL": 11 },
+      "overstay": {
+        "KOC": 0,
+        "HLB": 0,
+        "COSL": 11
+      },
       "nextSteps": "Rig preparation for move; rig move for new well BOUM-0001"
     },
     "OPH": {
@@ -74,11 +191,14 @@
       "lastWeek": "Nil",
       "personnelOnboard": 0,
       "visaHolders": 0,
-      "overstay": { "KOC": 0, "HLB": 0, "COSL": 0 },
+      "overstay": {
+        "KOC": 0,
+        "HLB": 0,
+        "COSL": 0
+      },
       "nextSteps": "Nil"
     }
   },
-
   "highlights": [
     "<b>OD1 stayed on standby for BOUM-0001 location clearance</b>, now to start jack-down and move to BM-0001. Last week activities are recorded as Nil: the rig was idle for the full seven days.",
     "<b>Overstay crew rose from 10 to 11</b>, all of them COSL. KOC and HLB are nil.",
@@ -86,14 +206,13 @@
     "<b>Ground transport turned sharply inbound: 32 arrivals against 12 dispatches</b>, 44 moves in total against 41. The week before ran 35 out and 6 in, so the direction reversed.",
     "The inbound load is the <b>BM-0001 move materials</b>: 18-5/8\" and 24\" casing and short joints, a casing spool, X-overs, and Fugro positioning tools, from KOC Ahmadi Yard-4 and Yard-5 and HETCO Mina Abdallah. Arrivals peaked on <b>Wed 09 Sep with 9</b>.",
     "<b>Fluids handled more than doubled, 1,782 m³ against 742 m³.</b> Fuel delivered to the rigs rose from 200 m³ to 394 m³, of which CA1 transferred 260 m³ on Sun 06 Sep.",
-    "Vessel trips were 8 on the count used across all three weeks, against 9. <b>The email reports 13.</b> The two figures agree on CA5 and Charlie-3 and differ on CA1 and CA3. See the data notes.",
+    "<b>Vessel trips rose to 13 from 9</b>, per the covering email: CA1 6, CA3 2, CA5 nil, Charlie-3 5. CA1 carried the increase, working OD1 and OPH through the week. See the data queries on the counting basis.",
     "OPH stayed off-hired for a third week, and still drew cargo and fluids: CA1 delivered 300 m³ of fresh water and 294 m³ of fuel to OPH across 03 and 07 Sep.",
     "<b>Port status reads Normal on all 7 days</b>, where both previous weeks read Not Normal on every day. The port again ran day shift only.",
     "Vessel movements remain under <b>MARSEC Level 2</b>."
   ],
-
   "dataNotes": [
-    "<b>Trip count differs from the email.</b> The email reports 13 trips (CA1 6, CA3 2, CA5 0, Charlie-3 5). On the rule used for the two earlier weeks, one outbound voyage from Shuaiba plus its return, the workbook gives 8 (CA1 2, CA3 1, CA5 0, Charlie-3 5). CA5 and Charlie-3 agree, CA1 and CA3 do not. That same rule reproduced the 26-08 published chart and the 03-09 email exactly, all eight vessel figures, so the basis appears to have changed with the author. Confirm which basis to use.",
+    "<b>Trips are taken from the covering email (13), which supersedes the workbook.</b> Settled 10 Sep. The workbook narrative yields 8 on the rule used for the two earlier weeks, one outbound voyage from Shuaiba plus its return; the difference is 4 further rig calls by CA1 and 1 by CA3, so the email appears to count rig calls rather than port voyages. For the two earlier weeks the email and the workbook agree exactly, so the 13 against 9 rise may reflect the change of basis as well as activity. Worth confirming once with the author so later weeks stay comparable.",
     "Vessel sheet 06.09: CA1 is recorded STBY at OPH, but on 05.09 it was approaching OD1 at 23:48 and on 07.09 it heaved up at OPH. One of the two rig names is likely wrong, which also affects where the 260.2 m³ of fuel went.",
     "Vessel sheet 09.09: Charlie-3 casts off at 11:25 and is alongside OPH at 11:30. That transit is not possible in five minutes.",
     "The well is named BOUM-0001, BM-0001 and BM-001 across the email and the workbook. Confirm the correct designation.",
@@ -103,5 +222,11 @@
     "Offload lines repeat arrivals already counted: E21 repeats E19, E23 repeats E24 to E27, E34 and E35 repeat E30 to E33, and E49 and E50 repeat E42, E43 and E46. Each truck is counted once, on arrival. Counting the offloads as well would add 14 movements.",
     "The 10-09 email carries no signature block. The sender is Rejeesh Kumar Kunjupillai. Title and phone need confirming.",
     "Reporting window is 7 days (03 to 09 Sep) against 8 days for the previous report, so absolute counts are not like for like. The comparison table carries a per day row."
-  ]
+  ],
+  "workbookTrips": {
+    "CA1": 2,
+    "CA3": 1,
+    "CA5": 0,
+    "Charlie-3": 5
+  }
 }

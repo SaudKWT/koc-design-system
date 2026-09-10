@@ -75,6 +75,12 @@ FONT = "DejaVu Sans"
 FLUIDS = ("Fresh water", "Fuel", "Drill water")
 
 
+def short(w):
+    """The period without the year, for chart labels. The panel heading and the
+    chart title already carry the year."""
+    return w["periodLabel"].replace(" 2026", "")
+
+
 # ── Small helpers over the data files ──────────────────────────────────────
 
 def trips(w):
@@ -166,9 +172,20 @@ def _labels(ax, bars, colour, fmt="{:g}", size=10.5):
                     color=colour, fontname=FONT)
 
 
+def _one_week_bars(ax, x, vals, w=0.58):
+    """A single series for the baseline week, which has nothing to compare to.
+
+    One series takes one colour: the category is already on the x axis, so a
+    second hue per bar would be decoration. No legend either -- the title names
+    the series."""
+    _labels(ax, ax.bar(x, vals, w, color=NAVY, edgecolor="white",
+                       linewidth=1.2), NAVY)
+
+
 def _two_week_bars(ax, x, mine_w, mine_v, other_w, other_v, w=0.39):
     """The shared grammar, used by both two-week charts so the reader learns the
-    encoding once: the panel's own week is solid navy, the other week is pale.
+    encoding once: this week is solid navy, the previous week is pale, and the
+    legend says which in words rather than leaving dates to be decoded.
 
     Bars are ordered by period, never by whose panel it is, so time always reads
     left to right. Ordering by panel put the later week on the left in the
@@ -178,10 +195,11 @@ def _two_week_bars(ax, x, mine_w, mine_v, other_w, other_v, w=0.39):
                    key=lambda pr: pr[0]["periodStart"])
     for k, (wk, vals, is_mine) in enumerate(pairs):
         off = -0.2025 if k == 0 else 0.2025
+        role = "This week" if is_mine else "Previous week"
         bars = ax.bar([i + off for i in x], vals, w,
                       color=NAVY if is_mine else OTHER,
                       edgecolor="white", linewidth=1.2,
-                      label=wk["periodLabel"] + ("" if is_mine else " (other)"))
+                      label=f"{role}  ({short(wk)})")
         _labels(ax, bars, NAVY if is_mine else INK_DELTA)
 
 
@@ -189,19 +207,29 @@ def chart_trips(mine, theirs):
     names = ["CA1", "CA3", "CA5", "Charlie-3"]
     fig, ax = plt.subplots(figsize=(9.5, 3.9))
     x = range(len(names))
-    _two_week_bars(ax, x,
-                   mine, [mine["vesselTrips"][n] for n in names],
-                   theirs, [theirs["vesselTrips"][n] for n in names])
+    vals = list(mine["vesselTrips"].values())
+    if theirs is None:
+        _one_week_bars(ax, list(x), [mine["vesselTrips"][n] for n in names])
+        title = f"Vessel Trips by Vessel   ({trips(mine)} total)"
+    else:
+        vals += list(theirs["vesselTrips"].values())
+        _two_week_bars(ax, x,
+                       mine, [mine["vesselTrips"][n] for n in names],
+                       theirs, [theirs["vesselTrips"][n] for n in names])
+        title = (f"Vessel Trips by Vessel   ({trips(mine)} this week, "
+                 f"{trips(theirs)} previous week)")
     ax.set_xticks(list(x))
     ax.set_xticklabels(names)
-    ax.set_ylim(0, 7)                    # held at 7 to match the 26-08 report
+    # 7 was the 26-08 report's ceiling and is kept as a floor so the weeks stay
+    # visually comparable, but it grows rather than clipping: CA1 reached 6 in
+    # report 24 and a fixed ceiling would fail silently on the first 8.
+    ax.set_ylim(0, max(7, max(vals) * 1.18))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     _frame(ax, "No. of trips")
-    ax.set_title(f"Vessel Trips by Vessel   ({trips(mine)} against "
-                 f"{trips(theirs)} the other week)",
-                 fontsize=13.5, fontweight="bold", color=NAVY,
+    ax.set_title(title, fontsize=13.5, fontweight="bold", color=NAVY,
                  fontname=FONT, pad=12)
-    _legend(ax, loc="upper left")
+    if theirs is not None:
+        _legend(ax, loc="upper left")
     return _png(fig)
 
 
@@ -222,7 +250,8 @@ def chart_ground(w):
 
     ax.set_xticks(list(x))
     ax.set_xticklabels([d["label"] for d in days])
-    ax.set_ylim(0, 12)                   # held at 12 to match the 26-08 report
+    # Same as the trips chart: the 26-08 ceiling of 12 is a floor, not a cap.
+    ax.set_ylim(0, max(12, max(out + inn) * 1.18))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     _frame(ax, "Trucks / tankers")
     ax.set_title(f"Daily Ground Transport Movements   ({sum(out)} out / "
@@ -234,7 +263,7 @@ def chart_ground(w):
 
 
 def chart_fluids(mine, theirs):
-    """Six categories, three fluids by two directions, both weeks.
+    """Six categories, three fluids by two directions.
 
     Grouped rather than stacked, and in the same grammar as the trips chart,
     because the interesting thing this week is a composition shift the totals
@@ -244,21 +273,28 @@ def chart_fluids(mine, theirs):
     labels = [f"{f}\n{'bunkered' if d == 'bunkered' else 'to rigs'}"
               for d, f in cats]
     mv = [mine["fluids"][d][f] for d, f in cats]
-    tv = [theirs["fluids"][d][f] for d, f in cats]
 
     fig, ax = plt.subplots(figsize=(9.5, 4.0))
     # A gap between the bunkered trio and the delivered trio.
     x = [0, 1, 2, 3.45, 4.45, 5.45]
-    _two_week_bars(ax, x, mine, mv, theirs, tv, w=0.37)
+    if theirs is None:
+        _one_week_bars(ax, x, mv, w=0.55)
+        ceiling = max(mv)
+        title = f"Fluids & Bulk Managed   ({fluid_total(mine):,} m³ total)"
+    else:
+        tv = [theirs["fluids"][d][f] for d, f in cats]
+        _two_week_bars(ax, x, mine, mv, theirs, tv, w=0.37)
+        ceiling = max(mv + tv)
+        title = (f"Fluids & Bulk Managed   ({fluid_total(mine):,} m³ this "
+                 f"week, {fluid_total(theirs):,} m³ previous week)")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, fontsize=9.5)
-    ax.set_ylim(0, max(mv + tv) * 1.22)
+    ax.set_ylim(0, ceiling * 1.22)
     _frame(ax, "Cubic metres (m³)")
-    ax.set_title(f"Fluids & Bulk Managed   ({fluid_total(mine):,} m³ against "
-                 f"{fluid_total(theirs):,} m³ the other week)",
-                 fontsize=13.5, fontweight="bold", color=NAVY,
+    ax.set_title(title, fontsize=13.5, fontweight="bold", color=NAVY,
                  fontname=FONT, pad=12)
-    _legend(ax, loc="upper right")
+    if theirs is not None:
+        _legend(ax, loc="upper right")
     return _png(fig)
 
 
@@ -290,37 +326,35 @@ def delta(now, was, mode="abs", intent="neutral", unit=""):
 
 def kpis(w, other):
     """Four tiles, in the same order every week. Consistency across weeks is
-    most of what makes a weekly dashboard readable, so the set never changes."""
-    base = w.get("publishedBaseline") or {}
-    arrows = w.get("showArrows", True)
+    most of what makes a weekly dashboard readable, so the set never changes.
+
+    The oldest week in the set is the baseline and carries no arrows. Comparing
+    it forward to a later week would read as time running backwards, and the
+    week it was originally measured against is not in the dashboard at all."""
+    arrows = other is not None and w.get("showArrows", True)
 
     def cmp(now, key, other_val, mode="abs", intent="neutral"):
         if arrows:
             return delta(now, other_val, mode, intent)
-        if key in base:
-            html, colour = delta(now, base[key], mode, intent)
-            return html + " <sup>&#8224;</sup>", colour
         return "", INK_DELTA
 
     tiles = [
         dict(value=trips(w), label="Total vessel trips", colour=NAVY,
-             caption=(f'<span style="color:{RED_TEXT};font-weight:700;">'
-                      f'{sum(w["publishedTrips"].values())} as published</span>'
-                      if w.get("publishedTrips")
-                      and sum(w["publishedTrips"].values()) != trips(w) else None),
              **dict(zip(("delta_html", "delta_colour"),
-                        cmp(trips(w), "trips", trips(other), "pct")))),
+                        cmp(trips(w), "trips",
+                            trips(other) if other else 0, "pct")))),
         dict(value=truck_total(w), label="Truck / tanker moves", colour=TEAL,
              **dict(zip(("delta_html", "delta_colour"),
                         cmp(truck_total(w), "truckMoves",
-                            truck_total(other), "pct")))),
+                            truck_total(other) if other else 0, "pct")))),
         dict(value=w["activeRigs"], label="Active rig (OD1)", colour=AMBER,
              **dict(zip(("delta_html", "delta_colour"),
                         cmp(w["activeRigs"], "activeRigs",
-                            other["activeRigs"])))),
+                            other["activeRigs"] if other else 0)))),
         dict(value=overstay(w), label="Overstay crew", colour=RED, alert=True,
              **dict(zip(("delta_html", "delta_colour"),
-                        cmp(overstay(w), "overstay", overstay(other),
+                        cmp(overstay(w), "overstay",
+                            overstay(other) if other else 0,
                             "abs", "lower-is-better")))),
     ]
     # The corrected truck figure cannot be compared to a baseline counted under
@@ -335,8 +369,9 @@ def kpis(w, other):
 
 
 def kpi_row(w, other):
-    default_caption = (f"vs {other['tabLabel']}" if w.get("showArrows", True)
-                       else "vs 06 to 12 Aug")
+    default_caption = (f"vs {other['tabLabel']}"
+                       if other is not None and w.get("showArrows", True)
+                       else "baseline week")
     cells = ""
     for t in kpis(w, other):
         alert = t.get("alert")
@@ -462,13 +497,6 @@ def heading(text, accent):
             f'border-left:4px solid {accent};padding-left:10px;">{text}</div>\n')
 
 
-def note_box(title, items):
-    lis = "".join(f"<li>{i}</li>" for i in items)
-    return (f'  <div style="background:{NOTE_BG};border:1px solid {NOTE_RULE};'
-            f'border-radius:6px;padding:12px 14px;font-size:12px;'
-            f'color:{NOTE_INK};"><b>{title}</b>'
-            f'<ul style="margin:8px 0 0;padding-left:18px;line-height:1.55;">'
-            f'{lis}</ul></div>\n')
 
 
 # ── Daily logs (dashboard only) ────────────────────────────────────────────
@@ -548,19 +576,21 @@ METHOD = ("One trip is one outbound voyage from Shuaiba Port plus its return; "
 
 
 def slops_caption(mine, theirs):
-    s, t = mine["slops"], theirs["slops"]
+    s = mine["slops"]
     txt = ("Slops: none recorded" if not s["dischargedBbl"]
            else f"Slops: {s['dischargedBbl']} bbl discharged to vacuum tankers")
-    if t["dischargedBbl"]:
-        txt += f". Other week: {t['dischargedBbl']} bbl"
+    if theirs is not None and theirs["slops"]["dischargedBbl"]:
+        txt += f". Previous week: {theirs['slops']['dischargedBbl']} bbl"
     return txt + "."
 
 
 def alt_trips(mine, theirs):
-    return ("Vessel trips by vessel. "
-            + f"{mine['periodLabel']}: "
-            + ", ".join(f"{k} {v}" for k, v in mine["vesselTrips"].items())
-            + f", total {trips(mine)}. {theirs['periodLabel']}: "
+    txt = ("Vessel trips by vessel. " + f"{mine['periodLabel']}: "
+           + ", ".join(f"{k} {v}" for k, v in mine["vesselTrips"].items())
+           + f", total {trips(mine)}.")
+    if theirs is None:
+        return txt
+    return (txt + f" {theirs['periodLabel']}: "
             + ", ".join(f"{k} {v}" for k, v in theirs["vesselTrips"].items())
             + f", total {trips(theirs)}.")
 
@@ -577,12 +607,16 @@ def alt_fluids(mine, theirs):
     parts = []
     for d, tag in (("bunkered", "bunkered"), ("delivered", "to rigs")):
         for f in FLUIDS:
-            parts.append(f"{f} {tag} {mine['fluids'][d][f]} against "
-                         f"{theirs['fluids'][d][f]}")
-    return ("Fluids and bulk managed, cubic metres, "
-            + f"{mine['periodLabel']} against {theirs['periodLabel']}. "
-            + "; ".join(parts)
-            + f". Totals {fluid_total(mine)} against {fluid_total(theirs)}.")
+            v = f"{f} {tag} {mine['fluids'][d][f]}"
+            if theirs is not None:
+                v += f" against {theirs['fluids'][d][f]}"
+            parts.append(v)
+    head = ("Fluids and bulk managed, cubic metres, " + mine["periodLabel"]
+            + ("." if theirs is None
+               else f" against {theirs['periodLabel']}."))
+    tail = (f". Total {fluid_total(mine)}." if theirs is None else
+            f". Totals {fluid_total(mine)} against {fluid_total(theirs)}.")
+    return head + " " + "; ".join(parts) + tail
 
 
 # ── Shared panel body ──────────────────────────────────────────────────────
@@ -603,18 +637,30 @@ def figure(b64, alt, caption="", email=False):
             f'  </{outer}>\n')
 
 
-def week_body(w, other, log, show_notes, with_comparison, email=False):
+def week_body(w, other, log, with_comparison, email=False):
     """Everything inside one week, used by both formats."""
     h = ""
     h += f'  <table width="100%" cellspacing="8"><tr>\n{kpi_row(w, other)}  </tr></table>\n'
 
-    if w.get("showArrows", True):
+    if other is not None and w.get("showArrows", True):
         basis = (f"Arrows compare against {other['periodLabel']}, counted on "
                  f"the same rule. Prior value in brackets.")
     else:
-        basis = ("&#8224; Arrows are as the 26-08 report published them, "
-                 "against 06 to 12 Aug 2026. Truck moves are restated on a "
-                 "consistent count and carry no arrow.")
+        # The earliest week in the set. Its own report measured against 06 to
+        # 12 Aug 2026, which is not in this dashboard, so that stays as a
+        # sentence rather than becoming arrows to a week nobody can open.
+        base = w.get("publishedBaseline") or {}
+        basis = "Earliest week in this dashboard, so no comparison is drawn."
+        if base:
+            basis += (f" The {w['reportLabel']} report compared these against "
+                      f"06 to 12 Aug 2026: {base.get('trips')} vessel trips, "
+                      f"{base.get('truckMoves')} truck moves, "
+                      f"{base.get('activeRigs')} active rigs, nil overstay "
+                      f"crew.")
+        if w["trucks"].get("publishedTotal"):
+            basis += (f" Truck moves read {truck_total(w)} here against the "
+                      f"{w['trucks']['publishedTotal']} that report published; "
+                      f"see the method note below.")
     h += (f'  <div style="font-size:11px;color:{INK_DELTA};padding:8px 2px 0;'
           f'text-align:right;">{basis}</div>\n')
 
@@ -640,10 +686,6 @@ def week_body(w, other, log, show_notes, with_comparison, email=False):
         h += daily_log(log, "port", "Port operations")
         h += daily_log(log, "vessel", "Vessel movements")
 
-    if show_notes and w.get("dataNotes"):
-        h += "\n" + note_box("Data notes, for confirmation before circulation",
-                             w["dataNotes"])
-
     h += (f'  <div style="background:{SURFACE};border:1px solid {RULE};'
           f'border-radius:6px;padding:10px 12px;font-size:12px;'
           f'color:{INK_MUTED};margin-top:12px;">{METHOD}</div>\n')
@@ -652,9 +694,8 @@ def week_body(w, other, log, show_notes, with_comparison, email=False):
 
 # ── Format: email ──────────────────────────────────────────────────────────
 
-def build_email(cur, prev, show_notes=True):
-    body = week_body(cur, prev, None, show_notes, with_comparison=True,
-                     email=True)
+def build_email(cur, prev):
+    body = week_body(cur, prev, None, with_comparison=True, email=True)
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -772,13 +813,13 @@ JS = """(function(){
 })();"""
 
 
-def build_dashboard(weeks, logs, show_notes=True):
+def build_dashboard(weeks, logs):
     """weeks: newest first. The first is the current report.
 
     Each week is compared against its own predecessor, so adding a week does
-    not re-point the older tabs at the wrong baseline. The oldest week has no
-    predecessor in the set and falls back to its successor, which the charts
-    still order correctly because they sort by period, not by argument."""
+    not re-point the older tabs at the wrong baseline. The earliest week has no
+    predecessor and is shown on its own: single-series charts, no arrows and no
+    comparison table."""
     cur = weeks[0]
     # Tabs run oldest to newest, left to right, matching the way every chart
     # orders its bars. The newest is still the tab that opens.
@@ -787,8 +828,10 @@ def build_dashboard(weeks, logs, show_notes=True):
     for j, w in enumerate(order):
         is_current = w is cur
         has_predecessor = j > 0
-        other = (order[j - 1] if has_predecessor
-                 else order[j + 1] if len(order) > 1 else w)
+        # None, not the successor: the earliest week is the baseline and is
+        # shown on its own. Handing it the week after would draw a comparison
+        # backwards in time.
+        other = order[j - 1] if has_predecessor else None
         wid = w["reportDate"]
         tabs += (f'      <button role="tab" id="tab-{wid}" '
                  f'aria-controls="panel-{wid}" data-week="{wid}" '
@@ -796,7 +839,7 @@ def build_dashboard(weeks, logs, show_notes=True):
                  f'tabindex="{0 if is_current else -1}">{w["tabLabel"]} '
                  f'<span class="rep">report {w["reportLabel"]}'
                  f'{" &middot; current" if is_current else ""}</span></button>\n')
-        body = week_body(w, other, logs.get(wid), show_notes,
+        body = week_body(w, other, logs.get(wid),
                          with_comparison=has_predecessor)
         panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">
       <div class="panel-head">
@@ -836,6 +879,77 @@ body{{margin:0;background:{PAGE};font-family:'Segoe UI',Arial,sans-serif;color:{
 """
 
 
+# ── Format: the notes file ─────────────────────────────────────────────────
+
+def _md(text):
+    """The data notes carry <b> for the dashboard. Markdown wants **."""
+    return text.replace("<b>", "**").replace("</b>", "**")
+
+
+def build_notes(weeks):
+    """Every open query, pulled out of the weeks and into one file.
+
+    These used to sit in an amber block inside the report. They are questions
+    for the report author, not findings about operations, so they do not belong
+    in something being circulated. They still come from the same data files as
+    the dashboard, so they cannot drift out of step with it."""
+    total = sum(len(w.get("dataNotes", [])) for w in weeks)
+    newest = weeks[0]
+    out = [
+        "# Offshore Logistics: open data queries",
+        "",
+        "Raised while reconciling the weekly workbooks and covering emails "
+        "against each other. Each item is a question for the report author, "
+        "not a finding about operations.",
+        "",
+        f"**{total} open queries across {len(weeks)} weeks**, as of the report "
+        f"of {newest['reportLabel']}.",
+        "",
+        "Tick an item once its answer is confirmed, and correct the matching "
+        "`data/<report-date>.json` so the dashboard follows.",
+        "",
+        "> Generated by `build.py` from the `dataNotes` arrays in "
+        "`data/*.json`. Edit those, not this file.",
+        "",
+    ]
+    for w in weeks:
+        notes = w.get("dataNotes", [])
+        out += [f"## {w['periodLabel']}", "",
+                f"Report of {w['reportLabel']} | {w['periodDays']} days | "
+                f"{len(notes)} "
+                f"{'query' if len(notes) == 1 else 'queries'}", "",
+                f"*Source: {w['provenance']}*", ""]
+        out += [f"- [ ] {_md(n)}" for n in notes] or ["*None.*"]
+        out.append("")
+
+    out += ["## Resolved", "",
+            "Settled counting questions. They are recorded here because a "
+            "figure somewhere differs from the dashboard, and anyone "
+            "reconciling the two will need the reason.",
+            "",
+            "- **Report 24's trips are the email's 13, not the workbook's 8.** "
+            "Settled 10 Sep: the covering email supersedes. The workbook "
+            "narrative yields 2 outbound voyages from Shuaiba for CA1 and 1 "
+            "for CA3, against the email's 6 and 2, so the email appears to "
+            "count rig calls rather than port voyages. CA5 and Charlie-3 agree "
+            "either way. For reports 22 and 23 the email and the workbook "
+            "agree exactly, so the rise from 9 to 13 may carry some of the "
+            "change of basis.",
+            "- **Report 22 published 46 truck moves for 20 to 25 Aug. The week "
+            "made 41.** Four vacuum trucks were loaded with slops on 23.08 "
+            "(`E21`) and dispatched on 24.08 (`E25`), and one truck was loaded "
+            "with mud skips on 23.08 (`E23`) and dispatched on 24.08 (`E26`). "
+            "Both events were counted. That report's prose repeats it as 8 "
+            "vacuum-truck loads and 6 full mud skips, where the workbook "
+            "records 4 trucks and 3 skips.",
+            "- **Offload lines re-describe arrivals already counted.** Most "
+            "visible in report 24, where counting them again would add 14 "
+            "movements to a 44-move week. Each truck is counted once, on "
+            "arrival.",
+            ""]
+    return "\n".join(out)
+
+
 # ── Entry point ────────────────────────────────────────────────────────────
 
 def load(date_str, suffix=""):
@@ -844,14 +958,25 @@ def load(date_str, suffix=""):
 
 
 def main():
+    """Three outputs, one per audience:
+
+        dashboard/  every week behind a tab strip, for circulating
+        email/      the newest week, Outlook safe, for the weekly mail
+        notes/      the open queries, for chasing answers
+
+    The queries used to sit in an amber block inside both reports. They are
+    questions for the report author, so they do not belong in something being
+    circulated -- but they are also not something to lose, hence a file of
+    their own, generated from the same data.
+    """
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
     dates = args or ["2026-09-10", "2026-09-03", "2026-08-26"]
-    cur_date, prev_date = dates[0], dates[1]
-    show_notes = "--no-notes" not in flags
-    want_email = "--email" in flags or not (flags & {"--dashboard"})
-    want_dash = "--dashboard" in flags or not (flags & {"--email"})
+
+    picked = flags & {"--dashboard", "--email", "--notes"}
+    want = {name: (f"--{name}" in flags or not picked)
+            for name in ("dashboard", "email", "notes")}
 
     weeks = []
     for d in dates:
@@ -863,25 +988,29 @@ def main():
     cur, prev = weeks[0], weeks[1]
 
     for w in weeks:
-        got, want = len(w["trucks"]["byDay"]), w["periodDays"]
-        assert got == want, f"{w['reportDate']}: {got} truck days, {want} declared"
+        got, expect = len(w["trucks"]["byDay"]), w["periodDays"]
+        assert got == expect, (
+            f"{w['reportDate']}: {got} truck days, {expect} declared")
 
-    dist = HERE / "dist"
-    dist.mkdir(parents=True, exist_ok=True)
-    tag = "" if show_notes else "_clean"
+    def write(folder, name, text):
+        d = HERE / folder
+        d.mkdir(parents=True, exist_ok=True)
+        (d / name).write_text(text, encoding="utf-8")
+        kb = (d / name).stat().st_size / 1024
+        print(f"  {folder + '/' + name:58s} {kb:5.0f} KB")
 
-    if want_email:
-        d, m, y = cur_date[8:10], cur_date[5:7], cur_date[:4]
-        out = dist / f"Offshore_Logistics_Weekly_Update_{d}-{m}-{y}{tag}.html"
-        out.write_text(build_email(cur, prev, show_notes), encoding="utf-8")
-        print(f"email     {out.name}  ({out.stat().st_size / 1024:.0f} KB)")
-
-    if want_dash:
-        logs = {w["reportDate"]: load(w["reportDate"], ".log") for w in weeks}
-        out = dist / f"Offshore_Logistics_Dashboard_{cur_date}{tag}.html"
-        out.write_text(build_dashboard(weeks, logs, show_notes),
-                       encoding="utf-8")
-        print(f"dashboard {out.name}  ({out.stat().st_size / 1024:.0f} KB)")
+    if want["dashboard"]:
+        # A stable filename: the dashboard covers every week, so the tab strip
+        # says which, and each rebuild replaces the file rather than adding one.
+        write("dashboard", "Offshore_Logistics_Weekly_Dashboard.html",
+              build_dashboard(weeks, {w["reportDate"]: load(w["reportDate"], ".log")
+                                      for w in weeks}))
+    if want["email"]:
+        d, m, y = cur["reportDate"][8:10], cur["reportDate"][5:7], cur["reportDate"][:4]
+        write("email", f"Offshore_Logistics_Weekly_Update_{d}-{m}-{y}.html",
+              build_email(cur, prev))
+    if want["notes"]:
+        write("notes", "data-queries.md", build_notes(weeks))
 
 
 if __name__ == "__main__":
