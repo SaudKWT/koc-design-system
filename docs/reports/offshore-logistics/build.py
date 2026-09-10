@@ -130,8 +130,16 @@ def _frame(ax, ylabel):
         lbl.set_fontname(FONT)
 
 
-def _legend(ax, **kw):
-    leg = ax.legend(frameon=False, fontsize=10.5, **kw)
+def _legend(ax, ncol=2, y=-0.20):
+    """Always below the axis, never inside it.
+
+    Inside the plot area a legend collides with whatever bar happens to be tall
+    that week. It has happened twice: the fluids legend landed on the slops
+    annotation, and the trips legend landed on CA1's value label the week CA1
+    reached 6. Below the axis the collision cannot happen at any data value,
+    which is worth more than the vertical space it costs."""
+    leg = ax.legend(frameon=False, fontsize=10.5, ncol=ncol,
+                    loc="upper center", bbox_to_anchor=(0.5, y))
     for t in leg.get_texts():
         t.set_color(INK)
         t.set_fontname(FONT)
@@ -229,7 +237,7 @@ def chart_trips(mine, theirs):
     ax.set_title(title, fontsize=13.5, fontweight="bold", color=NAVY,
                  fontname=FONT, pad=12)
     if theirs is not None:
-        _legend(ax, loc="upper left")
+        _legend(ax)
     return _png(fig)
 
 
@@ -258,7 +266,7 @@ def chart_ground(w):
                  f"{sum(inn)} in, {sum(out) + sum(inn)} total)",
                  fontsize=13.5, fontweight="bold", color=NAVY,
                  fontname=FONT, pad=12)
-    _legend(ax, loc="upper left", ncol=2)
+    _legend(ax)
     return _png(fig)
 
 
@@ -294,7 +302,8 @@ def chart_fluids(mine, theirs):
     ax.set_title(title, fontsize=13.5, fontweight="bold", color=NAVY,
                  fontname=FONT, pad=12)
     if theirs is not None:
-        _legend(ax, loc="upper right")
+        # Lower, because this chart's tick labels are two lines deep.
+        _legend(ax, y=-0.30)
     return _png(fig)
 
 
@@ -780,7 +789,18 @@ JS = """(function(){
       panels[j].hidden=!on;
     });
     if(focus)tabs[i].focus();
-    if(history.replaceState)history.replaceState(null,'','#'+tabs[i].dataset.week);
+    setHash(tabs[i].dataset.week);
+  }
+  function setHash(week){
+    /* SharePoint previews an uploaded .html inside a sandboxed srcdoc iframe,
+       where the document origin is null. replaceState is illegal there and
+       throws a SecurityError, which used to abort select() on every tab
+       switch and put a "some content didn't load" banner over the report.
+       Deep links cannot work in that frame anyway, so losing them quietly is
+       the right trade: the tab strip has to keep working. */
+    try{
+      if(history.replaceState)history.replaceState(null,'','#'+week);
+    }catch(e){}
   }
   tabs.forEach(function(t,i){
     t.addEventListener('click',function(){select(i,false);});
@@ -794,7 +814,8 @@ JS = """(function(){
     });
   });
   function fromHash(){
-    var h=location.hash.replace('#','');
+    var h='';
+    try{h=location.hash.replace('#','');}catch(e){}
     var want=-1;
     tabs.forEach(function(t,i){if(t.dataset.week===h)want=i;});
     return want;

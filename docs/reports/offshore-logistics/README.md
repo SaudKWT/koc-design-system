@@ -73,6 +73,38 @@ HTML5 sectioning elements. Outlook also blocks images by default, so every
 chart carries `alt` text with its figures and the comparison table repeats
 every charted number as text.
 
+## Hosting it on SharePoint
+
+SharePoint previews an uploaded `.html` inside a **sandboxed `srcdoc` iframe
+whose document origin is `null`**. Two consequences, both handled:
+
+- `history.replaceState` is illegal in an opaque origin and throws a
+  `SecurityError`. It used to abort `select()` on every tab switch and put a
+  red *"Some content didn't load. A script didn't run correctly on this page"*
+  banner over the report. The call is now wrapped in `try`/`catch`.
+- Deep links cannot work in that frame, because there is no address bar URL to
+  carry a hash. Losing them quietly there is the right trade: the tab strip has
+  to keep working.
+
+Everything else survives. Scripts run, the base64 charts render, tabs switch on
+click and keyboard. `scratchpad` reproduction: load the file into an
+`<iframe sandbox="allow-scripts">` via `srcdoc`, which produces the same opaque
+origin, and assert zero console errors.
+
+If a tenant blocks script outright, or renders nothing at all, use the PDF:
+
+```bash
+python3 docs/reports/offshore-logistics/to_pdf.py \
+  dashboard/Offshore_Logistics_Weekly_Dashboard.html
+```
+
+A PDF previews inline on every tenant with no script and no settings change.
+The tab strip cannot survive that trip and does not need to: the print
+stylesheet unhides every panel and hides the strip, so the PDF carries all
+weeks stacked, oldest first. `to_pdf.py` asserts that all panels are visible
+under print media, so a broken print rule fails loudly rather than shipping a
+one-week PDF.
+
 ## The tab strip
 
 Proper ARIA tabs: `role="tablist"` / `tab` / `tabpanel`, `aria-selected`,
