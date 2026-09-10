@@ -40,6 +40,14 @@ table{width:100%}
   [role=tablist]{display:none}
   [role=tabpanel][hidden]{display:block!important}
   .card{box-shadow:none}
+  /* A long table splits across pages, so its header has to come with it. */
+  thead{display:table-header-group}
+  tr,figure{break-inside:avoid}
+  /* The daily log is collapsed on screen and opened by to_pdf.py before
+     printing, so its summary stays visible: open, it is the section heading.
+     A long log has to be allowed to break across pages. */
+  details,details table{break-inside:auto}
+  summary{list-style:none}
 }
 @media (prefers-reduced-motion:reduce){
   [role=tab]{transition:none}
@@ -277,7 +285,10 @@ table{width:100%}
 
   <div style="font-size:15px;font-weight:700;color:#1F3B57;border-left:4px solid #1F3B57;padding-left:10px;">Week on week comparison</div>
   <table width="100%" cellspacing="0" style="font-size:13px;border-collapse:collapse;margin-top:8px;">
+  <thead>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">Metric</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">26 Aug to 02 Sep<br><span style='font-weight:400;font-size:11px;'>8 days</span></td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">20 to 25 Aug<br><span style='font-weight:400;font-size:11px;'>6 days</span></td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">Change</td></tr>
+  </thead>
+  <tbody>
     <tr><td colspan="4" style="padding:8px 10px;background:#1F3B57;color:#ffffff;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid #1F3B57;">Vessel trips</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">CA1</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">2</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">4</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#5B6B78;font-weight:700;font-size:12px;">&#9660; 2 &nbsp;(4)</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">CA3</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">1</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">0</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#5B6B78;font-weight:700;font-size:12px;">&#9650; 1 &nbsp;(0)</td></tr>
@@ -305,6 +316,7 @@ table{width:100%}
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">Overstay crew, HLB</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">0</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">2</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#2F7A55;font-weight:700;font-size:12px;">&#9660; 2 &nbsp;(2)</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">Overstay crew, COSL</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">10</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">11</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#2F7A55;font-weight:700;font-size:12px;">&#9660; 1 &nbsp;(11)</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;">Total overstay crew</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;font-variant-numeric:tabular-nums;">10</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;font-variant-numeric:tabular-nums;color:#5B6B78;">13</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;color:#2F7A55;font-weight:700;font-size:12px;">&#9660; 3 &nbsp;(13)</td></tr>
+  </tbody>
   </table>
 
   <div style="font-size:15px;font-weight:700;color:#1F3B57;border-left:4px solid #E0A73C;padding-left:10px;">Rig OD1 Status</div>
@@ -514,7 +526,10 @@ table{width:100%}
 
   <div style="font-size:15px;font-weight:700;color:#1F3B57;border-left:4px solid #1F3B57;padding-left:10px;">Week on week comparison</div>
   <table width="100%" cellspacing="0" style="font-size:13px;border-collapse:collapse;margin-top:8px;">
+  <thead>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">Metric</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">03 to 09 Sep<br><span style='font-weight:400;font-size:11px;'>7 days</span></td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">26 Aug to 02 Sep<br><span style='font-weight:400;font-size:11px;'>8 days</span></td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;background:#F4F6F8;font-weight:700;">Change</td></tr>
+  </thead>
+  <tbody>
     <tr><td colspan="4" style="padding:8px 10px;background:#1F3B57;color:#ffffff;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid #1F3B57;">Vessel trips</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">CA1</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">6</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">2</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#5B6B78;font-weight:700;font-size:12px;">&#9650; 4 &nbsp;(2)</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">CA3</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">2</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">1</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#5B6B78;font-weight:700;font-size:12px;">&#9650; 1 &nbsp;(1)</td></tr>
@@ -542,6 +557,7 @@ table{width:100%}
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">Overstay crew, HLB</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">0</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">0</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#5B6B78;font-weight:700;font-size:12px;">No change &nbsp;(0)</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;">Overstay crew, COSL</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;">11</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-variant-numeric:tabular-nums;color:#5B6B78;">10</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;color:#A8403D;font-weight:700;font-size:12px;">&#9650; 1 &nbsp;(10)</td></tr>
     <tr><td align="left" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;">Total overstay crew</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;font-variant-numeric:tabular-nums;">11</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;font-variant-numeric:tabular-nums;color:#5B6B78;">10</td><td align="right" style="padding:7px 10px;border:1px solid #E5EAEE;font-weight:700;color:#A8403D;font-weight:700;font-size:12px;">&#9650; 1 &nbsp;(10)</td></tr>
+  </tbody>
   </table>
 
   <div style="font-size:15px;font-weight:700;color:#1F3B57;border-left:4px solid #E0A73C;padding-left:10px;">Rig OD1 Status</div>

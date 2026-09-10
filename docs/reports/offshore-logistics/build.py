@@ -433,7 +433,7 @@ def comparison_table(cur, prev):
         ], bold=bold)
 
     h = ('  <table width="100%" cellspacing="0" style="font-size:13px;'
-         'border-collapse:collapse;margin-top:8px;">\n')
+         'border-collapse:collapse;margin-top:8px;">\n  <thead>\n')
     h += row([
         ("Metric", "left", ""),
         (f"{cur['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
@@ -442,6 +442,7 @@ def comparison_table(cur, prev):
          f"{prev['periodDays']} days</span>", "right", ""),
         ("Change", "right", ""),
     ], bold=True, shade=True)
+    h += "  </thead>\n  <tbody>\n"
 
     h += section_row("Vessel trips")
     for v in ("CA1", "CA3", "CA5", "Charlie-3"):
@@ -474,7 +475,7 @@ def comparison_table(cur, prev):
                   intent="lower-is-better")
     h += line("Total overstay crew", overstay(cur), overstay(prev),
               intent="lower-is-better", bold=True)
-    return h + "  </table>\n"
+    return h + "  </tbody>\n  </table>\n"
 
 
 def rig_table(rig, accent, name):
@@ -770,6 +771,14 @@ table{{width:100%}}
   [role=tablist]{{display:none}}
   [role=tabpanel][hidden]{{display:block!important}}
   .card{{box-shadow:none}}
+  /* A long table splits across pages, so its header has to come with it. */
+  thead{{display:table-header-group}}
+  tr,figure{{break-inside:avoid}}
+  /* The daily log is collapsed on screen and opened by to_pdf.py before
+     printing, so its summary stays visible: open, it is the section heading.
+     A long log has to be allowed to break across pages. */
+  details,details table{{break-inside:auto}}
+  summary{{list-style:none}}
 }}
 @media (prefers-reduced-motion:reduce){{
   [role=tab]{{transition:none}}

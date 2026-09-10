@@ -94,16 +94,38 @@ origin, and assert zero console errors.
 If a tenant blocks script outright, or renders nothing at all, use the PDF:
 
 ```bash
-python3 docs/reports/offshore-logistics/to_pdf.py \
-  dashboard/Offshore_Logistics_Weekly_Dashboard.html
+python3 to_pdf.py dashboard/Offshore_Logistics_Weekly_Dashboard.html
+python3 to_pdf.py <file>.html --week latest        # just the current week
+python3 to_pdf.py <file>.html --week 2026-09-03    # one named week
 ```
 
-A PDF previews inline on every tenant with no script and no settings change.
+A PDF previews inline on every tenant with no script and no settings change,
+and it is also the answer for a tenant that serves `.html` from a document
+library as a **download** rather than a preview, which is a tenant setting no
+file can work around.
+
 The tab strip cannot survive that trip and does not need to: the print
-stylesheet unhides every panel and hides the strip, so the PDF carries all
-weeks stacked, oldest first. `to_pdf.py` asserts that all panels are visible
-under print media, so a broken print rule fails loudly rather than shipping a
-one-week PDF.
+stylesheet unhides every panel and hides the strip, so the whole-file PDF
+carries all weeks stacked, oldest first. `--week` trims it to one by removing
+the other panels from the DOM. It reads the built HTML rather than
+re-rendering from data, so the PDF cannot disagree with the page it came from.
+
+Three things the PDF path has to get right, each of which was wrong first:
+
+- **The daily log is a collapsed `<details>`.** A PDF has nothing to click, so
+  a collapsed one printed as a heading with nothing under it, silently dropping
+  86 operations. `to_pdf.py` opens every one before printing and reports how
+  many, which is what makes the PDF a complete document rather than a summary.
+- **The comparison table spans pages** and lost its column headings on the
+  second, leaving three unlabelled number columns. It now has a real `<thead>`,
+  which Chromium repeats per page under `display:table-header-group`.
+- **Charts are atomic**, so one that does not fit bumps whole and leaves a
+  third of a page blank. `scale=0.95` is imperceptible and buys about 55px a
+  page, which is the difference between both charts fitting on page one and
+  the second being bumped.
+
+`to_pdf.py` asserts that every panel it kept is visible under print media, so a
+broken print rule fails loudly instead of shipping a truncated PDF.
 
 ## The tab strip
 
