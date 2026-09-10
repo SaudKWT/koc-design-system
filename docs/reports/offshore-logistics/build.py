@@ -763,8 +763,12 @@ JS = """(function(){
     var i=fromHash();
     if(i>-1)select(i,false);
   });
+  /* The default is whichever tab the markup marks selected, not index 0:
+     tabs run oldest first but the newest week is the one that should open. */
+  var initial=0;
+  tabs.forEach(function(t,i){if(t.getAttribute('aria-selected')==='true')initial=i;});
   var start=fromHash();
-  select(start>-1?start:0,false);
+  select(start>-1?start:initial,false);
 })();"""
 
 
@@ -776,17 +780,22 @@ def build_dashboard(weeks, logs, show_notes=True):
     predecessor in the set and falls back to its successor, which the charts
     still order correctly because they sort by period, not by argument."""
     cur = weeks[0]
+    # Tabs run oldest to newest, left to right, matching the way every chart
+    # orders its bars. The newest is still the tab that opens.
+    order = list(reversed(weeks))
     tabs, panels = "", ""
-    for i, w in enumerate(weeks):
-        other = weeks[i + 1] if i + 1 < len(weeks) else weeks[i - 1]
-        has_predecessor = i + 1 < len(weeks)
+    for j, w in enumerate(order):
+        is_current = w is cur
+        has_predecessor = j > 0
+        other = (order[j - 1] if has_predecessor
+                 else order[j + 1] if len(order) > 1 else w)
         wid = w["reportDate"]
         tabs += (f'      <button role="tab" id="tab-{wid}" '
                  f'aria-controls="panel-{wid}" data-week="{wid}" '
-                 f'aria-selected="{"true" if i == 0 else "false"}" '
-                 f'tabindex="{0 if i == 0 else -1}">{w["tabLabel"]} '
+                 f'aria-selected="{"true" if is_current else "false"}" '
+                 f'tabindex="{0 if is_current else -1}">{w["tabLabel"]} '
                  f'<span class="rep">report {w["reportLabel"]}'
-                 f'{" &middot; current" if i == 0 else ""}</span></button>\n')
+                 f'{" &middot; current" if is_current else ""}</span></button>\n')
         body = week_body(w, other, logs.get(wid), show_notes,
                          with_comparison=has_predecessor)
         panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">

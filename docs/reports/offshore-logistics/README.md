@@ -10,9 +10,10 @@ python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --email
 python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --no-notes
 ```
 
-Pass any number of report dates, each matching a filename in `data/`. They are
-sorted by period, newest first, and each becomes a tab. The email format always
-covers the first. `--no-notes` drops the amber "Data notes" block and writes a
+Pass any number of report dates, each matching a filename in `data/`, in any
+order. Each becomes a tab. **Tabs run oldest to newest, left to right**, the
+same direction every chart orders its bars, and the newest week is the one that
+opens. The email format always covers the newest. `--no-notes` drops the amber "Data notes" block and writes a
 `_clean` file, for once the open queries in that block have been answered.
 
 Every week is compared against **its own predecessor in the set**, so adding a
@@ -48,7 +49,8 @@ every charted number as text.
 ## The tab strip
 
 Proper ARIA tabs: `role="tablist"` / `tab` / `tabpanel`, `aria-selected`,
-managed `tabindex`, arrow keys plus Home and End, and a visible focus ring.
+managed `tabindex`, arrow keys that wrap both ways, Home and End landing on the
+oldest and newest week, and a visible focus ring.
 `#<report-date>` in the URL deep-links to a week, and selecting a tab updates
 it, so a link can point at one week.
 
@@ -57,9 +59,12 @@ resolve, rather than half-applying the pattern: this repo has already shipped a
 `Tabs` whose `aria-controls` pointed at an id that did not exist. The panels
 carry no `hidden` in the markup, so with script disabled every week renders
 stacked instead of the page collapsing to nothing, and printing does the same
-while hiding the tab strip. And a `hashchange` listener handles a link pasted
-into the address bar of an already-open page: a hash change alone does not
-re-run the script, so without it such a link would silently do nothing.
+while hiding the tab strip. A `hashchange` listener handles a link pasted into
+the address bar of an already-open page: a hash change alone does not re-run
+the script, so without it such a link would silently do nothing. And the
+default tab is read from whichever button the markup marks selected, not
+hardcoded to index 0, because index 0 is now the oldest week rather than the
+current one.
 
 ## Data flow
 
