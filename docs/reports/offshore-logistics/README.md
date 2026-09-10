@@ -4,16 +4,21 @@ A generator for the weekly Offshore Logistics report. One JSON file per report
 week in, two self-contained HTML files out.
 
 ```bash
-python3 docs/reports/offshore-logistics/build.py 2026-09-03 2026-08-26
-python3 docs/reports/offshore-logistics/build.py 2026-09-03 2026-08-26 --dashboard
-python3 docs/reports/offshore-logistics/build.py 2026-09-03 2026-08-26 --email
-python3 docs/reports/offshore-logistics/build.py 2026-09-03 2026-08-26 --no-notes
+python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 2026-08-26
+python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --dashboard
+python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --email
+python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --no-notes
 ```
 
-The two arguments are the current report date and the one it is compared
-against, both matching a filename in `data/`. `--no-notes` drops the amber
-"Data notes" block and writes a `_clean` file, for once the open queries in that
-block have been answered.
+Pass any number of report dates, each matching a filename in `data/`. They are
+sorted by period, newest first, and each becomes a tab. The email format always
+covers the first. `--no-notes` drops the amber "Data notes" block and writes a
+`_clean` file, for once the open queries in that block have been answered.
+
+Every week is compared against **its own predecessor in the set**, so adding a
+week does not re-point the older tabs at the wrong baseline. The oldest week has
+no predecessor and falls back to its successor, which the charts still order
+correctly because they sort by period rather than by argument.
 
 Requires `matplotlib`, plus `openpyxl` for `extract.py`. `pillow` is optional
 and cuts the output roughly in half.
@@ -22,12 +27,12 @@ and cuts the output roughly in half.
 
 | | `email` | `dashboard` |
 | --- | --- | --- |
-| Weeks | one | both, behind a tab strip |
+| Weeks | one | all of them, behind a tab strip |
 | Layout | nested tables, inline styles | CSS, sticky header |
 | Charts | 3 PNG, base64 | 6 PNG, base64 |
 | Script | none | tab behaviour only |
 | Daily logs | in the attached workbook | in the page |
-| Size | 92 KB | 203 KB |
+| Size | 94 KB | 314 KB at three weeks |
 
 The tab strip needs CSS and script, which is exactly what an Outlook-safe email
 cannot have, so the two cannot be the same file. The email is what Bu Khaled
@@ -47,12 +52,14 @@ managed `tabindex`, arrow keys plus Home and End, and a visible focus ring.
 `#<report-date>` in the URL deep-links to a week, and selecting a tab updates
 it, so a link can point at one week.
 
-Two deliberate details. The script bails out if any `aria-controls` fails to
+Three deliberate details. The script bails out if any `aria-controls` fails to
 resolve, rather than half-applying the pattern: this repo has already shipped a
-`Tabs` whose `aria-controls` pointed at an id that did not exist. And the
-panels carry no `hidden` in the markup, so with script disabled both weeks
-render stacked instead of the page collapsing to nothing. Printing does the
-same, and hides the tab strip.
+`Tabs` whose `aria-controls` pointed at an id that did not exist. The panels
+carry no `hidden` in the markup, so with script disabled every week renders
+stacked instead of the page collapsing to nothing, and printing does the same
+while hiding the tab strip. And a `hashchange` listener handles a link pasted
+into the address bar of an already-open page: a hash change alone does not
+re-run the script, so without it such a link would silently do nothing.
 
 ## Data flow
 
@@ -97,6 +104,32 @@ off still gets the whole report.
 5. `periodDays` must equal the length of `trucks.byDay`. The build asserts it.
 6. Run the build with the new date and the previous one.
 
+## Where the source disagrees with itself
+
+Three times now the covering email and the workbook have not matched. Each is
+resolved the same way: **one rule, applied to every week, with both numbers
+stated.** A dashboard whose weeks are counted differently is worse than no
+dashboard, because the arrows become fiction.
+
+| Report | Published | Counted here | Cause |
+| --- | --- | --- | --- |
+| 22 (26-08) | 46 truck moves | 41 | five trucks counted on both load and dispatch |
+| 24 (10-09) | 13 vessel trips | 8 | basis appears to have changed with the author |
+
+Report 24's trip figures agree with the workbook on CA5 (0) and Charlie-3 (5)
+and differ on CA1 (6 against 2) and CA3 (2 against 1). The same rule reproduced
+report 22's published chart and report 23's email exactly, all eight vessel
+figures, so the rule is not the thing that changed. Report 24 also has a
+different sender. Both numbers appear on the trips tile, and the open question
+is in that week's data notes.
+
+Report 24 needs the offload rule too. Its Port sheet re-describes arrivals as
+offloads (`E21` repeats `E19`, `E23` repeats `E24` to `E27`, `E34` and `E35`
+repeat `E30` to `E33`, `E49` and `E50` repeat `E42`, `E43` and `E46`). Counting
+both would add 14 movements to a 44-move week. `E35` is also what settles
+whether the identical `E30` and `E33` rows are a duplicate: it records two
+trucks of chemical containers offloaded, so they are two real trucks.
+
 ## The truck counting rule, and the 46 that was 41
 
 A truck loaded on one day and dispatched the next is **one** movement, counted
@@ -136,6 +169,14 @@ The blocks themselves come from the merged-cell geometry of the Day column, not
 from reading values. Reading values will not do: the Thursday 27.08 block is
 entirely empty, so a value-driven walk folds its four operations into Wednesday
 and reports a 7-day week for an 8-day period.
+
+## Signatures are per week
+
+The author changes. Report 24 came from a different sender and carried **no
+signature block at all**, so `data/2026-09-10.json` gives the name and the
+address from the `From` line and nothing else. Nothing beyond what the email
+supports is invented, and the gap is in that week's data notes. Weeks with no
+`signature` key fall back to the block from the 26.08 email.
 
 ## Palette: a deliberate exemption from invariant 1
 
@@ -177,7 +218,7 @@ Only the 11px delta needed the darker step. axe failed the original at both
 ## Accessibility
 
 axe-core, WCAG 2.1 A and AA **plus best-practice rules**, run in Chromium over
-both tabs with the daily logs expanded: **0 violations, 42 passes each**.
+every tab with the daily logs expanded: **0 violations, 42 passes each**.
 Best-practice rules are included for the reason `CLAUDE.md` gives, that both
 a11y defects a consuming KOC app reported were best-practice rules.
 
@@ -193,9 +234,11 @@ The one remaining `incomplete` is "element content is too short to determine if
 it is actual text content" on a single-digit KPI value. That is axe declining to
 classify one character, not a defect.
 
-Verified by driving the page rather than by reading it: click, arrow keys, Home
-and End, focus follows selection, `aria-controls` all resolve, deep link
-selects the right tab, no console errors, and no horizontal overflow at 400px.
+Verified by driving the page rather than by reading it: click, arrow keys that
+wrap in both directions, Home and End, focus follows selection, `aria-controls`
+all resolve, deep links select the right tab on a cold load **and** on an
+in-page hash change, an unknown hash falls back to the current week, no console
+errors, and no horizontal overflow at 400px.
 
 `#2F7A55` is new. The old palette had no colour for an improving figure, so a
 fall in overstay crew was rendered in the same alarm red as a rise. It measures

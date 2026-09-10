@@ -304,6 +304,10 @@ def kpis(w, other):
 
     tiles = [
         dict(value=trips(w), label="Total vessel trips", colour=NAVY,
+             caption=(f'<span style="color:{RED_TEXT};font-weight:700;">'
+                      f'{sum(w["publishedTrips"].values())} as published</span>'
+                      if w.get("publishedTrips")
+                      and sum(w["publishedTrips"].values()) != trips(w) else None),
              **dict(zip(("delta_html", "delta_colour"),
                         cmp(trips(w), "trips", trips(other), "pct")))),
         dict(value=truck_total(w), label="Truck / tanker moves", colour=TEAL,
@@ -331,6 +335,8 @@ def kpis(w, other):
 
 
 def kpi_row(w, other):
+    default_caption = (f"vs {other['tabLabel']}" if w.get("showArrows", True)
+                       else "vs 06 to 12 Aug")
     cells = ""
     for t in kpis(w, other):
         alert = t.get("alert")
@@ -340,7 +346,7 @@ def kpi_row(w, other):
         <div style="font-size:26px;font-weight:700;color:{t['colour']};line-height:1.1;">{t['value']}</div>
         <div style="font-size:11px;color:{INK_MUTED};padding:4px 0 6px;">{t['label']}</div>
         <div style="font-size:11px;font-weight:700;color:{t['delta_colour']};">{t['delta_html']}</div>
-        <div style="font-size:11px;color:{INK_DELTA};">{'vs the other week' if w.get('showArrows', True) else 'vs 06 to 12 Aug'}</div></td>
+        <div style="font-size:11px;color:{INK_DELTA};">{t.get('caption') or default_caption}</div></td>
 """
     return cells
 
@@ -373,7 +379,7 @@ def comparison_table(cur, prev):
 
     def line(name, now, was, mode="abs", intent="neutral", unit="",
              bold=False, fmt="{:,g}"):
-        html, colour = delta(now, was, mode, intent)
+        html, colour = delta(now, was, mode, intent, unit)
         return row([
             (name, "left", ""),
             (fmt.format(now) + unit, "right", "font-variant-numeric:tabular-nums;"),
@@ -507,13 +513,29 @@ def daily_log(log, key, title):
 """
 
 
-SIGNATURE = f"""    <p style="font-size:13px;margin:0;">Thanks and Best Regards,</p>
+DEFAULT_SIGNATURE = {
+    "name": "Naser M Gh Hassan",
+    "lines": ["Kuwait Oil Company (KOC)",
+              "Engineer Drilling &amp; Workover | "
+              "Drilling &amp; Workover Engineering Group"],
+    "muted": ["NHassan@kockw.com | www.kockw.com | Tel +965 238 72718",
+              "P.O Box 9758 | Ahmadi | Postal Code 61008 | Kuwait"],
+}
+
+
+def signature(w):
+    """Per week, because the author changes. Report 24 came from a different
+    sender and carried no signature block at all, so nothing beyond the name and
+    the address on the From line is invented here."""
+    sig = w.get("signature") or DEFAULT_SIGNATURE
+    body = "<br>\n      ".join(sig.get("lines", []))
+    muted = "<br>\n      ".join(sig.get("muted", []))
+    if muted:
+        muted = (f'<br>\n      <span style="color:{INK_MUTED};">{muted}</span>')
+    return f"""    <p style="font-size:13px;margin:0;">Thanks and Best Regards,</p>
     <p style="font-size:13px;margin:8px 0 0;line-height:1.6;">
-      <b>Naser M Gh Hassan</b><br>
-      Kuwait Oil Company (KOC)<br>
-      Engineer Drilling &amp; Workover | Drilling &amp; Workover Engineering Group<br>
-      <span style="color:{INK_MUTED};">NHassan@kockw.com | www.kockw.com | Tel +965 238 72718<br>
-      P.O Box 9758 | Ahmadi | Postal Code 61008 | Kuwait</span>
+      <b>{sig['name']}</b><br>
+      {body}{muted}
     </p>
 """
 
@@ -654,7 +676,7 @@ def build_email(cur, prev, show_notes=True):
 {body}  </td></tr>
   <tr><td style="padding:20px 28px 26px;">
     <p style="font-size:13px;margin:0 0 12px;">Full daily port and vessel logs are attached. Happy to walk through any item.</p>
-{SIGNATURE}  </td></tr>
+{signature(cur)}  </td></tr>
 </table></td></tr></table></body></html>
 """
 
@@ -729,19 +751,35 @@ JS = """(function(){
       if(n!==null){e.preventDefault();select(n,true);}
     });
   });
-  var hash=location.hash.replace('#','');
-  var want=-1;
-  tabs.forEach(function(t,i){if(t.dataset.week===hash)want=i;});
-  select(want>-1?want:0,false);
+  function fromHash(){
+    var h=location.hash.replace('#','');
+    var want=-1;
+    tabs.forEach(function(t,i){if(t.dataset.week===h)want=i;});
+    return want;
+  }
+  /* A hash change alone does not re-run this script, so a link pasted into the
+     address bar of an already-open page would otherwise do nothing. */
+  window.addEventListener('hashchange',function(){
+    var i=fromHash();
+    if(i>-1)select(i,false);
+  });
+  var start=fromHash();
+  select(start>-1?start:0,false);
 })();"""
 
 
 def build_dashboard(weeks, logs, show_notes=True):
-    """weeks: newest first. The first is the current report."""
+    """weeks: newest first. The first is the current report.
+
+    Each week is compared against its own predecessor, so adding a week does
+    not re-point the older tabs at the wrong baseline. The oldest week has no
+    predecessor in the set and falls back to its successor, which the charts
+    still order correctly because they sort by period, not by argument."""
     cur = weeks[0]
     tabs, panels = "", ""
     for i, w in enumerate(weeks):
-        other = weeks[1] if i == 0 else weeks[0]
+        other = weeks[i + 1] if i + 1 < len(weeks) else weeks[i - 1]
+        has_predecessor = i + 1 < len(weeks)
         wid = w["reportDate"]
         tabs += (f'      <button role="tab" id="tab-{wid}" '
                  f'aria-controls="panel-{wid}" data-week="{wid}" '
@@ -750,7 +788,7 @@ def build_dashboard(weeks, logs, show_notes=True):
                  f'<span class="rep">report {w["reportLabel"]}'
                  f'{" &middot; current" if i == 0 else ""}</span></button>\n')
         body = week_body(w, other, logs.get(wid), show_notes,
-                         with_comparison=(i == 0))
+                         with_comparison=has_predecessor)
         panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">
       <div class="panel-head">
         <h2>{w['periodLabel']}</h2>
@@ -779,7 +817,7 @@ body{{margin:0;background:{PAGE};font-family:'Segoe UI',Arial,sans-serif;color:{
   <main class="wrap">
     <div class="card">
 {panels}      <footer class="sig">
-{SIGNATURE}      </footer>
+{signature(cur)}      </footer>
     </div>
   </main>
 <script>
@@ -800,17 +838,22 @@ def main():
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
-    cur_date = args[0] if args else "2026-09-03"
-    prev_date = args[1] if len(args) > 1 else "2026-08-26"
+    dates = args or ["2026-09-10", "2026-09-03", "2026-08-26"]
+    cur_date, prev_date = dates[0], dates[1]
     show_notes = "--no-notes" not in flags
     want_email = "--email" in flags or not (flags & {"--dashboard"})
     want_dash = "--dashboard" in flags or not (flags & {"--email"})
 
-    cur, prev = load(cur_date), load(prev_date)
-    if cur is None or prev is None:
-        sys.exit(f"missing data file for {cur_date} or {prev_date}")
+    weeks = []
+    for d in dates:
+        w = load(d)
+        if w is None:
+            sys.exit(f"missing data/{d}.json")
+        weeks.append(w)
+    weeks.sort(key=lambda w: w["periodStart"], reverse=True)
+    cur, prev = weeks[0], weeks[1]
 
-    for w in (cur, prev):
+    for w in weeks:
         got, want = len(w["trucks"]["byDay"]), w["periodDays"]
         assert got == want, f"{w['reportDate']}: {got} truck days, {want} declared"
 
@@ -825,10 +868,9 @@ def main():
         print(f"email     {out.name}  ({out.stat().st_size / 1024:.0f} KB)")
 
     if want_dash:
-        logs = {w["reportDate"]: load(w["reportDate"], ".log")
-                for w in (cur, prev)}
+        logs = {w["reportDate"]: load(w["reportDate"], ".log") for w in weeks}
         out = dist / f"Offshore_Logistics_Dashboard_{cur_date}{tag}.html"
-        out.write_text(build_dashboard([cur, prev], logs, show_notes),
+        out.write_text(build_dashboard(weeks, logs, show_notes),
                        encoding="utf-8")
         print(f"dashboard {out.name}  ({out.stat().st_size / 1024:.0f} KB)")
 
