@@ -1,0 +1,83 @@
+{
+  "reportDate": "2026-09-03",
+  "reportLabel": "03 Sep 2026",
+  "periodStart": "2026-08-26",
+  "periodEnd": "2026-09-02",
+  "periodLabel": "26 Aug to 02 Sep 2026",
+  "periodDays": 8,
+  "provenance": "Email of 03.09.2026 plus DWOS_Weekly_Offshore_Logistics_Report_03.09.2026.xlsx (sheets: Port, Vessel).",
+  "marsec": "Level 2",
+  "vesselTrips": { "CA1": 2, "CA3": 1, "CA5": 1, "Charlie-3": 5 },
+  "tripRule": "One trip is one outbound voyage from Shuaiba Port to a rig or location, plus its return. Counted from the Vessel sheet narrative.",
+  "trucks": {
+    "rule": "Count truck units per movement. A dispatch counts as out, an arrival counts as in. Loading without dispatch and site visits do not count.",
+    "byDay": [
+      { "label": "Wed 26", "date": "26.08.2026", "out": 3, "in": 4,
+        "audit": ["E4 out 2", "E5 out 1", "E6 in 2", "E7 in 2"] },
+      { "label": "Thu 27", "date": "27.08.2026", "out": 3, "in": 0,
+        "audit": ["E9 out 1", "E10 out 1", "E11 out 1"] },
+      { "label": "Fri 28", "date": "28.08.2026", "out": 4, "in": 0,
+        "audit": ["E13 out 1", "E14 out 2", "E15 out 1"] },
+      { "label": "Sat 29", "date": "29.08.2026", "out": 3, "in": 2,
+        "audit": ["E17 out 1", "E18 out 1", "E19 out 1", "E20 in 2", "E21 four trucks loaded only, not counted"] },
+      { "label": "Sun 30", "date": "30.08.2026", "out": 5, "in": 0,
+        "audit": ["E23 out 4", "E24 out 1", "E25 vessel cargo op, not a truck move"] },
+      { "label": "Mon 31", "date": "31.08.2026", "out": 8, "in": 0,
+        "audit": ["E28 out 2", "E29 out 6", "E27 site visit, not counted", "E30 vessel cargo op, not a truck move"] },
+      { "label": "Tue 01", "date": "01.09.2026", "out": 4, "in": 0,
+        "audit": ["E32 out 2", "E33 out 1", "E34 out 1", "E35 vessel cargo op, not a truck move"] },
+      { "label": "Wed 02", "date": "02.09.2026", "out": 5, "in": 0,
+        "audit": ["E37 out 2", "E38 out 2", "E39 out 1"] }
+    ]
+  },
+  "fluids": [
+    { "label": "Fresh water\nbunkered", "value": 234, "direction": "bunkered",
+      "audit": ["E11 18 m3 Charlie-3", "E18 72 m3 CA5", "E26 144 m3 CA5"] },
+    { "label": "Drill water\nbunkered", "value": 108, "direction": "bunkered",
+      "audit": ["E18 108 m3 CA5"] },
+    { "label": "Fresh water\nto rigs", "value": 200, "direction": "delivered",
+      "audit": ["E8 200 m3 CA1 to OD1, started E4 on 26.08"] },
+    { "label": "Fuel\nto rigs", "value": 200, "direction": "delivered",
+      "audit": ["E8 100 m3 CA1 to OD1", "E20 100 m3 CA1 to OD1"] }
+  ],
+  "slopsBbl": 0,
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "STBY waiting for BOUM-0001 location clearance",
+      "lastWeek": "Cut 38\" conductor pipe, install protection structure, release rig to new well BOUM-0001, waiting for BOUM-0001 location clearance",
+      "personnelOnboard": 75,
+      "visaHolders": 53,
+      "overstay": { "KOC": 0, "HLB": 0, "COSL": 10 },
+      "nextSteps": "Rig preparation for move; rig move for new well BOUM-0001"
+    },
+    "OPH": {
+      "currentOperation": "Rig off-hired",
+      "lastWeek": "Nil",
+      "personnelOnboard": 0,
+      "visaHolders": 0,
+      "overstay": { "KOC": 0, "HLB": 0, "COSL": 0 },
+      "nextSteps": "Nil"
+    }
+  },
+  "dataNotes": [
+    "Reporting window is 8 days (26 Aug to 02 Sep). The previous report covered 6 days (20 to 25 Aug). Absolute counts are therefore not like for like. Per day rates are given beside each total.",
+    "Port sheet cell C4 reads 26.08.2025. The year should be 2026.",
+    "Port sheet rows 9 to 12 (Thursday 27.08.2026) carry no Day, Date or Status value.",
+    "Port sheet Status reads Not Normal on all 8 days. Vessel sheet Status reads Normal on all 8 days. The only recurring port exception recorded is no night shift operation.",
+    "Vessel sheet, Mon 31.08: Charlie-3 embarked 20 Pax and disembarked 20 Pax at OPH. The email reports OPH personnel onboard as Nil. Confirm which is correct.",
+    "The previous report recorded fuel as bunkered and drill water as delivered to OD1. This week the workbook records fuel as delivered to rigs and drill water as bunkered. Those two categories are not like for like across the weeks.",
+    "Vessel sheet day names read Wedeneday (26.08) and Thurseday (27.08)."
+  ],
+  "highlights": [
+    "<b>OD1 cut the 38\" conductor pipe and installed the protection structure</b>, and was released to new well <b>BOUM-0001</b>. The rig is on standby and waits for BOUM-0001 location clearance.",
+    "<b>Overstay crew fell from 13 to 10.</b> HLB cleared both of its overstay crew. COSL still holds 10 and needs follow up.",
+    "OD1 personnel onboard fell from 82 to 75. 53 of the 75 hold a seaman or business visa.",
+    "<b>OPH stayed off-hired for a second week</b>, and demobilisation continued. CA1 discharged 21 lifts at OPH across Tue 01 and Wed 02 Sep.",
+    "Vessel trips held at 9, but the mix changed. CA1 fell from 4 trips to 2. CA3 and CA5 each ran 1 trip after most of the week on station. Charlie-3 again ran all 5 crew change circuits.",
+    "Ground transport peaked on <b>Mon 31 Aug with 8 dispatches</b>, of which six trucks carried empty mud skips to HETCO Mina Abdallah Yard.",
+    "Cut casing joints of 18-5/8\", 13-5/8\", 10-3/4\" and 7-5/8\" went to the KOC scrap yard on Sun 30 Aug. The SWT burner boom sections A, B and C moved to TSS-WT Hall Mina Abdallah on Wed 02 Sep.",
+    "The port ran day shift only on all eight days. No night shift operation is recorded.",
+    "Vessel movements remain under <b>MARSEC Level 2</b>."
+  ]
+}

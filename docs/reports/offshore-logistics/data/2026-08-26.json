@@ -1,0 +1,46 @@
+{
+  "reportDate": "2026-08-26",
+  "reportLabel": "26 Aug 2026",
+  "periodStart": "2026-08-20",
+  "periodEnd": "2026-08-25",
+  "periodLabel": "20 to 25 Aug 2026",
+  "periodDays": 6,
+  "provenance": "Extracted from Offshore_Logistics_Weekly_Update_26-08-2026_v2.html, including the three embedded PNG charts.",
+  "vesselTrips": { "CA1": 4, "CA3": 0, "CA5": 0, "Charlie-3": 5 },
+  "trucks": {
+    "byDay": [
+      { "label": "Thu 20", "out": 4, "in": 4 },
+      { "label": "Fri 21", "out": 2, "in": 3 },
+      { "label": "Sat 22", "out": 6, "in": 0 },
+      { "label": "Sun 23", "out": 7, "in": 4 },
+      { "label": "Mon 24", "out": 7, "in": 0 },
+      { "label": "Tue 25", "out": 9, "in": 0 }
+    ]
+  },
+  "fluids": [
+    { "label": "Fresh water bunkered", "value": 756, "direction": "bunkered" },
+    { "label": "Fresh water to rigs", "value": 380, "direction": "delivered" },
+    { "label": "Fuel bunkered", "value": 216, "direction": "bunkered" },
+    { "label": "Drill water to OD1", "value": 100, "direction": "delivered" }
+  ],
+  "slopsBbl": 320,
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "Rig preparations for next well",
+      "lastWeek": "N/D wellhead sections, install 30\" corrosion cap, rig maintenance as plan",
+      "personnelOnboard": 82,
+      "visaHolders": 55,
+      "overstay": { "KOC": 0, "HLB": 2, "COSL": 11 },
+      "nextSteps": "Rig preparation for move; rig move for new well BOUM-0001"
+    },
+    "OPH": {
+      "currentOperation": "Rig off-hired",
+      "lastWeek": "Nil",
+      "personnelOnboard": 0,
+      "visaHolders": 0,
+      "overstay": { "KOC": 0, "HLB": 0, "COSL": 0 },
+      "nextSteps": "Nil. Backload demobilisation to COSL Mina Abdallah ongoing"
+    }
+  }
+}
