@@ -1,0 +1,230 @@
+{
+  "reportDate": "2026-08-26",
+  "source": "c5158cb0-22.__DWOS_Weekly_Offshore_Logistics_Report_26.08.2026.xlsx",
+  "port": {
+    "from": "20.08.2026",
+    "to": "25.08.2026",
+    "days": [
+      {
+        "day": "Thursday",
+        "date": "20.08.2026",
+        "status": "Not Normal",
+        "lines": [
+          "One boom Truck loaded with 3 DST X-Overs, 9 KOC X-Overs and 2 Landing Nipples sent to Shuaiba Pipe Yard & DST Facility.",
+          "One truck loaded with 1 Mini container and 1 Basket with Well Testing tool rack and Propane Cylinders sent to SWT facility.",
+          "One truck loaded with 1 cargo Basket with Well Testing equipment and sent to SWT facility.",
+          "One truck loaded with Well head Sec-C, Sec-D, Sec-E & Sec-F with 3-1/2\" Tubing Pup joints and sent to Shuaiba Pipe yard.",
+          "Two trucks arrived at Shuaiba Port from Odfjell with 36\" & 38\" TRS equipment as per Call Off OD-JL3-N-8-13 for OD1.",
+          "Two trucks arrived at Shuaiba Port from COSL Warehouse as per Call Off OP-RI3-N-16-3 for OPH."
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          4,
+          10
+        ],
+        "iso": "2026-08-20"
+      },
+      {
+        "day": "Friday",
+        "date": "21.08.2026",
+        "status": "Not Normal",
+        "lines": [
+          "Two Trucks sent to Shuaiba Pipe Yard with 31 joints of 7-5/8\", 9-5/8\", 13-5/8\" & 18-5/8\" R-3 casing as per RCM-OD-916 & 919.",
+          "Two Trucks arrived from PE/ FRAC with 2 Baskets, offloaded the baskets at Shuaiba Berth-20.",
+          "One truck arrived from MPD Facility with 2 baskets. Offloaded at Shuaiba Berth-20."
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          11,
+          14
+        ],
+        "iso": "2026-08-21"
+      },
+      {
+        "day": "Saturday",
+        "date": "22.08.2026",
+        "status": "Not Normal",
+        "lines": [
+          "Three trucks were dispatched with 8 lifts received from OD1 to OWS Mina Abdallah facility.",
+          "Two trucks were dispatched with 14 bundles of DP, DC & HWDP received from OD1 & OPH to COSL Mina Abdallah facility.",
+          "One truck was dispatched with 4 lifts received from OD1 to OWS Mina Abdallah facility."
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          15,
+          18
+        ],
+        "iso": "2026-08-22"
+      },
+      {
+        "day": "Sunday",
+        "date": "23.08.2026",
+        "status": "Not Normal",
+        "lines": [
+          "One truck was dispatched with 3 lifts received from OPH (RCM-OP-1185) to CMT hall Mina Abdallah facility.",
+          "One truck was dispatched with 3 lifts received from OD1 (RCM-OD-923) to COSL Mina Abdallah facility.",
+          "Four vacuum trucks were loaded with 9.0ppg contaminated oily Slops received from OD1 to MG-0348 for disposal.",
+          "Four trucks arrived with 16 lifts for OD1 (call off: OD-JL3-N-12-3) from COSL Mina Abdallah facility.",
+          "One truck was loaded with 3 full mud skips received from OD1 to NCC SEK plant."
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          19,
+          24
+        ],
+        "iso": "2026-08-23"
+      },
+      {
+        "day": "Monday",
+        "date": "24.08.2026",
+        "status": "Not Normal",
+        "lines": [
+          "Four vacuum trucks were dispatched with 9.0ppg contaminated oily Slops received from OD1 to MG-0348 for disposal.",
+          "One truck was dispatched with 3 full mud skips received from OD1 to NCC SEK plant.",
+          "One truck was dispatched with 7 lifts with Cut Casing received from OD1 to KOC Shuaiba Port Pipe yard.",
+          "One truck was dispatched with 7 lifts with MLS Running tool with cut casing received from OD1 to KOC Shuaiba Port Pipe yard."
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          25,
+          29
+        ],
+        "iso": "2026-08-24"
+      },
+      {
+        "day": "Tuesday",
+        "date": "25.08.2026",
+        "status": "Not Normal",
+        "lines": [
+          "Two trucks were dispatched with 2 Batch Mixer received from OD1 & OPH to Cementing Hall Mina Abdallah facility.",
+          "Two trucks were dispatched with 2 backloads received from OPH to COSL Mina Abdallah facility.",
+          "One truck was dispatched with 2 backloads received from OPH to COSL / TSS Hall Mina Abdallah facility.",
+          "One truck was dispatched with 2 joints 30’’ R3 casing from Berth-20 to KOC Shuaiba Port pipe yard facility.",
+          "One truck was dispatched with 2 joints 18-5/8’’ & 24’’ R3 casing ea. from Bert-20 to KOC Shuaiba Port pipe yard facility.",
+          "One truck was dispatched with 3 joints 5-1/2’’ DP received from OPH to COSL Mina Abdallah facility.",
+          "One truck was dispatched with 1 x 18-3/4’’ Annular BOP received from OPH to COSL Mina Abdallah facility."
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          30,
+          37
+        ],
+        "iso": "2026-08-25"
+      }
+    ]
+  },
+  "vessel": {
+    "from": "20.08.2026",
+    "to": "25.08.2026",
+    "days": [
+      {
+        "day": "Thursday",
+        "date": "20.08.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel arrive OD1, pull out due to weather, vessel STBY 500 meter of OD1, at 05:50 vessel sail to Shuiaba port, arrvived Shuaiba port at 09:50, vessel received 108 m3 fresh water, pick up 4 Pax MOI cargo operation, backload 4 lifts, at 15:07 cast off and sail to OD1, arrived OD1 at 18:46, cargo operation, backload 2 lifts, at 19:12 pull out and sail to Shuaiba port, arrived Shuaiba port at 22:34, MOI 4 Pax disembarked, cargo operation, offload 15 lifts from OPH and 2 lifts from OD1, vessel received 36 m3 fresh water, Vessel STBY at Shuiba port.",
+          "Vessel CA3- vessel STBY at OPH location,.",
+          "Vessel CA5- vessel STBY at OD1 location",
+          "Vessel Charlie 3- Vessel STBY at Shuaiba Port B.4."
+        ],
+        "defects": [],
+        "_rows": [
+          4,
+          7
+        ],
+        "iso": "2026-08-20"
+      },
+      {
+        "day": "Friday",
+        "date": "21.08.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- vessel at Shuaiba port B.20, cargo operation, backloading 6 lifts, received 72 m3 fresh water, at 03:25 cast off and sail to OD1, vessel arrived OD1 at 07:15, cargo operation, offload 7 lifts and backload 40 lifts, transfer 200 m3 fresh water to OD1, at 22:55 pull out and sail 500 meter away from OD1, vessel STBY 500 meter away from OD1 location.",
+          "Vessel CA3- vessel STBY at OPH location,.",
+          "Vessel CA5- vessel STBY at OD1 location",
+          "Vessel Charlie 3- vessel STBY at Shuaiba port, at 16:45 cast off and sail to OD1, arrived OD1 at 18:00, received 1 Pax,, at 18:06 pull out and sail to Shuaiba port, arrived Shuaiba port at 19:20, disemberked 1 Pax, vessel STBY at Shuaiba port B.4."
+        ],
+        "defects": [],
+        "_rows": [
+          8,
+          11
+        ],
+        "iso": "2026-08-21"
+      },
+      {
+        "day": "Saturday",
+        "date": "22.08.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- vessel STBY 500 meter away from OD1, at 00:30 vessel sail to Shuaiba port, arrived Shuaiba port at 04:10, cargo operation, offload 52 lifts, backload 12 lifts, vessel received 216 m3 fresh water, at 15:25 cast off and sail to OD1, arrived OD1 at 19:25, cargo operation, offload 7 lifts, backload 3 lifts, transfer 100 m3 drill water to OD1, at 22:18 pull out and sail 500 meter away from OD1, vessel STBY 500 meter away from OD1 location.",
+          "Vessel CA3- vessel STBY at OPH location.",
+          "Vessel CA5- vessel STBY at OD1 location.",
+          "Vessel Charlie 3- Vessel STBY at Shuaiba port, at 06:05 cast off and sail to MM port loaction, arrived MM port location at 07:35, receied 14 Pax from Abul Kheer boat, sail to OPH, arrived OPH at 09:12, transfer 6 Pax to OPH, at 09:32 pull out and sail to OD1, arrived OD1 at 10:55, tranfer Pax (8 out / 18 in), at 11:40 pull out and sail to OPH, arrived OPH at 13:06, transfer Pax (4 out/ 4 in), cargo operation, backload 3 lifts, at 14:17 pull out and sail to MM port location, at 15:20 arrived MM port location, transfer 10 Pax to Abul Kheer boat, arrived Shuaiba port at 17:10, disembark 8 Pax, offload 3 lifts vessel STBY at Shuaiba port B.4."
+        ],
+        "defects": [],
+        "_rows": [
+          12,
+          15
+        ],
+        "iso": "2026-08-22"
+      },
+      {
+        "day": "Sunday",
+        "date": "23.08.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- vessel STBY 500 meter away from OD1 location, at 05:20 vessel under portside of OD1, received 290 bbl SLOP, cargo operation, backload 2 lifts, at 07:38 pull out and sail to Shuaiba port, arrived shuaiba port at 11:12, cargo operation, offloading 5 lifts, backloading 32 lifts, transfer 320 bbl SLOP to vacuum tankers, received 108 m3 fresh water, at 18:45 cast off and sail to OD1, arrived OD1 at 22:32, cargo operation, offload 9 lifts and backload 1 lifts, vessel at OD1",
+          "Vessel CA3- vessel STBY at OPH location.",
+          "Vessel CA5- vessel STBY at OD1 location.",
+          "Vessel Charlie 3- Vessel STBY at Shuaiba port, backload 2 lifts, at 09:45 cast off and sail to OD1, cargo operation offload 2 lifts, at 11:15 pull out and sail to shuaiba port, arrived Shuaiba port at 12:40, vessel STBY at Shuaiba port B.4."
+        ],
+        "defects": [],
+        "_rows": [
+          16,
+          19
+        ],
+        "iso": "2026-08-23"
+      },
+      {
+        "day": "Monday",
+        "date": "24.08.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- vessel at OD1, cargo operation, offload 8 lifts,backload 1 lift, at 01:25 pull out and sail to OPH, arrived OPH at 09:55, cago operation, offload 17 lifts, backload 10 lifts, transfer 180 m3 fresh water to OPH, transfer 1 Pax of CA3 to OPH, at 17:00 pull out and sail to Shuaiba port, arrived Shuaiba port at 20:20, disembarked 1 Pax, received 72 m3 Fuel and 36 m3 fresh water, cargo operation, backload 7 lifts, vessel at Shuaiba port B.20.",
+          "Vessel CA3- vessel STBY at OPH location.",
+          "Vessel CA5- vessel STBY at OD1 location.",
+          "Vessel Charlie 3- vessel STBY at Shuaiba port B.4."
+        ],
+        "defects": [],
+        "_rows": [
+          20,
+          23
+        ],
+        "iso": "2026-08-24"
+      },
+      {
+        "day": "Tuesday",
+        "date": "25.08.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel at Shuaiba port, continue cargo operation, offload 3 lifts, vessel received 144 m3 Fuel and 180 m3 fresh water, vessel STBY at Shuaiba port B.20.",
+          "Vessel CA3- vessel STBY at OPH location.",
+          "Vessel CA5- vessel STBY at OD1 location.",
+          "Vessel Charlie 3- Vessel STBY at Shuaiba port, embarked 16 Pax, at 07:40 cast off and sail to OD1, arrived OD1 at 09:00, transfer Pax (16 Pax out/19 Pax in), at 09:19 pull out and sail to Shuaiba port, arrived Shuaiba port at 10:45, disembarked 19 Pax, cargo operation, backload 3 lifts, at 12:00 cast off and sail to MM port, Arrived MM port location at 13:25, received 1 Pax from Abul Kheer boat, at 13:35 sail to OD1, arrived OD1 at 15:55, cargo operation, offload 3 lifts, transfer 1 Pax to OD1, , at 16:51 pull out and sail to Shuaiba port, arrived Shuaiba port at 18:15, vessel STBY at Shuaiba port B.4."
+        ],
+        "defects": [],
+        "_rows": [
+          24,
+          27
+        ],
+        "iso": "2026-08-25"
+      }
+    ]
+  }
+}

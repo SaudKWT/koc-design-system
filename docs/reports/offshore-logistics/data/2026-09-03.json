@@ -1,16 +1,26 @@
 {
   "reportDate": "2026-09-03",
   "reportLabel": "03 Sep 2026",
+  "tabLabel": "26 Aug to 02 Sep",
   "periodStart": "2026-08-26",
   "periodEnd": "2026-09-02",
   "periodLabel": "26 Aug to 02 Sep 2026",
   "periodDays": 8,
-  "provenance": "Email of 03.09.2026 plus DWOS_Weekly_Offshore_Logistics_Report_03.09.2026.xlsx (sheets: Port, Vessel).",
   "marsec": "Level 2",
+  "provenance": "Email of 03.09.2026 plus DWOS_Weekly_Offshore_Logistics_Report_03.09.2026.xlsx (report 23, sheets Port and Vessel).",
+  "showArrows": true,
+
   "vesselTrips": { "CA1": 2, "CA3": 1, "CA5": 1, "Charlie-3": 5 },
-  "tripRule": "One trip is one outbound voyage from Shuaiba Port to a rig or location, plus its return. Counted from the Vessel sheet narrative.",
+  "tripRule": "One trip is one outbound voyage from Shuaiba Port to a rig or location, plus its return. A rig to rig transit is not a new trip.",
+  "vesselTripsAudit": {
+    "CA1": "2 outbound: Shuaiba to OD1 on 26.08 (18:45), Shuaiba to OPH on 01.09 (17:33).",
+    "CA3": "1 outbound: Shuaiba to OD1 on 02.09 (07:42). STBY at OPH from 26.08 to 01.09.",
+    "CA5": "1 outbound: Shuaiba to OD1 on 01.09 (09:35). STBY at OD1 to 29.08, then Shuaiba.",
+    "Charlie-3": "5 outbound: 26.08 (07:45), 29.08 (06:00), two on 30.08 (07:40 and 17:00), 31.08 (14:30)."
+  },
+
   "trucks": {
-    "rule": "Count truck units per movement. A dispatch counts as out, an arrival counts as in. Loading without dispatch and site visits do not count.",
+    "rule": "Count truck units per movement. A dispatch counts as out, an arrival counts as in. A truck loaded on one day and dispatched the next is one movement, counted on dispatch. Loading without dispatch and site visits do not count.",
     "byDay": [
       { "label": "Wed 26", "date": "26.08.2026", "out": 3, "in": 4,
         "audit": ["E4 out 2", "E5 out 1", "E6 in 2", "E7 in 2"] },
@@ -19,9 +29,9 @@
       { "label": "Fri 28", "date": "28.08.2026", "out": 4, "in": 0,
         "audit": ["E13 out 1", "E14 out 2", "E15 out 1"] },
       { "label": "Sat 29", "date": "29.08.2026", "out": 3, "in": 2,
-        "audit": ["E17 out 1", "E18 out 1", "E19 out 1", "E20 in 2", "E21 four trucks loaded only, not counted"] },
+        "audit": ["E17 out 1", "E18 out 1", "E19 out 1", "E20 in 2", "E21 four trucks loaded only, counted on dispatch 30.08"] },
       { "label": "Sun 30", "date": "30.08.2026", "out": 5, "in": 0,
-        "audit": ["E23 out 4", "E24 out 1", "E25 vessel cargo op, not a truck move"] },
+        "audit": ["E23 out 4 (the trucks loaded 29.08)", "E24 out 1", "E25 vessel cargo op, not a truck move"] },
       { "label": "Mon 31", "date": "31.08.2026", "out": 8, "in": 0,
         "audit": ["E28 out 2", "E29 out 6", "E27 site visit, not counted", "E30 vessel cargo op, not a truck move"] },
       { "label": "Tue 01", "date": "01.09.2026", "out": 4, "in": 0,
@@ -30,17 +40,19 @@
         "audit": ["E37 out 2", "E38 out 2", "E39 out 1"] }
     ]
   },
-  "fluids": [
-    { "label": "Fresh water\nbunkered", "value": 234, "direction": "bunkered",
-      "audit": ["E11 18 m3 Charlie-3", "E18 72 m3 CA5", "E26 144 m3 CA5"] },
-    { "label": "Drill water\nbunkered", "value": 108, "direction": "bunkered",
-      "audit": ["E18 108 m3 CA5"] },
-    { "label": "Fresh water\nto rigs", "value": 200, "direction": "delivered",
-      "audit": ["E8 200 m3 CA1 to OD1, started E4 on 26.08"] },
-    { "label": "Fuel\nto rigs", "value": 200, "direction": "delivered",
-      "audit": ["E8 100 m3 CA1 to OD1", "E20 100 m3 CA1 to OD1"] }
-  ],
-  "slopsBbl": 0,
+
+  "fluids": {
+    "bunkered": { "Fresh water": 234, "Fuel": 0, "Drill water": 108 },
+    "delivered": { "Fresh water": 200, "Fuel": 200, "Drill water": 0 },
+    "audit": {
+      "Fresh water bunkered": "E11 18 Charlie-3; E18 72 CA5; E26 144 CA5",
+      "Drill water bunkered": "E18 108 CA5",
+      "Fresh water delivered": "E8 200 CA1 to OD1, the transfer begun at E4 on 26.08",
+      "Fuel delivered": "E8 100 CA1 to OD1; E20 100 CA1 to OD1"
+    }
+  },
+  "slops": { "receivedBbl": 0, "dischargedBbl": 0, "note": "No slops movement recorded this week." },
+
   "activeRigs": 1,
   "rigs": {
     "OD1": {
@@ -60,24 +72,27 @@
       "nextSteps": "Nil"
     }
   },
-  "dataNotes": [
-    "Reporting window is 8 days (26 Aug to 02 Sep). The previous report covered 6 days (20 to 25 Aug). Absolute counts are therefore not like for like. Per day rates are given beside each total.",
-    "Port sheet cell C4 reads 26.08.2025. The year should be 2026.",
-    "Port sheet rows 9 to 12 (Thursday 27.08.2026) carry no Day, Date or Status value.",
-    "Port sheet Status reads Not Normal on all 8 days. Vessel sheet Status reads Normal on all 8 days. The only recurring port exception recorded is no night shift operation.",
-    "Vessel sheet, Mon 31.08: Charlie-3 embarked 20 Pax and disembarked 20 Pax at OPH. The email reports OPH personnel onboard as Nil. Confirm which is correct.",
-    "The previous report recorded fuel as bunkered and drill water as delivered to OD1. This week the workbook records fuel as delivered to rigs and drill water as bunkered. Those two categories are not like for like across the weeks.",
-    "Vessel sheet day names read Wedeneday (26.08) and Thurseday (27.08)."
-  ],
+
   "highlights": [
     "<b>OD1 cut the 38\" conductor pipe and installed the protection structure</b>, and was released to new well <b>BOUM-0001</b>. The rig is on standby and waits for BOUM-0001 location clearance.",
     "<b>Overstay crew fell from 13 to 10.</b> HLB cleared both of its overstay crew. COSL still holds 10 and needs follow up.",
     "OD1 personnel onboard fell from 82 to 75. 53 of the 75 hold a seaman or business visa.",
     "<b>OPH stayed off-hired for a second week</b>, and demobilisation continued. CA1 discharged 21 lifts at OPH across Tue 01 and Wed 02 Sep.",
     "Vessel trips held at 9, but the mix changed. CA1 fell from 4 trips to 2. CA3 and CA5 each ran 1 trip after most of the week on station. Charlie-3 again ran all 5 crew change circuits.",
+    "Truck moves also held at 41 on a consistent count, against the 46 the 26-08 report published. Per day the rate fell from 6.8 to 5.1, because this period runs 8 days against the previous 6.",
     "Ground transport peaked on <b>Mon 31 Aug with 8 dispatches</b>, of which six trucks carried empty mud skips to HETCO Mina Abdallah Yard.",
     "Cut casing joints of 18-5/8\", 13-5/8\", 10-3/4\" and 7-5/8\" went to the KOC scrap yard on Sun 30 Aug. The SWT burner boom sections A, B and C moved to TSS-WT Hall Mina Abdallah on Wed 02 Sep.",
-    "The port ran day shift only on all eight days. No night shift operation is recorded.",
+    "Fluids handled fell by about half, 742 m³ against 1,452 m³, and no slops movement is recorded. The port ran day shift only on all eight days.",
     "Vessel movements remain under <b>MARSEC Level 2</b>."
+  ],
+
+  "dataNotes": [
+    "Reporting window is 8 days (26 Aug to 02 Sep). The previous report covered 6 days (20 to 25 Aug). Absolute counts are therefore not like for like, so the comparison table carries a per day row.",
+    "Truck moves for both weeks are counted on one rule: a truck loaded on one day and dispatched the next is one movement. On that rule this week made 41 and the previous week 41, against the 46 that report published. See the previous week tab for the arithmetic.",
+    "Port sheet cell C4 reads 26.08.2025. The year should be 2026. The extractor reads it as 2026 because 26.08.2025 falls outside the period the sheet declares, and reports the repair.",
+    "Port sheet rows 9 to 12 (Thursday 27.08.2026) carry no Day, no Date and no Status. The block is recovered from the merged cell geometry and its date inferred from the previous block.",
+    "Port sheet Status reads Not Normal on all 8 days. Vessel sheet Status reads Normal on all 8 days. The only recurring port exception recorded is no night shift operation.",
+    "Vessel sheet, Mon 31.08: Charlie-3 embarked 20 Pax and disembarked 20 Pax at OPH. The email reports OPH personnel onboard as Nil. Confirm which is correct.",
+    "Vessel sheet day names read Wedeneday (26.08) and Thurseday (27.08). Day names in this dashboard are derived from the date, not read from the sheet."
   ]
 }

@@ -1,27 +1,34 @@
 #!/usr/bin/env python3
 """
-Build the Offshore Logistics weekly update as one email-safe HTML file.
+Build the Offshore Logistics weekly report.
 
-Run:  python3 docs/reports/offshore-logistics/build.py 2026-09-03 2026-08-26
+    python3 build.py 2026-09-03 2026-08-26              # both formats
+    python3 build.py 2026-09-03 2026-08-26 --dashboard  # tabbed, browser only
+    python3 build.py 2026-09-03 2026-08-26 --email      # single week, Outlook safe
+    python3 build.py 2026-09-03 2026-08-26 --no-notes   # drop the data-notes block
 
-Why a generator and not a hand-edited HTML file: the report states the same
-figure in a KPI tile, a chart and a comparison table. Hand-editing three copies
-is how they start to disagree. Every number below is read once from
-data/<report-date>.json and rendered everywhere from that one value.
+Two formats, because they cannot be one file:
 
-Why email-safe (nested tables, inline styles, base64 PNG charts): KOC is a
-Windows/Outlook organisation. Outlook strips <svg>, external CSS and script, so
-an interactive SVG chart would render as nothing. The charts therefore ship as
-PNG, every bar carries a printed value, and the week-on-week comparison table
-repeats all charted figures as text for the case where Outlook blocks images.
+  email      One week, nested tables, inline styles, base64 PNG charts, no
+             script and no SVG. This is what Bu Khaled receives. Outlook strips
+             <svg>, external CSS and script, so an interactive chart arrives as
+             nothing, and Outlook blocks images by default, so every chart
+             carries alt text and every charted figure is repeated as text.
 
-PALETTE NOTE: the colours here are the 26-08-2026 report's own palette, kept on
+  dashboard  Both weeks behind a tab strip. Tabs need CSS and script, which is
+             exactly what the email format cannot have, so this one is for a
+             browser. It carries the full daily port and vessel logs, which the
+             email leaves to the attached workbook.
+
+Numbers come from data/<report-date>.json (hand-audited counts, each with the
+workbook cell it came from) and data/<report-date>.log.json (the daily
+narrative, machine-extracted by extract.py). Nothing is typed twice.
+
+PALETTE NOTE: these colours are the 26-08-2026 report's own, kept on
 instruction so the weekly series stays visually continuous. They are NOT the
 KOC token palette -- this navy is #1F3B57, the KOC brand blue is #0060A9. That
-is why this file lives under docs/reports/ and not in packages/ or apps/: it is
-an email deliverable, not design-system source, and invariant 1 (never
-hand-write a hex outside packages/tokens/src/) is scoped to the system itself.
-See README.md in this directory.
+is why this directory sits under docs/reports/ and not in packages/ or apps/:
+an email deliverable, not design-system source. See README.md.
 """
 
 import base64
@@ -39,24 +46,25 @@ from matplotlib.ticker import MaxNLocator
 HERE = Path(__file__).parent
 
 # ── Palette ────────────────────────────────────────────────────────────────
-# Carried over from the 26-08-2026 report, with three contrast defects fixed.
-# Fixes are listed in README.md with the measured before/after ratios.
-NAVY = "#1F3B57"   # headings, primary series, header bar
-TEAL = "#2E8B8B"   # secondary series
-AMBER = "#E0A73C"  # arrivals series, OD1 accent
-GREY = "#8A9AA5"   # OPH accent
-RED = "#C0504D"    # overstay value
-GREEN = "#2F7A55"  # improving delta  (added: the old file had no "good" colour)
-PRIOR = "#AEBECB"  # prior-week reference bars
+NAVY = "#1F3B57"    # headings, the panel's own week, header bar
+TEAL = "#2E8B8B"    # truck KPI value, highlights accent
+AMBER = "#E0A73C"   # arrivals series, OD1 accent
+GREY = "#8A9AA5"    # OPH accent, axis spines
+RED = "#C0504D"     # overstay value, 24px and 13px only
+RED_TEXT = "#A8403D"  # the same alarm at 11px: 5.59:1 on the tile,
+                      # 5.49:1 on the alert fill. #C0504D managed
+                      # only 4.31 and 4.22 and axe failed it.
+GREEN = "#2F7A55"   # improving delta  (added: the old file had no "good" colour)
+OTHER = "#AEBECB"   # the week that is not this panel's
 
 INK = "#243746"        # body
 INK_SOFT = "#3B4C5A"   # list copy
 INK_MUTED = "#4A5C6A"  # tile labels      (was #6B7C88, 3.99:1 -> 6.43:1)
 INK_DELTA = "#5B6B78"  # neutral deltas   (was #7E8C97, 3.19:1 -> 5.08:1)
 
-SURFACE = "#F4F6F8"   # tile fill
-RULE = "#E5EAEE"      # table borders
-PAGE = "#EDF1F4"      # page behind the card
+SURFACE = "#F4F6F8"
+RULE = "#E5EAEE"
+PAGE = "#EDF1F4"
 ALERT_BG = "#FDF1F0"
 ALERT_RULE = "#EBC9C7"
 NOTE_BG = "#FFF8EC"
@@ -64,12 +72,44 @@ NOTE_RULE = "#F0DCB0"
 NOTE_INK = "#7A5A16"
 
 FONT = "DejaVu Sans"
+FLUIDS = ("Fresh water", "Fuel", "Drill water")
 
 
-# ── Chart helpers ──────────────────────────────────────────────────────────
+# ── Small helpers over the data files ──────────────────────────────────────
+
+def trips(w):
+    return sum(w["vesselTrips"].values())
+
+
+def truck_split(w):
+    d = w["trucks"]["byDay"]
+    return sum(x["out"] for x in d), sum(x["in"] for x in d)
+
+
+def truck_total(w):
+    o, i = truck_split(w)
+    return o + i
+
+
+def fluid_total(w):
+    f = w["fluids"]
+    return sum(f["bunkered"].values()) + sum(f["delivered"].values())
+
+
+def overstay(w):
+    return sum(w["rigs"][r]["overstay"][k]
+               for r in ("OD1", "OPH") for k in ("KOC", "HLB", "COSL"))
+
+
+def overstay_by(w):
+    return {k: sum(w["rigs"][r]["overstay"][k] for r in ("OD1", "OPH"))
+            for k in ("KOC", "HLB", "COSL")}
+
+
+# ── Chart plumbing ─────────────────────────────────────────────────────────
 
 def _frame(ax, ylabel):
-    """Recessive axes: y grid only, no top/right spines."""
+    """Recessive axes: y grid only, no top or right spine."""
     ax.set_axisbelow(True)
     ax.yaxis.grid(True, color=RULE, linewidth=0.9)
     ax.xaxis.grid(False)
@@ -79,19 +119,26 @@ def _frame(ax, ylabel):
         ax.spines[side].set_color(GREY)
         ax.spines[side].set_linewidth(0.9)
     ax.set_ylabel(ylabel, fontsize=11, color=INK, fontname=FONT)
-    ax.tick_params(axis="both", labelsize=11, colors=INK, length=0)
+    ax.tick_params(axis="both", labelsize=10.5, colors=INK, length=0)
     for lbl in ax.get_xticklabels() + ax.get_yticklabels():
         lbl.set_fontname(FONT)
+
+
+def _legend(ax, **kw):
+    leg = ax.legend(frameon=False, fontsize=10.5, **kw)
+    for t in leg.get_texts():
+        t.set_color(INK)
+        t.set_fontname(FONT)
+    return leg
 
 
 def _png(fig):
     """Render at 2x the 664px display width, then quantise.
 
     These charts are a handful of flat fills plus antialiasing, so an adaptive
-    128-colour palette is visually identical to truecolour and roughly a third
-    of the bytes. That matters: the PNGs are base64-inlined, and base64 adds
-    another 33% on top. The whole email has to stay in the size range of the
-    report it replaces."""
+    128-colour palette is visually identical to truecolour and about a third of
+    the bytes. That matters: the PNGs are base64-inlined and base64 adds another
+    33%, and the dashboard carries six of them."""
     buf = io.BytesIO()
     fig.savefig(buf, format="png", dpi=140, bbox_inches="tight",
                 facecolor="white", edgecolor="none")
@@ -108,142 +155,118 @@ def _png(fig):
     return base64.b64encode(out.getvalue()).decode("ascii")
 
 
-def _label_bars(ax, bars, colour, fmt="{:g}", size=11):
+def _labels(ax, bars, colour, fmt="{:g}", size=10.5):
     """Direct value labels. Required, not decorative: they are the relief that
-    discharges the sub-3:1 contrast of the amber and prior-week fills."""
+    discharges the sub-3:1 contrast of the amber and pale-blue fills."""
     for b in bars:
         h = b.get_height()
-        ax.annotate(fmt.format(h),
-                    (b.get_x() + b.get_width() / 2, h),
-                    textcoords="offset points", xytext=(0, 4),
-                    ha="center", va="bottom",
-                    fontsize=size, fontweight="bold",
+        ax.annotate(fmt.format(h), (b.get_x() + b.get_width() / 2, h),
+                    textcoords="offset points", xytext=(0, 4), ha="center",
+                    va="bottom", fontsize=size, fontweight="bold",
                     color=colour, fontname=FONT)
 
 
-def chart_vessel_trips(cur, prev):
-    """Grouped bars: trips per vessel, this week against the prior week."""
+def _two_week_bars(ax, x, mine_w, mine_v, other_w, other_v, w=0.39):
+    """The shared grammar, used by both two-week charts so the reader learns the
+    encoding once: the panel's own week is solid navy, the other week is pale.
+
+    Bars are ordered by period, never by whose panel it is, so time always reads
+    left to right. Ordering by panel put the later week on the left in the
+    previous-week tab, which read as time running backwards. Centres at
+    +/-0.2025 leave a ~4px gap between the pair at render width."""
+    pairs = sorted([(mine_w, mine_v, True), (other_w, other_v, False)],
+                   key=lambda pr: pr[0]["periodStart"])
+    for k, (wk, vals, is_mine) in enumerate(pairs):
+        off = -0.2025 if k == 0 else 0.2025
+        bars = ax.bar([i + off for i in x], vals, w,
+                      color=NAVY if is_mine else OTHER,
+                      edgecolor="white", linewidth=1.2,
+                      label=wk["periodLabel"] + ("" if is_mine else " (other)"))
+        _labels(ax, bars, NAVY if is_mine else INK_DELTA)
+
+
+def chart_trips(mine, theirs):
     names = ["CA1", "CA3", "CA5", "Charlie-3"]
-    now = [cur["vesselTrips"][n] for n in names]
-    was = [prev["vesselTrips"][n] for n in names]
-
-    fig, ax = plt.subplots(figsize=(9.5, 4.0))
+    fig, ax = plt.subplots(figsize=(9.5, 3.9))
     x = range(len(names))
-    w = 0.39
-    # centres at +/-0.2025 leave a ~4px gap between the pair at render width
-    b_prev = ax.bar([i - 0.2025 for i in x], was, w, color=PRIOR,
-                    edgecolor="white", linewidth=1.2,
-                    label=f"Prior week ({prev['periodLabel']})")
-    b_now = ax.bar([i + 0.2025 for i in x], now, w, color=NAVY,
-                   edgecolor="white", linewidth=1.2,
-                   label=f"This week ({cur['periodLabel']})")
-
-    _label_bars(ax, b_prev, INK_DELTA)
-    _label_bars(ax, b_now, NAVY)
-
+    _two_week_bars(ax, x,
+                   mine, [mine["vesselTrips"][n] for n in names],
+                   theirs, [theirs["vesselTrips"][n] for n in names])
     ax.set_xticks(list(x))
     ax.set_xticklabels(names)
-    ax.set_ylim(0, 7)                      # held at 7 to match the prior report
+    ax.set_ylim(0, 7)                    # held at 7 to match the 26-08 report
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     _frame(ax, "No. of trips")
-    ax.set_title(
-        f"Vessel Trips by Vessel   ({sum(now)} this week vs {sum(was)} prior week)",
-        fontsize=14, fontweight="bold", color=NAVY, fontname=FONT, pad=12)
-    leg = ax.legend(loc="upper left", frameon=False, fontsize=10.5)
-    for t in leg.get_texts():
-        t.set_color(INK)
-        t.set_fontname(FONT)
+    ax.set_title(f"Vessel Trips by Vessel   ({trips(mine)} against "
+                 f"{trips(theirs)} the other week)",
+                 fontsize=13.5, fontweight="bold", color=NAVY,
+                 fontname=FONT, pad=12)
+    _legend(ax, loc="upper left")
     return _png(fig)
 
 
-def chart_ground_transport(cur):
-    """Grouped bars: daily truck dispatches and arrivals."""
-    days = cur["trucks"]["byDay"]
-    labels = [d["label"] for d in days]
+def chart_ground(w):
+    """Per week by nature: the two periods are 8 days and 6 days long."""
+    days = w["trucks"]["byDay"]
     out = [d["out"] for d in days]
     inn = [d["in"] for d in days]
 
-    fig, ax = plt.subplots(figsize=(9.5, 4.0))
-    x = range(len(labels))
-    w = 0.39
-    b_out = ax.bar([i - 0.2025 for i in x], out, w, color=NAVY,
+    fig, ax = plt.subplots(figsize=(9.5, 3.9))
+    x = range(len(days))
+    b_out = ax.bar([i - 0.2025 for i in x], out, 0.39, color=NAVY,
                    edgecolor="white", linewidth=1.2, label="Dispatched (out)")
-    b_in = ax.bar([i + 0.2025 for i in x], inn, w, color=AMBER,
+    b_in = ax.bar([i + 0.2025 for i in x], inn, 0.39, color=AMBER,
                   edgecolor="white", linewidth=1.2, label="Arrived (in)")
-
-    _label_bars(ax, b_out, NAVY)
-    _label_bars(ax, b_in, INK_DELTA)
+    _labels(ax, b_out, NAVY)
+    _labels(ax, b_in, INK_DELTA)
 
     ax.set_xticks(list(x))
-    ax.set_xticklabels(labels)
-    ax.set_ylim(0, 12)                     # held at 12 to match the prior report
+    ax.set_xticklabels([d["label"] for d in days])
+    ax.set_ylim(0, 12)                   # held at 12 to match the 26-08 report
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     _frame(ax, "Trucks / tankers")
-    ax.set_title(
-        f"Daily Ground Transport Movements   "
-        f"({sum(out)} out / {sum(inn)} in, {sum(out) + sum(inn)} total)",
-        fontsize=14, fontweight="bold", color=NAVY, fontname=FONT, pad=12)
-    leg = ax.legend(loc="upper left", frameon=False, fontsize=10.5, ncol=2)
-    for t in leg.get_texts():
-        t.set_color(INK)
-        t.set_fontname(FONT)
+    ax.set_title(f"Daily Ground Transport Movements   ({sum(out)} out / "
+                 f"{sum(inn)} in, {sum(out) + sum(inn)} total)",
+                 fontsize=13.5, fontweight="bold", color=NAVY,
+                 fontname=FONT, pad=12)
+    _legend(ax, loc="upper left", ncol=2)
     return _png(fig)
 
 
-def chart_fluids(cur, prev):
-    """Single series, coloured by direction. Colour earns its place here because
-    it separates fluid bunkered into vessels from fluid delivered to rigs; the
-    x axis already carries the category, so a fifth hue per bar would be noise."""
-    items = cur["fluids"]
-    labels = [i["label"] for i in items]
-    vals = [i["value"] for i in items]
-    cols = [TEAL if i["direction"] == "bunkered" else NAVY for i in items]
+def chart_fluids(mine, theirs):
+    """Six categories, three fluids by two directions, both weeks.
+
+    Grouped rather than stacked, and in the same grammar as the trips chart,
+    because the interesting thing this week is a composition shift the totals
+    hide: fuel moved from bunkering into delivery and drill water went the other
+    way. A stack would bury that inside two columns."""
+    cats = [(d, f) for d in ("bunkered", "delivered") for f in FLUIDS]
+    labels = [f"{f}\n{'bunkered' if d == 'bunkered' else 'to rigs'}"
+              for d, f in cats]
+    mv = [mine["fluids"][d][f] for d, f in cats]
+    tv = [theirs["fluids"][d][f] for d, f in cats]
 
     fig, ax = plt.subplots(figsize=(9.5, 4.0))
-    bars = ax.bar(range(len(items)), vals, 0.58, color=cols,
-                  edgecolor="white", linewidth=1.2)
-    for b, v in zip(bars, vals):
-        ax.annotate(f"{v:,} m³",
-                    (b.get_x() + b.get_width() / 2, v),
-                    textcoords="offset points", xytext=(0, 5),
-                    ha="center", va="bottom", fontsize=11.5,
-                    fontweight="bold", color=NAVY, fontname=FONT)
-
-    ax.set_xticks(range(len(items)))
-    ax.set_xticklabels(labels)
-    ax.set_ylim(0, max(vals) * 1.22)
+    # A gap between the bunkered trio and the delivered trio.
+    x = [0, 1, 2, 3.45, 4.45, 5.45]
+    _two_week_bars(ax, x, mine, mv, theirs, tv, w=0.37)
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels, fontsize=9.5)
+    ax.set_ylim(0, max(mv + tv) * 1.22)
     _frame(ax, "Cubic metres (m³)")
-
-    cur_total, prev_total = sum(vals), sum(i["value"] for i in prev["fluids"])
-    ax.set_title(
-        f"Fluids & Bulk Managed   "
-        f"({cur_total:,} m³ this week vs {prev_total:,} m³ prior week)",
-        fontsize=14, fontweight="bold", color=NAVY, fontname=FONT, pad=12)
-
-    slops = ("Slops: none recorded this week"
-             if not cur["slopsBbl"]
-             else f"Slops: {cur['slopsBbl']} bbl discharged to vacuum tankers")
-    if prev["slopsBbl"]:
-        slops += f" (prior week: {prev['slopsBbl']} bbl)."
-
-    handles = [plt.Rectangle((0, 0), 1, 1, color=TEAL),
-               plt.Rectangle((0, 0), 1, 1, color=NAVY)]
-    # Below the axis, not inside it: at upper-centre the legend sat on top of
-    # the slops annotation, and at upper-left it sat on the 234 m3 bar.
-    leg = ax.legend(handles, ["Bunkered at port", "Delivered to rigs"],
-                    loc="upper center", bbox_to_anchor=(0.5, -0.13),
-                    frameon=False, fontsize=10.5, ncol=2)
-    for t in leg.get_texts():
-        t.set_color(INK)
-        t.set_fontname(FONT)
-    return _png(fig), slops
+    ax.set_title(f"Fluids & Bulk Managed   ({fluid_total(mine):,} m³ against "
+                 f"{fluid_total(theirs):,} m³ the other week)",
+                 fontsize=13.5, fontweight="bold", color=NAVY,
+                 fontname=FONT, pad=12)
+    _legend(ax, loc="upper right")
+    return _png(fig)
 
 
-# ── Delta formatting ───────────────────────────────────────────────────────
-# The StatCard rule from CLAUDE.md applies here: the arithmetic and the meaning
-# are two different things. A fall in truck moves is neither good nor bad, it
-# tracks the rig count. A fall in overstay crew is unambiguously good. So
-# `intent` decides the colour, `delta` only decides the arrow.
+# ── Deltas ─────────────────────────────────────────────────────────────────
+# The StatCard rule from CLAUDE.md: the arithmetic and the meaning are two
+# different things. A fall in truck moves is neither good nor bad, it tracks the
+# rig count. A fall in overstay crew is unambiguously good. So `intent` decides
+# the colour and `delta` only decides the arrow.
 
 UP, DOWN = "&#9650;", "&#9660;"
 
@@ -255,201 +278,361 @@ def delta(now, was, mode="abs", intent="neutral", unit=""):
         return f"No change &nbsp;({was:,g}{unit})", INK_DELTA
     arrow = UP if diff > 0 else DOWN
     if mode == "pct":
-        size = "&#8734;%" if was == 0 else f"{abs(diff) / was * 100:.0f}%"
+        size = "new" if was == 0 else f"{abs(diff) / was * 100:.0f}%"
     else:
         size = f"{abs(diff):,g}{unit}"
     colour = INK_DELTA
     if intent == "lower-is-better":
-        colour = GREEN if diff < 0 else RED
+        # Delta text is always 11px, so the alarm uses the small-text red.
+        colour = GREEN if diff < 0 else RED_TEXT
     return f"{arrow} {size} &nbsp;({was:,g}{unit})", colour
 
 
-def kpi_tile(value, label, value_colour, delta_html, delta_colour, alert=False):
-    bg = ALERT_BG if alert else SURFACE
-    edge = f"border:1px solid {ALERT_RULE};" if alert else ""
-    return f"""      <td width="25%" align="center" valign="top" style="background:{bg};border-radius:8px;padding:14px 8px;{edge}">
-        <div style="font-size:26px;font-weight:700;color:{value_colour};line-height:1.1;">{value}</div>
-        <div style="font-size:11px;color:{INK_MUTED};padding:4px 0 6px;">{label}</div>
-        <div style="font-size:11px;font-weight:700;color:{delta_colour};">{delta_html}</div>
-        <div style="font-size:11px;color:{INK_DELTA};">vs prior week</div></td>
+def kpis(w, other):
+    """Four tiles, in the same order every week. Consistency across weeks is
+    most of what makes a weekly dashboard readable, so the set never changes."""
+    base = w.get("publishedBaseline") or {}
+    arrows = w.get("showArrows", True)
+
+    def cmp(now, key, other_val, mode="abs", intent="neutral"):
+        if arrows:
+            return delta(now, other_val, mode, intent)
+        if key in base:
+            html, colour = delta(now, base[key], mode, intent)
+            return html + " <sup>&#8224;</sup>", colour
+        return "", INK_DELTA
+
+    tiles = [
+        dict(value=trips(w), label="Total vessel trips", colour=NAVY,
+             **dict(zip(("delta_html", "delta_colour"),
+                        cmp(trips(w), "trips", trips(other), "pct")))),
+        dict(value=truck_total(w), label="Truck / tanker moves", colour=TEAL,
+             **dict(zip(("delta_html", "delta_colour"),
+                        cmp(truck_total(w), "truckMoves",
+                            truck_total(other), "pct")))),
+        dict(value=w["activeRigs"], label="Active rig (OD1)", colour=AMBER,
+             **dict(zip(("delta_html", "delta_colour"),
+                        cmp(w["activeRigs"], "activeRigs",
+                            other["activeRigs"])))),
+        dict(value=overstay(w), label="Overstay crew", colour=RED, alert=True,
+             **dict(zip(("delta_html", "delta_colour"),
+                        cmp(overstay(w), "overstay", overstay(other),
+                            "abs", "lower-is-better")))),
+    ]
+    # The corrected truck figure cannot be compared to a baseline counted under
+    # the old rule, so that one tile states both numbers instead of an arrow.
+    if not arrows and w["trucks"].get("publishedTotal"):
+        tiles[1]["delta_html"] = (
+            f'{truck_total(w)} counted once each &nbsp;'
+            f'<span style="font-weight:400;">'
+            f'({w["trucks"]["publishedTotal"]} as published)</span>')
+        tiles[1]["delta_colour"] = RED_TEXT
+    return tiles
+
+
+def kpi_row(w, other):
+    cells = ""
+    for t in kpis(w, other):
+        alert = t.get("alert")
+        bg = ALERT_BG if alert else SURFACE
+        edge = f"border:1px solid {ALERT_RULE};" if alert else ""
+        cells += f"""      <td width="25%" align="center" valign="top" style="background:{bg};border-radius:8px;padding:14px 8px;{edge}">
+        <div style="font-size:26px;font-weight:700;color:{t['colour']};line-height:1.1;">{t['value']}</div>
+        <div style="font-size:11px;color:{INK_MUTED};padding:4px 0 6px;">{t['label']}</div>
+        <div style="font-size:11px;font-weight:700;color:{t['delta_colour']};">{t['delta_html']}</div>
+        <div style="font-size:11px;color:{INK_DELTA};">{'vs the other week' if w.get('showArrows', True) else 'vs 06 to 12 Aug'}</div></td>
 """
+    return cells
 
 
-# ── Table helpers ──────────────────────────────────────────────────────────
+# ── Tables ─────────────────────────────────────────────────────────────────
 
 def row(cells, bold=False, shade=False):
     weight = "font-weight:700;" if bold else ""
     bg = f"background:{SURFACE};" if shade else ""
     tds = "".join(
-        f'<td align="{a}" style="padding:7px 10px;border:1px solid {RULE};{bg}{weight}'
-        f'{extra}">{v}</td>'
-        for v, a, extra in cells)
+        f'<td align="{a}" style="padding:7px 10px;border:1px solid {RULE};'
+        f'{bg}{weight}{extra}">{v}</td>' for v, a, extra in cells)
     return f"    <tr>{tds}</tr>\n"
 
 
 def section_row(title, span=4):
-    return (f'    <tr><td colspan="{span}" style="padding:8px 10px;background:{NAVY};'
-            f'color:#ffffff;font-size:11px;font-weight:700;letter-spacing:.06em;'
-            f'text-transform:uppercase;border:1px solid {NAVY};">{title}</td></tr>\n')
+    return (f'    <tr><td colspan="{span}" style="padding:8px 10px;'
+            f'background:{NAVY};color:#ffffff;font-size:11px;font-weight:700;'
+            f'letter-spacing:.06em;text-transform:uppercase;'
+            f'border:1px solid {NAVY};">{title}</td></tr>\n')
 
 
 def comparison_table(cur, prev):
-    """The week-on-week comparison, and the text fallback for the three charts.
-    Every charted figure appears here, so a recipient whose client blocks images
-    still gets all of it."""
-    ct, pt = cur["vesselTrips"], prev["vesselTrips"]
-    cd, pd_ = cur["trucks"]["byDay"], prev["trucks"]["byDay"]
-    c_out, c_in = sum(d["out"] for d in cd), sum(d["in"] for d in cd)
-    p_out, p_in = sum(d["out"] for d in pd_), sum(d["in"] for d in pd_)
-    c_fluid = sum(i["value"] for i in cur["fluids"])
-    p_fluid = sum(i["value"] for i in prev["fluids"])
-    c_days, p_days = cur["periodDays"], prev["periodDays"]
+    """The week-on-week comparison, and the text fallback for every chart.
+    Each charted figure appears here, so a recipient whose client blocks images
+    still receives all of it."""
+    c_out, c_in = truck_split(cur)
+    p_out, p_in = truck_split(prev)
+    c_over, p_over = overstay_by(cur), overstay_by(prev)
 
-    c_over = {k: cur["rigs"]["OD1"]["overstay"][k] + cur["rigs"]["OPH"]["overstay"][k]
-              for k in ("KOC", "HLB", "COSL")}
-    p_over = {k: prev["rigs"]["OD1"]["overstay"][k] + prev["rigs"]["OPH"]["overstay"][k]
-              for k in ("KOC", "HLB", "COSL")}
-
-    def line(name, now, was, mode="abs", intent="neutral", unit="", bold=False, fmt="{:,g}"):
-        html, colour = delta(now, was, mode, intent, unit)
+    def line(name, now, was, mode="abs", intent="neutral", unit="",
+             bold=False, fmt="{:,g}"):
+        html, colour = delta(now, was, mode, intent)
         return row([
             (name, "left", ""),
-            (fmt.format(now) + unit, "right", "font-family:Consolas,monospace;"),
-            (fmt.format(was) + unit, "right", f"font-family:Consolas,monospace;color:{INK_DELTA};"),
+            (fmt.format(now) + unit, "right", "font-variant-numeric:tabular-nums;"),
+            (fmt.format(was) + unit, "right",
+             f"font-variant-numeric:tabular-nums;color:{INK_DELTA};"),
             (html, "right", f"color:{colour};font-weight:700;font-size:12px;"),
         ], bold=bold)
 
-    h = (f'  <table width="100%" cellspacing="0" style="font-size:13px;'
-         f'border-collapse:collapse;margin-top:8px;">\n')
+    h = ('  <table width="100%" cellspacing="0" style="font-size:13px;'
+         'border-collapse:collapse;margin-top:8px;">\n')
     h += row([
         ("Metric", "left", ""),
-        (f"This week<br><span style='font-weight:400;font-size:11px;'>{cur['periodLabel']}</span>", "right", ""),
-        (f"Prior week<br><span style='font-weight:400;font-size:11px;'>{prev['periodLabel']}</span>", "right", ""),
+        (f"{cur['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
+         f"{cur['periodDays']} days</span>", "right", ""),
+        (f"{prev['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
+         f"{prev['periodDays']} days</span>", "right", ""),
         ("Change", "right", ""),
     ], bold=True, shade=True)
 
     h += section_row("Vessel trips")
     for v in ("CA1", "CA3", "CA5", "Charlie-3"):
-        h += line(v, ct[v], pt[v])
-    h += line("Total vessel trips", sum(ct.values()), sum(pt.values()), bold=True)
+        h += line(v, cur["vesselTrips"][v], prev["vesselTrips"][v])
+    h += line("Total vessel trips", trips(cur), trips(prev), bold=True)
 
     h += section_row("Ground transport")
     h += line("Dispatched (out)", c_out, p_out)
     h += line("Arrived (in)", c_in, p_in)
     h += line("Total truck / tanker moves", c_out + c_in, p_out + p_in, bold=True)
-    h += line("Moves per day", round((c_out + c_in) / c_days, 1),
-              round((p_out + p_in) / p_days, 1), fmt="{:.1f}")
+    h += line("Moves per day", round((c_out + c_in) / cur["periodDays"], 1),
+              round((p_out + p_in) / prev["periodDays"], 1), fmt="{:.1f}")
 
     h += section_row("Fluids and bulk")
-    h += line("Total fluids managed", c_fluid, p_fluid, unit=" m³", bold=True)
+    for d, tag in (("bunkered", "bunkered at port"), ("delivered", "to rigs")):
+        for f in FLUIDS:
+            h += line(f"{f} {tag}", cur["fluids"][d][f], prev["fluids"][d][f],
+                      unit=" m³")
+    h += line("Total fluids managed", fluid_total(cur), fluid_total(prev),
+              unit=" m³", bold=True)
+    h += line("Slops discharged", cur["slops"]["dischargedBbl"],
+              prev["slops"]["dischargedBbl"], unit=" bbl")
 
     h += section_row("Rigs and crew")
     h += line("Active rigs", cur["activeRigs"], prev["activeRigs"])
     h += line("OD1 personnel onboard", cur["rigs"]["OD1"]["personnelOnboard"],
               prev["rigs"]["OD1"]["personnelOnboard"])
     for k in ("KOC", "HLB", "COSL"):
-        h += line(f"Overstay crew, {k}", c_over[k], p_over[k], intent="lower-is-better")
-    h += line("Total overstay crew", sum(c_over.values()), sum(p_over.values()),
+        h += line(f"Overstay crew, {k}", c_over[k], p_over[k],
+                  intent="lower-is-better")
+    h += line("Total overstay crew", overstay(cur), overstay(prev),
               intent="lower-is-better", bold=True)
     return h + "  </table>\n"
 
 
 def rig_table(rig, accent, name):
-    def nil(n):
-        return "Nil" if not n else f"{n}"
-
-    ov = rig["overstay"]
-    ov_txt = " &nbsp;|&nbsp; ".join(
+    ov = " &nbsp;|&nbsp; ".join(
         (f'{k}: <span style="color:{RED};font-weight:700;">{v}</span>' if v
          else f"{k}: Nil")
-        for k, v in ov.items())
-    ov_style = ""
+        for k, v in rig["overstay"].items())
     pob = "Nil" if not rig["personnelOnboard"] else (
         f"{rig['personnelOnboard']} crew "
         f"(incl. {rig['visaHolders']} seaman / business visas)")
-
-    rows = [
-        ("Current operation", rig["currentOperation"], ""),
-        ("Last week", rig["lastWeek"], ""),
-        ("Personnel onboard", pob, ""),
-        ("Overstay crew", ov_txt, ov_style),
-        ("Next steps", rig["nextSteps"], ""),
-    ]
+    rows = [("Current operation", rig["currentOperation"]),
+            ("Last week", rig["lastWeek"]),
+            ("Personnel onboard", pob),
+            ("Overstay crew", ov),
+            ("Next steps", rig["nextSteps"])]
     body = "".join(
-        f'    <tr><td style="background:{SURFACE};padding:8px 10px;font-weight:600;'
-        f'width:34%;border:1px solid {RULE};">{k}</td>'
-        f'<td style="padding:8px 10px;border:1px solid {RULE};{st}">{v}</td></tr>\n'
-        for k, v, st in rows)
-    return f"""  <div style="font-size:15px;font-weight:700;color:{NAVY};border-left:4px solid {accent};padding-left:10px;">{name}</div>
-  <table width="100%" cellspacing="0" style="margin-top:8px;font-size:13px;border-collapse:collapse;">
-{body}  </table>
+        f'    <tr><td style="background:{SURFACE};padding:8px 10px;'
+        f'font-weight:600;width:34%;border:1px solid {RULE};">{k}</td>'
+        f'<td style="padding:8px 10px;border:1px solid {RULE};">{v}</td></tr>\n'
+        for k, v in rows)
+    return (f'  <div style="font-size:15px;font-weight:700;color:{NAVY};'
+            f'border-left:4px solid {accent};padding-left:10px;">{name}</div>\n'
+            f'  <table width="100%" cellspacing="0" style="margin-top:8px;'
+            f'font-size:13px;border-collapse:collapse;">\n{body}  </table>\n')
+
+
+def heading(text, accent):
+    return (f'  <div style="font-size:15px;font-weight:700;color:{NAVY};'
+            f'border-left:4px solid {accent};padding-left:10px;">{text}</div>\n')
+
+
+def note_box(title, items):
+    lis = "".join(f"<li>{i}</li>" for i in items)
+    return (f'  <div style="background:{NOTE_BG};border:1px solid {NOTE_RULE};'
+            f'border-radius:6px;padding:12px 14px;font-size:12px;'
+            f'color:{NOTE_INK};"><b>{title}</b>'
+            f'<ul style="margin:8px 0 0;padding-left:18px;line-height:1.55;">'
+            f'{lis}</ul></div>\n')
+
+
+# ── Daily logs (dashboard only) ────────────────────────────────────────────
+
+def daily_log(log, key, title):
+    """The workbook's own narrative, one block per day.
+
+    The email leaves this to the attached workbook. A browser page has no
+    attachment, so it carries the log itself and the report stands alone."""
+    days = log[key]["days"]
+    rows = ""
+    for d in days:
+        ops = "".join(f"<li>{ln}</li>" for ln in d["lines"]) or "<li>Nil</li>"
+        marks = []
+        if d.get("nightShift") is False:
+            marks.append("no night shift")
+        if d.get("dateInferred"):
+            marks.append("date inferred")
+        for msg in d.get("defects", []):
+            marks.append(msg)
+        mark_html = ""
+        if marks:
+            mark_html = (f'<div style="font-size:11px;color:{NOTE_INK};'
+                         f'padding-top:6px;">{"; ".join(marks)}</div>')
+        status = d["status"] or "not stated"
+        tone = INK_DELTA if status.lower() == "normal" else NOTE_INK
+        rows += f"""    <tr>
+      <td valign="top" style="background:{SURFACE};padding:8px 10px;border:1px solid {RULE};width:23%;">
+        <div style="font-weight:700;">{d['day']}</div>
+        <div style="font-size:12px;color:{INK_MUTED};font-variant-numeric:tabular-nums;">{d['date']}</div>
+        <div style="font-size:11px;color:{tone};padding-top:4px;">{status}</div></td>
+      <td valign="top" style="padding:8px 10px;border:1px solid {RULE};">
+        <ul style="margin:0;padding-left:18px;line-height:1.5;">{ops}</ul>{mark_html}</td>
+    </tr>
+"""
+    n = sum(len(d["lines"]) for d in days)
+    return f"""  <details style="margin-top:10px;">
+    <summary style="cursor:pointer;font-size:13px;font-weight:600;color:{NAVY};padding:8px 10px;background:{SURFACE};border:1px solid {RULE};border-radius:6px;">{title} &nbsp;<span style="font-weight:400;color:{INK_MUTED};">{len(days)} days, {n} operations</span></summary>
+  <table width="100%" cellspacing="0" style="font-size:13px;border-collapse:collapse;margin-top:8px;">
+{rows}  </table>
+  </details>
 """
 
 
-# ── Document ───────────────────────────────────────────────────────────────
-
-def build(cur, prev, show_notes=True):
-    ct, pt = cur["vesselTrips"], prev["vesselTrips"]
-    cd, pd_ = cur["trucks"]["byDay"], prev["trucks"]["byDay"]
-    c_trips, p_trips = sum(ct.values()), sum(pt.values())
-    c_truck = sum(d["out"] for d in cd) + sum(d["in"] for d in cd)
-    p_truck = sum(d["out"] for d in pd_) + sum(d["in"] for d in pd_)
-    c_over = sum(cur["rigs"][r]["overstay"][k]
-                 for r in ("OD1", "OPH") for k in ("KOC", "HLB", "COSL"))
-    p_over = sum(prev["rigs"][r]["overstay"][k]
-                 for r in ("OD1", "OPH") for k in ("KOC", "HLB", "COSL"))
-
-    d_trips = delta(c_trips, p_trips, "pct")
-    d_truck = delta(c_truck, p_truck, "pct")
-    d_rigs = delta(cur["activeRigs"], prev["activeRigs"])
-    d_over = delta(c_over, p_over, "abs", intent="lower-is-better")
-
-    tiles = (
-        kpi_tile(c_trips, "Total vessel trips", NAVY, *d_trips)
-        + kpi_tile(c_truck, "Truck / tanker moves", TEAL, *d_truck)
-        + kpi_tile(cur["activeRigs"], "Active rig (OD1)", AMBER, *d_rigs)
-        + kpi_tile(c_over, "Overstay crew", RED, *d_over, alert=True)
-    )
-
-    c1 = chart_vessel_trips(cur, prev)
-    c2 = chart_ground_transport(cur)
-    c3, slops = chart_fluids(cur, prev)
-    c_out_t = sum(d["out"] for d in cd)
-    c_in_t = sum(d["in"] for d in cd)
-    c_fluid = sum(i["value"] for i in cur["fluids"])
-    p_fluid = sum(i["value"] for i in prev["fluids"])
-
-    def img(b64, alt, caption=""):
-        cap = (f'\n    <div style="font-size:11px;color:{INK_DELTA};padding:6px 2px 0;">'
-               f'{caption}</div>' if caption else "")
-        return (f'  <tr><td style="padding:14px 28px 0;">\n'
-                f'    <img src="data:image/png;base64,{b64}" width="664" alt="{alt}"\n'
-                f'      style="width:100%;max-width:664px;border:1px solid {RULE};'
-                f'border-radius:8px;">{cap}</td></tr>\n')
-
-    alt1 = (f"Vessel trips by vessel. This week: "
-            + ", ".join(f"{k} {v}" for k, v in ct.items())
-            + f", total {c_trips}. Prior week: "
-            + ", ".join(f"{k} {v}" for k, v in pt.items()) + f", total {p_trips}.")
-    alt2 = ("Daily ground transport movements. "
-            + "; ".join(f"{d['label']} {d['out']} out {d['in']} in" for d in cd)
-            + f". Totals {c_out_t} out, {c_in_t} in, {c_truck} moves.")
-    alt3 = ("Fluids and bulk managed. "
-            + "; ".join(f"{i['label'].replace(chr(10), ' ')} {i['value']} cubic metres"
-                        for i in cur["fluids"])
-            + f". Total {c_fluid} cubic metres this week against {p_fluid} prior week.")
-
-    notes_block = ""
-    if show_notes and cur.get("dataNotes"):
-        notes = "".join(f"<li>{n}</li>" for n in cur["dataNotes"])
-        notes_block = f"""  <tr><td style="padding:18px 28px 0;">
-    <div style="background:{NOTE_BG};border:1px solid {NOTE_RULE};border-radius:6px;padding:12px 14px;font-size:12px;color:{NOTE_INK};">
-      <b>Data notes, for confirmation before circulation</b>
-      <ul style="margin:8px 0 0;padding-left:18px;line-height:1.55;">{notes}</ul>
-    </div></td></tr>
+SIGNATURE = f"""    <p style="font-size:13px;margin:0;">Thanks and Best Regards,</p>
+    <p style="font-size:13px;margin:8px 0 0;line-height:1.6;">
+      <b>Naser M Gh Hassan</b><br>
+      Kuwait Oil Company (KOC)<br>
+      Engineer Drilling &amp; Workover | Drilling &amp; Workover Engineering Group<br>
+      <span style="color:{INK_MUTED};">NHassan@kockw.com | www.kockw.com | Tel +965 238 72718<br>
+      P.O Box 9758 | Ahmadi | Postal Code 61008 | Kuwait</span>
+    </p>
 """
-    highs = "".join(f"<li>{h}</li>" for h in cur["highlights"])
 
+METHOD = ("One trip is one outbound voyage from Shuaiba Port plus its return; "
+          "a rig to rig transit is not a new trip. A truck move counts one "
+          "truck unit per dispatch or arrival, and a truck loaded on one day "
+          "and dispatched the next is one movement, counted on dispatch. Both "
+          "weeks are counted on that one rule, which is why the previous week "
+          "reads 41 here against the 46 its own report published.")
+
+
+def slops_caption(mine, theirs):
+    s, t = mine["slops"], theirs["slops"]
+    txt = ("Slops: none recorded" if not s["dischargedBbl"]
+           else f"Slops: {s['dischargedBbl']} bbl discharged to vacuum tankers")
+    if t["dischargedBbl"]:
+        txt += f". Other week: {t['dischargedBbl']} bbl"
+    return txt + "."
+
+
+def alt_trips(mine, theirs):
+    return ("Vessel trips by vessel. "
+            + f"{mine['periodLabel']}: "
+            + ", ".join(f"{k} {v}" for k, v in mine["vesselTrips"].items())
+            + f", total {trips(mine)}. {theirs['periodLabel']}: "
+            + ", ".join(f"{k} {v}" for k, v in theirs["vesselTrips"].items())
+            + f", total {trips(theirs)}.")
+
+
+def alt_ground(w):
+    o, i = truck_split(w)
+    return ("Daily ground transport movements, " + w["periodLabel"] + ". "
+            + "; ".join(f"{d['label']} {d['out']} out {d['in']} in"
+                        for d in w["trucks"]["byDay"])
+            + f". Totals {o} out, {i} in, {o + i} moves.")
+
+
+def alt_fluids(mine, theirs):
+    parts = []
+    for d, tag in (("bunkered", "bunkered"), ("delivered", "to rigs")):
+        for f in FLUIDS:
+            parts.append(f"{f} {tag} {mine['fluids'][d][f]} against "
+                         f"{theirs['fluids'][d][f]}")
+    return ("Fluids and bulk managed, cubic metres, "
+            + f"{mine['periodLabel']} against {theirs['periodLabel']}. "
+            + "; ".join(parts)
+            + f". Totals {fluid_total(mine)} against {fluid_total(theirs)}.")
+
+
+# ── Shared panel body ──────────────────────────────────────────────────────
+
+def figure(b64, alt, caption="", email=False):
+    """<figure> on the web, plain <div> in the email.
+
+    Outlook renders mail through the Word engine, which styles HTML5 sectioning
+    elements unreliably. The semantics are worth having in a browser and not
+    worth the risk in an inbox."""
+    outer, inner = ("div", "div") if email else ("figure", "figcaption")
+    cap = (f'\n    <{inner} style="font-size:11px;color:{INK_DELTA};'
+           f'padding:6px 2px 0;">{caption}</{inner}>' if caption else "")
+    return (f'  <{outer} style="margin:14px 0 0;">\n'
+            f'    <img src="data:image/png;base64,{b64}" alt="{alt}"\n'
+            f'      style="width:100%;max-width:100%;display:block;'
+            f'border:1px solid {RULE};border-radius:8px;">{cap}\n'
+            f'  </{outer}>\n')
+
+
+def week_body(w, other, log, show_notes, with_comparison, email=False):
+    """Everything inside one week, used by both formats."""
+    h = ""
+    h += f'  <table width="100%" cellspacing="8"><tr>\n{kpi_row(w, other)}  </tr></table>\n'
+
+    if w.get("showArrows", True):
+        basis = (f"Arrows compare against {other['periodLabel']}, counted on "
+                 f"the same rule. Prior value in brackets.")
+    else:
+        basis = ("&#8224; Arrows are as the 26-08 report published them, "
+                 "against 06 to 12 Aug 2026. Truck moves are restated on a "
+                 "consistent count and carry no arrow.")
+    h += (f'  <div style="font-size:11px;color:{INK_DELTA};padding:8px 2px 0;'
+          f'text-align:right;">{basis}</div>\n')
+
+    h += figure(chart_trips(w, other), alt_trips(w, other), email=email)
+    h += figure(chart_ground(w), alt_ground(w), email=email)
+    h += figure(chart_fluids(w, other), alt_fluids(w, other),
+                slops_caption(w, other), email=email)
+
+    if with_comparison:
+        h += "\n" + heading("Week on week comparison", NAVY)
+        h += comparison_table(w, other)
+
+    h += "\n" + rig_table(w["rigs"]["OD1"], AMBER, "Rig OD1 Status")
+    h += "\n" + rig_table(w["rigs"]["OPH"], GREY, "Rig OPH Status")
+
+    h += "\n" + heading("Key highlights", TEAL)
+    lis = "".join(f"<li>{x}</li>" for x in w["highlights"])
+    h += (f'  <ul style="font-size:13px;color:{INK_SOFT};margin:10px 0 0;'
+          f'padding-left:20px;line-height:1.6;">{lis}</ul>\n')
+
+    if log:
+        h += "\n" + heading("Daily log", GREY)
+        h += daily_log(log, "port", "Port operations")
+        h += daily_log(log, "vessel", "Vessel movements")
+
+    if show_notes and w.get("dataNotes"):
+        h += "\n" + note_box("Data notes, for confirmation before circulation",
+                             w["dataNotes"])
+
+    h += (f'  <div style="background:{SURFACE};border:1px solid {RULE};'
+          f'border-radius:6px;padding:10px 12px;font-size:12px;'
+          f'color:{INK_MUTED};margin-top:12px;">{METHOD}</div>\n')
+    return h
+
+
+# ── Format: email ──────────────────────────────────────────────────────────
+
+def build_email(cur, prev, show_notes=True):
+    body = week_body(cur, prev, None, show_notes, with_comparison=True,
+                     email=True)
     return f"""<!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -458,78 +641,196 @@ def build(cur, prev, show_notes=True):
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{PAGE};padding:24px 0;">
 <tr><td align="center">
 <table role="presentation" width="720" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);">
-
   <tr><td style="background:{NAVY};padding:22px 28px;">
     <table width="100%"><tr>
       <td style="color:#fff;font-size:20px;font-weight:700;">Offshore Logistics Weekly Update</td>
       <td align="right" style="color:#9FC0D4;font-size:13px;">{cur['periodLabel']}</td>
     </tr></table></td></tr>
-
   <tr><td style="padding:22px 28px 6px;">
     <p style="margin:0 0 6px;font-size:15px;">Salam Bu Khaled,</p>
     <p style="margin:0;font-size:14px;color:{INK_MUTED};">Kindly find below the Offshore Logistics weekly summary. A one glance dashboard comes first, then the week on week comparison, then the supporting detail. Full daily port and vessel logs are in the attached workbook.</p>
   </td></tr>
-
-  <tr><td style="padding:18px 28px 2px;">
-    <table width="100%" cellspacing="8"><tr>
-{tiles}    </tr></table></td></tr>
-  <tr><td style="padding:0 28px;">
-    <div style="font-size:11px;color:{INK_DELTA};text-align:right;">Arrows compare against the week {prev['periodLabel']}. Prior week value in brackets.</div>
-  </td></tr>
-
-{img(c1, alt1)}{img(c2, alt2)}{img(c3, alt3, slops)}
-  <tr><td style="padding:22px 28px 4px;">
-    <div style="font-size:15px;font-weight:700;color:{NAVY};border-left:4px solid {NAVY};padding-left:10px;">Week on week comparison</div>
-{comparison_table(cur, prev)}  </td></tr>
-
-  <tr><td style="padding:22px 28px 4px;">
-{rig_table(cur['rigs']['OD1'], AMBER, 'Rig OD1 Status')}  </td></tr>
-
-  <tr><td style="padding:16px 28px 4px;">
-{rig_table(cur['rigs']['OPH'], GREY, 'Rig OPH Status')}  </td></tr>
-
-  <tr><td style="padding:18px 28px 4px;">
-    <div style="font-size:15px;font-weight:700;color:{NAVY};border-left:4px solid {TEAL};padding-left:10px;">Key highlights</div>
-    <ul style="font-size:13px;color:{INK_SOFT};margin:10px 0 0;padding-left:20px;line-height:1.6;">{highs}</ul></td></tr>
-
-{notes_block}
-  <tr><td style="padding:12px 28px 0;">
-    <div style="background:{SURFACE};border:1px solid {RULE};border-radius:6px;padding:10px 12px;font-size:12px;color:{INK_MUTED};">
-      Trip, truck and bulk figures are consolidated from the daily port and vessel logs. One trip is one outbound voyage from Shuaiba Port plus its return. A truck move counts one truck unit per dispatch or arrival. Refer to the attached workbook for line item detail.
-    </div></td></tr>
-
+  <tr><td style="padding:14px 28px 0;">
+{body}  </td></tr>
   <tr><td style="padding:20px 28px 26px;">
     <p style="font-size:13px;margin:0 0 12px;">Full daily port and vessel logs are attached. Happy to walk through any item.</p>
-    <p style="font-size:13px;margin:0;">Thanks and Best Regards,</p>
-    <p style="font-size:13px;margin:8px 0 0;line-height:1.5;">
-      <b>Naser M Gh Hassan</b><br>
-      Engineer, Drilling and Workover | Drilling and Workover Operations Support<br>
-      Kuwait Oil Company (KOC) | NHassan@kockw.com
-    </p></td></tr>
-
+{SIGNATURE}  </td></tr>
 </table></td></tr></table></body></html>
 """
 
 
+# ── Format: tabbed dashboard ───────────────────────────────────────────────
+
+CSS = f""".wrap{{max-width:1000px;margin:0 auto;padding:0 16px 40px}}
+.card{{background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}}
+.top{{position:sticky;top:0;z-index:5;background:{NAVY};box-shadow:0 2px 8px rgba(0,0,0,.14)}}
+.top-in{{max-width:1000px;margin:0 auto;padding:16px 16px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}}
+.top h1{{margin:0;color:#fff;font-size:19px;font-weight:700;letter-spacing:-.01em}}
+.top .sub{{color:#9FC0D4;font-size:12.5px;margin:0}}
+[role=tablist]{{max-width:1000px;margin:0 auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;gap:4px}}
+[role=tab]{{appearance:none;background:transparent;border:0;border-bottom:3px solid transparent;
+  color:#9FC0D4;font:inherit;font-size:13.5px;font-weight:600;text-align:left;
+  padding:8px 14px 9px;cursor:pointer;border-radius:6px 6px 0 0;
+  transition:color 120ms cubic-bezier(0,0,.2,1),border-color 120ms cubic-bezier(0,0,.2,1),background-color 120ms cubic-bezier(0,0,.2,1)}}
+[role=tab] .rep{{display:block;font-weight:400;font-size:11px;color:#8CACC1}}
+[role=tab][aria-selected=true] .rep{{color:#D6E4EE}}
+[role=tab]:hover .rep{{color:#D6E4EE}}
+[role=tab]:hover{{color:#fff;background:rgba(255,255,255,.07)}}
+[role=tab][aria-selected=true]{{color:#fff;border-bottom-color:{AMBER};background:rgba(255,255,255,.10)}}
+[role=tab]:focus-visible{{outline:2px solid #fff;outline-offset:-2px}}
+[role=tabpanel]{{padding:20px 24px 26px}}
+[role=tabpanel]:focus-visible{{outline:2px solid {NAVY};outline-offset:-2px}}
+.panel-head{{border-bottom:1px solid {RULE};padding-bottom:12px;margin-bottom:4px}}
+.panel-head h2{{margin:0;font-size:17px;color:{NAVY}}}
+.panel-head p{{margin:4px 0 0;font-size:12.5px;color:{INK_MUTED}}}
+.sig{{border-top:1px solid {RULE};padding:18px 24px 24px}}
+details[open] summary{{border-radius:6px 6px 0 0}}
+summary::marker{{color:{GREY}}}
+table{{width:100%}}
+@media (max-width:760px){{
+  [role=tabpanel]{{padding:16px 12px 20px}}
+  .top h1{{font-size:17px}}
+  [role=tab]{{flex:1 1 auto;font-size:12.5px;padding:8px 10px 9px}}
+}}
+@media print{{
+  .top{{position:static}}
+  [role=tablist]{{display:none}}
+  [role=tabpanel][hidden]{{display:block!important}}
+  .card{{box-shadow:none}}
+}}
+@media (prefers-reduced-motion:reduce){{
+  [role=tab]{{transition:none}}
+}}"""
+
+JS = """(function(){
+  var list=document.querySelector('[role="tablist"]');
+  if(!list)return;
+  var tabs=Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
+  var panels=tabs.map(function(t){return document.getElementById(t.getAttribute('aria-controls'));});
+  if(panels.some(function(p){return !p;}))return;   /* never leave aria-controls dangling */
+  function select(i,focus){
+    tabs.forEach(function(t,j){
+      var on=j===i;
+      t.setAttribute('aria-selected',on?'true':'false');
+      t.tabIndex=on?0:-1;
+      panels[j].hidden=!on;
+    });
+    if(focus)tabs[i].focus();
+    if(history.replaceState)history.replaceState(null,'','#'+tabs[i].dataset.week);
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){select(i,false);});
+    t.addEventListener('keydown',function(e){
+      var n=null,k=e.key;
+      if(k==='ArrowRight'||k==='ArrowDown')n=(i+1)%tabs.length;
+      else if(k==='ArrowLeft'||k==='ArrowUp')n=(i-1+tabs.length)%tabs.length;
+      else if(k==='Home')n=0;
+      else if(k==='End')n=tabs.length-1;
+      if(n!==null){e.preventDefault();select(n,true);}
+    });
+  });
+  var hash=location.hash.replace('#','');
+  var want=-1;
+  tabs.forEach(function(t,i){if(t.dataset.week===hash)want=i;});
+  select(want>-1?want:0,false);
+})();"""
+
+
+def build_dashboard(weeks, logs, show_notes=True):
+    """weeks: newest first. The first is the current report."""
+    cur = weeks[0]
+    tabs, panels = "", ""
+    for i, w in enumerate(weeks):
+        other = weeks[1] if i == 0 else weeks[0]
+        wid = w["reportDate"]
+        tabs += (f'      <button role="tab" id="tab-{wid}" '
+                 f'aria-controls="panel-{wid}" data-week="{wid}" '
+                 f'aria-selected="{"true" if i == 0 else "false"}" '
+                 f'tabindex="{0 if i == 0 else -1}">{w["tabLabel"]} '
+                 f'<span class="rep">report {w["reportLabel"]}'
+                 f'{" &middot; current" if i == 0 else ""}</span></button>\n')
+        body = week_body(w, other, logs.get(wid), show_notes,
+                         with_comparison=(i == 0))
+        panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">
+      <div class="panel-head">
+        <h2>{w['periodLabel']}</h2>
+        <p>Report of {w['reportLabel']} &nbsp;&middot;&nbsp; {w['periodDays']} days &nbsp;&middot;&nbsp; MARSEC {w['marsec']}</p>
+        <p>{w['provenance']}</p>
+      </div>
+{body}    </div>
+"""
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offshore Logistics Dashboard {cur['periodLabel']}</title>
+<style>
+body{{margin:0;background:{PAGE};font-family:'Segoe UI',Arial,sans-serif;color:{INK};-webkit-text-size-adjust:100%}}
+{CSS}
+</style></head>
+<body>
+  <header class="top">
+    <div class="top-in">
+      <h1>Offshore Logistics Weekly Dashboard</h1>
+      <p class="sub">Drilling &amp; Workover Operations Support &nbsp;&middot;&nbsp; Kuwait Oil Company</p>
+    </div>
+    <div role="tablist" aria-label="Report week">
+{tabs}    </div>
+  </header>
+  <main class="wrap">
+    <div class="card">
+{panels}      <footer class="sig">
+{SIGNATURE}      </footer>
+    </div>
+  </main>
+<script>
+{JS}
+</script>
+</body></html>
+"""
+
+
+# ── Entry point ────────────────────────────────────────────────────────────
+
+def load(date_str, suffix=""):
+    p = HERE / "data" / f"{date_str}{suffix}.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
 def main():
-    args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    show_notes = "--no-notes" not in sys.argv
-    cur_date = args[0] if len(args) > 0 else "2026-09-03"
+    argv = sys.argv[1:]
+    flags = {a for a in argv if a.startswith("--")}
+    args = [a for a in argv if not a.startswith("--")]
+    cur_date = args[0] if args else "2026-09-03"
     prev_date = args[1] if len(args) > 1 else "2026-08-26"
-    cur = json.loads((HERE / "data" / f"{cur_date}.json").read_text())
-    prev = json.loads((HERE / "data" / f"{prev_date}.json").read_text())
+    show_notes = "--no-notes" not in flags
+    want_email = "--email" in flags or not (flags & {"--dashboard"})
+    want_dash = "--dashboard" in flags or not (flags & {"--email"})
 
-    # Guard the one failure mode that matters: a figure quoted in two places.
-    assert len(cur["trucks"]["byDay"]) == cur["periodDays"], "day count mismatch"
-    assert len(prev["trucks"]["byDay"]) == prev["periodDays"], "day count mismatch"
+    cur, prev = load(cur_date), load(prev_date)
+    if cur is None or prev is None:
+        sys.exit(f"missing data file for {cur_date} or {prev_date}")
 
-    suffix = "" if show_notes else "_clean"
-    out = HERE / "dist" / (
-        f"Offshore_Logistics_Weekly_Update_"
-        f"{cur_date[8:10]}-{cur_date[5:7]}-{cur_date[0:4]}{suffix}.html")
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(build(cur, prev, show_notes), encoding="utf-8")
-    print(f"wrote {out}  ({out.stat().st_size / 1024:.0f} KB)")
+    for w in (cur, prev):
+        got, want = len(w["trucks"]["byDay"]), w["periodDays"]
+        assert got == want, f"{w['reportDate']}: {got} truck days, {want} declared"
+
+    dist = HERE / "dist"
+    dist.mkdir(parents=True, exist_ok=True)
+    tag = "" if show_notes else "_clean"
+
+    if want_email:
+        d, m, y = cur_date[8:10], cur_date[5:7], cur_date[:4]
+        out = dist / f"Offshore_Logistics_Weekly_Update_{d}-{m}-{y}{tag}.html"
+        out.write_text(build_email(cur, prev, show_notes), encoding="utf-8")
+        print(f"email     {out.name}  ({out.stat().st_size / 1024:.0f} KB)")
+
+    if want_dash:
+        logs = {w["reportDate"]: load(w["reportDate"], ".log")
+                for w in (cur, prev)}
+        out = dist / f"Offshore_Logistics_Dashboard_{cur_date}{tag}.html"
+        out.write_text(build_dashboard([cur, prev], logs, show_notes),
+                       encoding="utf-8")
+        print(f"dashboard {out.name}  ({out.stat().st_size / 1024:.0f} KB)")
 
 
 if __name__ == "__main__":

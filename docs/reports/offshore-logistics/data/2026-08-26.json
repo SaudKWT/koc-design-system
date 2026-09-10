@@ -1,29 +1,65 @@
 {
   "reportDate": "2026-08-26",
   "reportLabel": "26 Aug 2026",
+  "tabLabel": "20 to 25 Aug",
   "periodStart": "2026-08-20",
   "periodEnd": "2026-08-25",
   "periodLabel": "20 to 25 Aug 2026",
   "periodDays": 6,
-  "provenance": "Extracted from Offshore_Logistics_Weekly_Update_26-08-2026_v2.html, including the three embedded PNG charts.",
+  "marsec": "Level 2",
+  "provenance": "DWOS_Weekly_Offshore_Logistics_Report_26.08.2026.xlsx (report 22, sheets Port and Vessel), plus Offshore_Logistics_Weekly_Update_26082026_v2.html and the 26.08.2026 email for the rig summaries.",
+  "showArrows": false,
+  "publishedBaselineNote": "The 26-08 report drew its own arrows against the week 06 to 12 Aug 2026 (report 20), skipping 13 to 19 Aug (report 21), and published these values for that week: 16 vessel trips, 68 truck moves, 2 active rigs, nil overstay crew. Those are shown as published and were not recomputed under the corrected truck rule below.",
+  "publishedBaseline": { "trips": 16, "truckMoves": 68, "activeRigs": 2, "overstay": 0 },
+
   "vesselTrips": { "CA1": 4, "CA3": 0, "CA5": 0, "Charlie-3": 5 },
+  "vesselTripsAudit": {
+    "CA1": "4 outbound: Shuaiba to OD1 on 20.08 (15:07), 21.08 (03:25), 22.08 (15:25), 23.08 (18:45). The OD1 to OPH leg on 24.08 is a rig to rig transit, not a new outbound voyage.",
+    "CA3": "0. STBY at OPH location on all six days.",
+    "CA5": "0. STBY at OD1 location on all six days.",
+    "Charlie-3": "5 outbound: 21.08 (16:45), 22.08 (06:05), 23.08 (09:45), and two on 25.08 (07:40 and 12:00)."
+  },
+
   "trucks": {
-    "byDay": [
+    "publishedTotal": 46,
+    "publishedByDay": [
       { "label": "Thu 20", "out": 4, "in": 4 },
       { "label": "Fri 21", "out": 2, "in": 3 },
       { "label": "Sat 22", "out": 6, "in": 0 },
       { "label": "Sun 23", "out": 7, "in": 4 },
       { "label": "Mon 24", "out": 7, "in": 0 },
       { "label": "Tue 25", "out": 9, "in": 0 }
+    ],
+    "correctionNote": "The 26-08 report published 46 truck moves. Five of those are the same trucks counted twice across the Sunday to Monday boundary: four vacuum trucks were loaded with slops on 23.08 (E21) and dispatched on 24.08 (E25), and one truck was loaded with mud skips on 23.08 (E23) and dispatched on 24.08 (E26). The report's own prose repeats the error, calling them 8 vacuum-truck loads and 6 full mud skips where the workbook records 4 trucks and 3 skips. Counted once each, the week made 41 moves, which is what this dashboard shows.",
+    "byDay": [
+      { "label": "Thu 20", "date": "20.08.2026", "out": 4, "in": 4,
+        "audit": ["E4 out 1", "E5 out 1", "E6 out 1", "E7 out 1", "E8 in 2", "E9 in 2"] },
+      { "label": "Fri 21", "date": "21.08.2026", "out": 2, "in": 3,
+        "audit": ["E11 out 2", "E12 in 2", "E13 in 1"] },
+      { "label": "Sat 22", "date": "22.08.2026", "out": 6, "in": 0,
+        "audit": ["E15 out 3", "E16 out 2", "E17 out 1"] },
+      { "label": "Sun 23", "date": "23.08.2026", "out": 2, "in": 4,
+        "audit": ["E19 out 1", "E20 out 1", "E22 in 4", "E21 four vacuum trucks loaded only, counted on dispatch 24.08", "E23 one mud-skip truck loaded only, counted on dispatch 24.08"] },
+      { "label": "Mon 24", "date": "24.08.2026", "out": 7, "in": 0,
+        "audit": ["E25 out 4 (the vacuum trucks loaded 23.08)", "E26 out 1 (the mud-skip truck loaded 23.08)", "E27 out 1", "E28 out 1"] },
+      { "label": "Tue 25", "date": "25.08.2026", "out": 9, "in": 0,
+        "audit": ["E30 out 2", "E31 out 2", "E32 out 1", "E33 out 1", "E34 out 1", "E35 out 1", "E36 out 1"] }
     ]
   },
-  "fluids": [
-    { "label": "Fresh water bunkered", "value": 756, "direction": "bunkered" },
-    { "label": "Fresh water to rigs", "value": 380, "direction": "delivered" },
-    { "label": "Fuel bunkered", "value": 216, "direction": "bunkered" },
-    { "label": "Drill water to OD1", "value": 100, "direction": "delivered" }
-  ],
-  "slopsBbl": 320,
+
+  "fluids": {
+    "bunkered": { "Fresh water": 756, "Fuel": 216, "Drill water": 0 },
+    "delivered": { "Fresh water": 380, "Fuel": 0, "Drill water": 100 },
+    "audit": {
+      "Fresh water bunkered": "E4 108 + 36 CA1; E8 72 CA1; E12 216 CA1; E16 108 CA1; E20 36 CA1; E24 180 CA1",
+      "Fuel bunkered": "E20 72 CA1; E24 144 CA1",
+      "Fresh water delivered": "E8 200 CA1 to OD1; E20 180 CA1 to OPH",
+      "Drill water delivered": "E12 100 CA1 to OD1"
+    }
+  },
+  "slops": { "receivedBbl": 290, "dischargedBbl": 320,
+             "note": "E16: 290 bbl received from OD1, 320 bbl transferred to vacuum tankers at Shuaiba." },
+
   "activeRigs": 1,
   "rigs": {
     "OD1": {
@@ -42,5 +78,23 @@
       "overstay": { "KOC": 0, "HLB": 0, "COSL": 0 },
       "nextSteps": "Nil. Backload demobilisation to COSL Mina Abdallah ongoing"
     }
-  }
+  },
+
+  "highlights": [
+    "<b>OD1 completed the wellhead N/D and the 30\" corrosion cap installation.</b> The rig is preparing to move to new well <b>BOUM-0001</b>.",
+    "<b>Overstay crew rose to 13</b> (HLB 2, COSL 11) from nil the week before. Contractor demobilisation needs follow up with COSL.",
+    "Lower vessel and truck activity follows <b>OPH being off-hired</b>, one active rig against two the week before, not a reduction in service level.",
+    "CA1 carried the bulk and cargo programme across 4 trips, including a 52 lift peak offload at Shuaiba on Sat 22.",
+    "Charlie-3 handled all crew changes across 5 trips, including 14 Pax via MM Port on Sat 22, and an 18 in / 8 out change at OD1.",
+    "Ground activity peaked on <b>Tue 25 with 9 dispatches</b>, driven by OPH demobilisation: batch mixers, an 18-3/4\" annular BOP and DP backloads to COSL Mina Abdallah.",
+    "<b>4 vacuum trucks of 9.0 ppg contaminated slops</b> went to MG-0348 and <b>3 full mud skips</b> to the NCC SEK plant, loaded Sun 23 and dispatched Mon 24, with no HSE incident. CA1 also transferred 320 bbl of slops to vacuum tankers at Shuaiba.",
+    "Vessel movements remain under <b>MARSEC Level 2</b>."
+  ],
+
+  "dataNotes": [
+    "The 26-08 report published 46 truck moves. Counted once each, the week made 41: four vacuum trucks and one mud-skip truck were loaded on 23.08 and dispatched on 24.08, and both events were counted. The report's prose repeats it as 8 vacuum-truck loads and 6 full mud skips.",
+    "The 26-08 report drew its arrows against 06 to 12 Aug 2026, skipping the week 13 to 19 Aug. The gap is in the report, not in this dashboard.",
+    "Port sheet Status reads Not Normal on all 6 days. Vessel sheet Status reads Normal on all 6 days. The only recurring port exception recorded is no night shift operation.",
+    "Vessel sheet day name reads Thurseday for 20.08."
+  ]
 }
