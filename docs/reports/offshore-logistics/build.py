@@ -542,19 +542,20 @@ def daily_log(log, key, title):
 
 
 DEFAULT_SIGNATURE = {
-    "name": "Naser M Gh Hassan",
+    "name": "Saud Abdulaziz AlKharji",
     "lines": ["Kuwait Oil Company (KOC)",
               "Engineer Drilling &amp; Workover | "
-              "Drilling &amp; Workover Engineering Group"],
-    "muted": ["NHassan@kockw.com | www.kockw.com | Tel +965 238 72718",
-              "P.O Box 9758 | Ahmadi | Postal Code 61008 | Kuwait"],
+              "Drilling &amp; Workover Operational Support Team"],
+    "muted": ["skharji@kockw.com | www.kockw.com"],
 }
 
 
 def signature(w):
-    """Per week, because the author changes. Report 24 came from a different
-    sender and carried no signature block at all, so nothing beyond the name and
-    the address on the From line is invented here."""
+    """Whoever is circulating the report signs it, which is the default below.
+
+    A week may override it with a `signature` key. Nothing is invented: only
+    what the person's own profile or email states goes in, which is why there is
+    no phone or postal line here."""
     sig = w.get("signature") or DEFAULT_SIGNATURE
     body = "<br>\n      ".join(sig.get("lines", []))
     muted = "<br>\n      ".join(sig.get("muted", []))

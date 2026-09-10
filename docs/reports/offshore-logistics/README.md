@@ -213,13 +213,20 @@ from reading values. Reading values will not do: the Thursday 27.08 block is
 entirely empty, so a value-driven walk folds its four operations into Wednesday
 and reports a 7-day week for an 8-day period.
 
-## Signatures are per week
+## Signatures
 
-The author changes. Report 24 came from a different sender and carried **no
-signature block at all**, so `data/2026-09-10.json` gives the name and the
-address from the `From` line and nothing else. Nothing beyond what the email
-supports is invented, and the gap is in that week's data notes. Weeks with no
-`signature` key fall back to the block from the 26.08 email.
+**Whoever circulates the report signs it.** That is `DEFAULT_SIGNATURE` in
+`build.py`: Saud Abdulaziz AlKharji, Engineer Drilling & Workover, Drilling &
+Workover Operational Support Team, skharji@kockw.com.
+
+The sender of the source email is a different thing and belongs in
+`provenance`, which the dashboard prints under each week's heading. Report 24
+came from Rejeesh Kumar Kunjupillai, so his name appears there and nowhere else.
+
+A week can override the block with a `signature` key (`name`, `lines`,
+`muted`). Nothing goes in that the person's own profile or email does not state,
+which is why there is no phone or postal line. Only the newest week's signature
+is ever rendered, in the footer below the tabs and at the foot of the email.
 
 ## Palette: a deliberate exemption from invariant 1
 

@@ -7,18 +7,8 @@
   "periodLabel": "03 to 09 Sep 2026",
   "periodDays": 7,
   "marsec": "Level 2",
-  "provenance": "Email of 10.09.2026 plus DWOS_Weekly_Offshore_Logistics_Report_10.09.2026.xlsx (report 24, sheets Port and Vessel).",
+  "provenance": "Email of 10.09.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_10.09.2026.xlsx (report 24, sheets Port and Vessel).",
   "showArrows": true,
-  "signature": {
-    "name": "Rejeesh Kumar Kunjupillai",
-    "lines": [
-      "Kuwait Oil Company (KOC)"
-    ],
-    "muted": [
-      "RKunjupillai@kockw.com"
-    ],
-    "note": "The 10-09 email carries no signature block. Title and phone need confirming."
-  },
   "vesselTrips": {
     "CA1": 6,
     "CA3": 2,
@@ -220,7 +210,6 @@
     "The Port sheet records bunkering less precisely than the Vessel sheet. Port E10 gives fresh water 216 m³ to CA3, where Vessel E5 splits the same delivery into fresh water 144 m³ and drilling water 72 m³. The Vessel sheet is used. The Port sheet also has no bunkering line for 05.09, where Vessel E12 records 108 m³ to CA1.",
     "Fuel volumes are recorded to three decimals (35.997, 107.999, 71.99) and are read as 36, 108 and 72 m³.",
     "Offload lines repeat arrivals already counted: E21 repeats E19, E23 repeats E24 to E27, E34 and E35 repeat E30 to E33, and E49 and E50 repeat E42, E43 and E46. Each truck is counted once, on arrival. Counting the offloads as well would add 14 movements.",
-    "The 10-09 email carries no signature block. The sender is Rejeesh Kumar Kunjupillai. Title and phone need confirming.",
     "Reporting window is 7 days (03 to 09 Sep) against 8 days for the previous report, so absolute counts are not like for like. The comparison table carries a per day row."
   ],
   "workbookTrips": {

@@ -2,7 +2,7 @@
 
 Raised while reconciling the weekly workbooks and covering emails against each other. Each item is a question for the report author, not a finding about operations.
 
-**21 open queries across 3 weeks**, as of the report of 10 Sep 2026.
+**20 open queries across 3 weeks**, as of the report of 10 Sep 2026.
 
 Tick an item once its answer is confirmed, and correct the matching `data/<report-date>.json` so the dashboard follows.
 
@@ -10,9 +10,9 @@ Tick an item once its answer is confirmed, and correct the matching `data/<repor
 
 ## 03 to 09 Sep 2026
 
-Report of 10 Sep 2026 | 7 days | 10 queries
+Report of 10 Sep 2026 | 7 days | 9 queries
 
-*Source: Email of 10.09.2026 plus DWOS_Weekly_Offshore_Logistics_Report_10.09.2026.xlsx (report 24, sheets Port and Vessel).*
+*Source: Email of 10.09.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_10.09.2026.xlsx (report 24, sheets Port and Vessel).*
 
 - [ ] **Trips are taken from the covering email (13), which supersedes the workbook.** Settled 10 Sep. The workbook narrative yields 8 on the rule used for the two earlier weeks, one outbound voyage from Shuaiba plus its return; the difference is 4 further rig calls by CA1 and 1 by CA3, so the email appears to count rig calls rather than port voyages. For the two earlier weeks the email and the workbook agree exactly, so the 13 against 9 rise may reflect the change of basis as well as activity. Worth confirming once with the author so later weeks stay comparable.
 - [ ] Vessel sheet 06.09: CA1 is recorded STBY at OPH, but on 05.09 it was approaching OD1 at 23:48 and on 07.09 it heaved up at OPH. One of the two rig names is likely wrong, which also affects where the 260.2 m³ of fuel went.
@@ -22,7 +22,6 @@ Report of 10 Sep 2026 | 7 days | 10 queries
 - [ ] The Port sheet records bunkering less precisely than the Vessel sheet. Port E10 gives fresh water 216 m³ to CA3, where Vessel E5 splits the same delivery into fresh water 144 m³ and drilling water 72 m³. The Vessel sheet is used. The Port sheet also has no bunkering line for 05.09, where Vessel E12 records 108 m³ to CA1.
 - [ ] Fuel volumes are recorded to three decimals (35.997, 107.999, 71.99) and are read as 36, 108 and 72 m³.
 - [ ] Offload lines repeat arrivals already counted: E21 repeats E19, E23 repeats E24 to E27, E34 and E35 repeat E30 to E33, and E49 and E50 repeat E42, E43 and E46. Each truck is counted once, on arrival. Counting the offloads as well would add 14 movements.
-- [ ] The 10-09 email carries no signature block. The sender is Rejeesh Kumar Kunjupillai. Title and phone need confirming.
 - [ ] Reporting window is 7 days (03 to 09 Sep) against 8 days for the previous report, so absolute counts are not like for like. The comparison table carries a per day row.
 
 ## 26 Aug to 02 Sep 2026
