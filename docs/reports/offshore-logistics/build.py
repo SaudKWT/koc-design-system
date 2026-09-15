@@ -502,6 +502,15 @@ def rig_table(rig, accent, name):
             f'font-size:13px;border-collapse:collapse;">\n{body}  </table>\n')
 
 
+def note_box(title, items):
+    lis = "".join(f"<li>{i}</li>" for i in items)
+    return (f'  <div style="background:{NOTE_BG};border:1px solid {NOTE_RULE};'
+            f'border-radius:6px;padding:12px 14px;font-size:12px;'
+            f'color:{NOTE_INK};margin-top:14px;"><b>{title}</b>'
+            f'<ul style="margin:8px 0 0;padding-left:18px;line-height:1.55;">'
+            f'{lis}</ul></div>\n')
+
+
 def heading(text, accent):
     return (f'  <div style="font-size:15px;font-weight:700;color:{NAVY};'
             f'border-left:4px solid {accent};padding-left:10px;">{text}</div>\n')
@@ -648,7 +657,8 @@ def figure(b64, alt, caption="", email=False):
             f'  </{outer}>\n')
 
 
-def week_body(w, other, log, with_comparison, email=False):
+def week_body(w, other, log, with_comparison, email=False,
+              with_notes=False):
     """Everything inside one week, used by both formats."""
     h = ""
     h += f'  <table width="100%" cellspacing="8"><tr>\n{kpi_row(w, other)}  </tr></table>\n'
@@ -697,6 +707,10 @@ def week_body(w, other, log, with_comparison, email=False):
         h += daily_log(log, "port", "Port operations")
         h += daily_log(log, "vessel", "Vessel movements")
 
+    if with_notes and w.get("dataNotes"):
+        h += note_box("Data notes, for confirmation before circulation",
+                      w["dataNotes"])
+
     h += (f'  <div style="background:{SURFACE};border:1px solid {RULE};'
           f'border-radius:6px;padding:10px 12px;font-size:12px;'
           f'color:{INK_MUTED};margin-top:12px;">{METHOD}</div>\n')
@@ -735,9 +749,10 @@ def build_email(cur, prev):
 
 # ── Format: tabbed dashboard ───────────────────────────────────────────────
 
-CSS = f""".wrap{{max-width:1000px;margin:0 auto;padding:0 16px 40px}}
+CSS = f""":root{{color-scheme:light}}
+.wrap{{max-width:1000px;margin:0 auto;padding:0 16px 40px}}
 .card{{background:#fff;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.08);overflow:hidden}}
-.top{{position:sticky;top:0;z-index:5;background:{NAVY};box-shadow:0 2px 8px rgba(0,0,0,.14)}}
+.top{{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:{NAVY};box-shadow:0 2px 8px rgba(0,0,0,.14)}}
 .top-in{{max-width:1000px;margin:0 auto;padding:16px 16px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}}
 .top h1{{margin:0;color:#fff;font-size:19px;font-weight:700;letter-spacing:-.01em}}
 .top .sub{{color:#9FC0D4;font-size:12.5px;margin:0}}
@@ -844,7 +859,7 @@ JS = """(function(){
 })();"""
 
 
-def build_dashboard(weeks, logs):
+def build_dashboard(weeks, logs, with_notes=False, artifact=False):
     """weeks: newest first. The first is the current report.
 
     Each week is compared against its own predecessor, so adding a week does
@@ -871,7 +886,8 @@ def build_dashboard(weeks, logs):
                  f'<span class="rep">report {w["reportLabel"]}'
                  f'{" &middot; current" if is_current else ""}</span></button>\n')
         body = week_body(w, other, logs.get(wid),
-                         with_comparison=has_predecessor)
+                         with_comparison=has_predecessor,
+                         with_notes=with_notes)
         panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">
       <div class="panel-head">
         <h2>{w['periodLabel']}</h2>
@@ -880,16 +896,7 @@ def build_dashboard(weeks, logs):
       </div>
 {body}    </div>
 """
-    return f"""<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Offshore Logistics Dashboard {cur['periodLabel']}</title>
-<style>
-body{{margin:0;background:{PAGE};font-family:'Segoe UI',Arial,sans-serif;color:{INK};-webkit-text-size-adjust:100%}}
-{CSS}
-</style></head>
-<body>
-  <header class="top">
+    shell = f"""  <header class="top">
     <div class="top-in">
       <h1>Offshore Logistics Weekly Dashboard</h1>
       <p class="sub">Drilling &amp; Workover Operations Support &nbsp;&middot;&nbsp; Kuwait Oil Company</p>
@@ -906,7 +913,27 @@ body{{margin:0;background:{PAGE};font-family:'Segoe UI',Arial,sans-serif;color:{
 <script>
 {JS}
 </script>
-</body></html>
+"""
+    style = f"""<style>
+body{{margin:0;background:{PAGE};font-family:'Segoe UI',Arial,sans-serif;color:{INK};-webkit-text-size-adjust:100%}}
+{CSS}
+</style>"""
+
+    if artifact:
+        # The Artifact host supplies <!doctype>, <html>, <head> and <body>, so
+        # the page ships as a body fragment. Anything above <body> here is
+        # either discarded or re-parsed into the body.
+        return f"""<title>Offshore Logistics Weekly Dashboard</title>
+{style}
+{shell}"""
+
+    return f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offshore Logistics Dashboard {cur['periodLabel']}</title>
+{style}</head>
+<body>
+{shell}</body></html>
 """
 
 
@@ -1005,9 +1032,9 @@ def main():
     args = [a for a in argv if not a.startswith("--")]
     dates = args or ["2026-09-10", "2026-09-03", "2026-08-26"]
 
-    picked = flags & {"--dashboard", "--email", "--notes"}
+    picked = flags & {"--dashboard", "--email", "--notes", "--artifact"}
     want = {name: (f"--{name}" in flags or not picked)
-            for name in ("dashboard", "email", "notes")}
+            for name in ("dashboard", "email", "notes", "artifact")}
 
     weeks = []
     for d in dates:
@@ -1030,18 +1057,26 @@ def main():
         kb = (d / name).stat().st_size / 1024
         print(f"  {folder + '/' + name:58s} {kb:5.0f} KB")
 
+    logs = {w["reportDate"]: load(w["reportDate"], ".log") for w in weeks}
+
     if want["dashboard"]:
         # A stable filename: the dashboard covers every week, so the tab strip
         # says which, and each rebuild replaces the file rather than adding one.
         write("dashboard", "Offshore_Logistics_Weekly_Dashboard.html",
-              build_dashboard(weeks, {w["reportDate"]: load(w["reportDate"], ".log")
-                                      for w in weeks}))
+              build_dashboard(weeks, logs))
     if want["email"]:
         d, m, y = cur["reportDate"][8:10], cur["reportDate"][5:7], cur["reportDate"][:4]
         write("email", f"Offshore_Logistics_Weekly_Update_{d}-{m}-{y}.html",
               build_email(cur, prev))
     if want["notes"]:
         write("notes", "data-queries.md", build_notes(weeks))
+
+    if want["artifact"]:
+        # The review copy: the same dashboard with the open queries put back in,
+        # as a body fragment for the Artifact host. The circulated copy in
+        # dashboard/ stays clean, which is why the queries came out at all.
+        write("artifact", "dashboard.artifact.html",
+              build_dashboard(weeks, logs, with_notes=True, artifact=True))
 
 
 if __name__ == "__main__":
