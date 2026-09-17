@@ -34,6 +34,7 @@ an email deliverable, not design-system source. See README.md.
 import base64
 import io
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -397,6 +398,249 @@ def chart_fluids(mine, theirs):
     return _png(fig)
 
 
+# ── Detail charts: inline SVG ──────────────────────────────────────────────
+#
+# One builder for all three, because all three are the same chart: grouped
+# bars, a categorical x axis, direct value labels and a legend. The matplotlib
+# versions are kept for the email, which cannot have <svg> at all.
+
+
+def _nice_step(top, target=5, integer=False):
+    """A tick step a reader can do arithmetic in: 1, 2, 2.5, 5 or 10 times a
+    power of ten. matplotlib's MaxNLocator did this; hand-rolled axes have to."""
+    if top <= 0:
+        return 1
+    raw = top / float(target)
+    mag = 10.0 ** math.floor(math.log10(raw))
+    step = next((m * mag for m in (1, 2, 2.5, 5, 10) if raw <= m * mag),
+                10 * mag)
+    return max(1, round(step)) if integer else step
+
+
+def svg_bars(uid, cats, series, ylabel, title, readout_default,
+             aria, xpos=None, floor=0, headroom=1.18, fmt="{:g}",
+             integer=False, caption="", diff=False):
+    """A grouped bar chart as inline SVG.
+
+    Same grammar as the PNG it replaces, so a reader who learned one has
+    learned the other: recessive y grid, no top or right spine, a direct value
+    label on every bar, and the legend below the axis rather than inside it.
+
+    The value labels are not decoration. They are the relief that discharges
+    the sub-3:1 contrast of the pale fills, so they are drawn whatever else
+    changes.
+
+    Hovering or tabbing a column reads the whole category out under the chart
+    -- every series and the change between them -- rather than popping a
+    tooltip. A tooltip repeats the value already printed on the bar, gets
+    clipped by the edge of a SharePoint preview frame, and cannot be reached
+    by keyboard or touch. The readout states what the bars do not: the
+    difference."""
+    n = len(series)
+    two_line = any("\n" in c for c in cats)
+    W, PAD_L, PAD_R, PAD_T = 950.0, 66.0, 14.0, 42.0
+    PLOT_H = 232.0
+    XLAB_H = 40.0 if two_line else 24.0
+    LEG_H = 30.0 if n > 1 else 4.0
+    H = PAD_T + PLOT_H + XLAB_H + LEG_H
+    plot_w = W - PAD_L - PAD_R
+    y0 = PAD_T + PLOT_H
+
+    us = list(xpos) if xpos else list(range(len(cats)))
+    span = (max(us) - min(us)) + 1.0
+    unit = plot_w / span
+
+    def px(u):
+        return PAD_L + (u - min(us) + 0.5) * unit
+
+    allv = [v for s in series for v in s["values"]]
+    peak = max(allv) if allv else 1
+    step = _nice_step(max(floor, peak * headroom), integer=integer)
+    # The ceiling is the first tick at or above the peak, raised one more step
+    # if that leaves no room to print the tallest bar's label. The label sits
+    # above the bar and is the required contrast relief, so it cannot be the
+    # thing that gets clipped -- and rounding every chart up a whole step
+    # unconditionally would leave the fluids chart a fifth empty.
+    # A multiple of the step, so the top edge of the plot is a labelled tick.
+    # It was max(floor, ...) unrounded, which left the trips chart topping out
+    # at 7 with its last gridline at 6.
+    ymax = math.ceil(max(floor, peak, step) / step) * step
+    while (ymax - peak) / ymax * PLOT_H < 20:
+        ymax += step
+    ticks, t = [], 0.0
+    while t <= ymax + step * 0.001:
+        ticks.append(t)
+        t += step
+
+    def py(v):
+        return y0 - (v / ymax) * PLOT_H if ymax else y0
+
+    # Grid and y tick labels.
+    grid = ""
+    for t in ticks:
+        yy = py(t)
+        grid += (f'<line class="cx-grid" x1="{PAD_L:.1f}" y1="{yy:.1f}" '
+                 f'x2="{W - PAD_R:.1f}" y2="{yy:.1f}"/>'
+                 f'<text class="cx-yt" x="{PAD_L - 9:.1f}" y="{yy + 4:.1f}" '
+                 f'text-anchor="end">{fmt.format(t)}</text>')
+    axes = (f'<line class="cx-axis" x1="{PAD_L:.1f}" y1="{PAD_T:.1f}" '
+            f'x2="{PAD_L:.1f}" y2="{y0:.1f}"/>'
+            f'<line class="cx-axis" x1="{PAD_L:.1f}" y1="{y0:.1f}" '
+            f'x2="{W - PAD_R:.1f}" y2="{y0:.1f}"/>')
+
+    # A group per category: its bars, its labels, and one hit target spanning
+    # the whole column, so the pointer finds it above a one-unit bar too.
+    # Capped in absolute units as well as in slot fractions: four vessels
+    # across 950 units gives a 217-unit slot, where a slot fraction alone drew
+    # bars wide enough to read as blocks rather than bars.
+    bw = min((0.52 if n == 1 else 0.56 / n - 0.02) * unit, 54.0)
+    groups = ""
+    for i, cat in enumerate(cats):
+        cx = px(us[i])
+        bars = ""
+        parts = []
+        for k, s in enumerate(series):
+            v = s["values"][i]
+            off = 0.0 if n == 1 else (k - (n - 1) / 2.0) * (bw + 0.02 * unit)
+            x = cx + off - bw / 2
+            h = y0 - py(v)
+            bars += (f'<rect class="cx-bar" x="{x:.1f}" y="{py(v):.1f}" '
+                     f'width="{bw:.1f}" height="{max(h, 0.0):.1f}" '
+                     f'fill="{s["fill"]}"/>'
+                     f'<text class="cx-vl" x="{x + bw / 2:.1f}" '
+                     f'y="{py(v) - 5:.1f}" text-anchor="middle" '
+                     f'fill="{s["ink"]}">{fmt.format(v)}</text>')
+            parts.append(f'{s["name"]} {fmt.format(v)}')
+        flat = cat.replace("\n", " ")
+        read = f"{flat}: " + ", ".join(parts)
+        if diff and n == 2:
+            d = series[-1]["values"][i] - series[0]["values"][i]
+            read += (f" &middot; no change" if d == 0 else
+                     f" &middot; {'up' if d > 0 else 'down'} "
+                     f"{fmt.format(abs(d))}")
+        lines = cat.split("\n")
+        xlab = "".join(
+            f'<text class="cx-xt" x="{cx:.1f}" '
+            f'y="{y0 + 17 + j * 14:.1f}" text-anchor="middle">{ln}</text>'
+            for j, ln in enumerate(lines))
+        groups += (f'<g class="cx-g" tabindex="{0 if i == 0 else -1}" '
+                   f'role="img" aria-label="{read.replace("&middot;", ",")}" '
+                   f'data-r="{read}">{bars}{xlab}'
+                   f'<rect class="cx-hit" x="{cx - unit / 2:.1f}" '
+                   f'y="{PAD_T:.1f}" width="{unit:.1f}" '
+                   f'height="{PLOT_H:.1f}"/></g>')
+
+    legend = ""
+    if n > 1:
+        # Below the axis, never inside it: inside, it collides with whatever
+        # bar happens to be tall that week, which has happened twice.
+        ly = H - LEG_H + 18
+        widths = [len(s["name"]) * 6.6 + 26 for s in series]
+        tot = sum(widths)
+        lx = (W - tot) / 2
+        for s, wd in zip(series, widths):
+            legend += (f'<rect class="cx-sw" x="{lx:.1f}" y="{ly - 9:.1f}" '
+                       f'width="12" height="12" fill="{s["fill"]}"/>'
+                       f'<text class="cx-lg" x="{lx + 18:.1f}" y="{ly:.1f}">'
+                       f'{s["name"]}</text>')
+            lx += wd
+
+    cap = (f'\n    <figcaption class="cx-cap">{caption}</figcaption>'
+           if caption else "")
+    return f"""  <figure class="cx" id="cx-{uid}">
+    <svg class="cx-svg" viewBox="0 0 {W:g} {H:g}" role="group"
+         aria-label="{aria}">
+      <text class="cx-title" x="{PAD_L:.1f}" y="24">{title}</text>
+      <text class="cx-ax" x="{PAD_L - 52:.1f}" y="{PAD_T + PLOT_H / 2:.1f}"
+            transform="rotate(-90 {PAD_L - 52:.1f} {PAD_T + PLOT_H / 2:.1f})"
+            text-anchor="middle">{ylabel}</text>
+      {grid}{axes}{groups}{legend}
+    </svg>
+    <div class="cx-read" data-default="{readout_default}">{readout_default}</div>{cap}
+  </figure>
+"""
+
+
+def svg_trips(mine, theirs):
+    names = ["CA1", "CA3", "CA5", "Charlie-3"]
+    mv = [mine["vesselTrips"][n] for n in names]
+    if theirs is None:
+        series = [dict(name="Trips", values=mv, fill=PRIMARY, ink=PRIMARY)]
+        title = f"Vessel trips by vessel  ({trips(mine)} total)"
+    else:
+        tv = [theirs["vesselTrips"][n] for n in names]
+        series = _two_week_series(mine, mv, theirs, tv)
+        title = (f"Vessel trips by vessel  ({trips(mine)} this week, "
+                 f"{trips(theirs)} previous week)")
+    return svg_bars(
+        f"trips-{mine['reportDate']}", names, series, "No. of trips", title,
+        # 7 was the 26-08 report's ceiling, kept as a floor so the weeks stay
+        # visually comparable. It grows rather than clipping: CA1 reached 6 in
+        # report 24 and a fixed ceiling would fail silently on the first 8.
+        _readout_hint(len(series)), alt_trips(mine, theirs), floor=7,
+        integer=True, diff=len(series) == 2)
+
+
+def svg_ground(w):
+    days = w["trucks"]["byDay"]
+    out = [d["out"] for d in days]
+    inn = [d["in"] for d in days]
+    series = [dict(name="Dispatched (out)", values=out, fill=PRIMARY,
+                   ink=PRIMARY),
+              dict(name="Arrived (in)", values=inn, fill=CHART[1],
+                   ink=INK_MUTED)]
+    title = (f"Daily ground transport movements  ({sum(out)} out / "
+             f"{sum(inn)} in, {sum(out) + sum(inn)} total)")
+    return svg_bars(
+        f"ground-{w['reportDate']}", [d["label"] for d in days], series,
+        "Trucks / tankers", title,
+        "Hover or tab a day to read its dispatches and arrivals.",
+        alt_ground(w), floor=12, integer=True)
+
+
+def svg_fluids(mine, theirs):
+    cats = [(d, f) for d in ("bunkered", "delivered") for f in FLUIDS]
+    labels = [f"{f}\n{'bunkered' if d == 'bunkered' else 'to rigs'}"
+              for d, f in cats]
+    mv = [mine["fluids"][d][f] for d, f in cats]
+    if theirs is None:
+        series = [dict(name="Cubic metres", values=mv, fill=PRIMARY,
+                       ink=PRIMARY)]
+        title = f"Fluids and bulk managed  ({fluid_total(mine):,} m³ total)"
+    else:
+        tv = [theirs["fluids"][d][f] for d, f in cats]
+        series = _two_week_series(mine, mv, theirs, tv)
+        title = (f"Fluids and bulk managed  ({fluid_total(mine):,} m³ this "
+                 f"week, {fluid_total(theirs):,} m³ previous week)")
+    return svg_bars(
+        # A gap between the bunkered trio and the delivered trio.
+        f"fluids-{mine['reportDate']}", labels, series, "Cubic metres (m³)",
+        title, _readout_hint(len(series)), alt_fluids(mine, theirs),
+        xpos=[0, 1, 2, 3.45, 4.45, 5.45], headroom=1.22, fmt="{:,g}",
+        caption=slops_caption(mine, theirs), diff=len(series) == 2)
+
+
+def _two_week_series(mine_w, mine_v, other_w, other_v):
+    """The shared grammar: this week solid navy, the previous week pale, and
+    the legend saying which in words rather than leaving dates to be decoded.
+
+    Ordered by period and never by whose panel it is, so time reads left to
+    right in every tab. Ordering by panel put the later week on the left in an
+    older tab, which read as time running backwards."""
+    pairs = sorted([(mine_w, mine_v, True), (other_w, other_v, False)],
+                   key=lambda pr: pr[0]["periodStart"])
+    return [dict(name=f"{'This week' if mn else 'Previous week'} "
+                      f"({short(wk)})", values=vals,
+                 fill=PRIMARY if mn else PRIOR,
+                 ink=PRIMARY if mn else INK_MUTED)
+            for wk, vals, mn in pairs]
+
+
+def _readout_hint(n):
+    return ("Hover or tab a column to read it." if n == 1 else
+            "Hover or tab a column to read both weeks and the change.")
+
+
 TREND_SERIES = [
     ("Vessel trips", lambda w: trips(w), "{:g}"),
     ("Vessel movements", lambda w: movements(w), "{:g}"),
@@ -614,11 +858,11 @@ def kpis(w, other):
     # The corrected truck figure cannot be compared to a baseline counted under
     # the old rule, so that one tile states both numbers instead of an arrow.
     if not arrows and w["trucks"].get("publishedTotal"):
-        tiles[1]["delta_html"] = (
+        tiles[2]["delta_html"] = (
             f'{truck_total(w)} counted once each &nbsp;'
             f'<span style="font-weight:400;">'
             f'({w["trucks"]["publishedTotal"]} as published)</span>')
-        tiles[1]["delta_colour"] = DANGER
+        tiles[2]["delta_colour"] = DANGER
     return tiles
 
 
@@ -631,9 +875,12 @@ def kpi_row(w, other, sparks=None):
     <svg> and runs no script, so it keeps the raster small-multiples chart
     further down instead. Every style stays inline for the same reason -- the
     classes are there for the stylesheet and are inert in a mail client."""
-    default_caption = (f"vs {other['tabLabel']}"
+    # "Last week", not "vs 03 to 09 Sep". The reader does not need the dates
+    # of the week they are not reading; the panel head states the week they
+    # are, and the comparison table below spells both out in full.
+    default_caption = ("Last week"
                        if other is not None and w.get("showArrows", True)
-                       else "baseline week")
+                       else "Baseline week, no comparison")
     tiles = kpis(w, other)
     width = f"{100 // len(tiles)}%"
     cells = ""
@@ -925,11 +1172,32 @@ def signature(w):
 """
 
 METHOD = ("One trip is one outbound voyage from Shuaiba Port plus its return; "
-          "a rig to rig transit is not a new trip. A truck move counts one "
-          "truck unit per dispatch or arrival, and a truck loaded on one day "
-          "and dispatched the next is one movement, counted on dispatch. Both "
-          "weeks are counted on that one rule, which is why the previous week "
-          "reads 41 here against the 46 its own report published.")
+          "a rig to rig transit is not a new trip. A vessel movement is a "
+          "transit between locations -- port to rig, rig to port or rig to "
+          "rig -- so a pull-out and re-berth at the same rig is not one. A "
+          "truck move counts one truck unit per dispatch or arrival, and a "
+          "truck loaded on one day and dispatched the next is one movement, "
+          "counted on dispatch. Every week is counted on that one rule, which "
+          "is why 20 to 25 Aug reads 41 truck moves here against the 46 its "
+          "own report published.")
+
+
+def method_note(w):
+    """Counting rules and provenance, at the foot where provenance belongs.
+
+    The source line used to sit in the panel head, third line down, above the
+    headline -- so the first thing a reader met was a filename. It is an audit
+    trail, not news: it belongs here, with the rules the figures were counted
+    on. Nothing was dropped."""
+    txt = METHOD + f" Source: {w['provenance']}"
+    base = w.get("publishedBaseline") or {}
+    if base and not w.get("showArrows", True):
+        txt += (f" This is the earliest week tracked here, so no comparison is "
+                f"drawn. The {w['reportLabel']} report compared it against 06 "
+                f"to 12 Aug 2026: {base.get('trips')} vessel trips, "
+                f"{base.get('truckMoves')} truck moves, "
+                f"{base.get('activeRigs')} active rigs, nil overstay.")
+    return txt
 
 
 def slops_caption(mine, theirs):
@@ -1010,26 +1278,6 @@ def week_body(w, other, log, with_comparison, email=False,
           f'cellpadding="0"><tr>\n{kpi_row(w, other, sparks)}'
           f'  </tr></table>\n')
 
-    if w.get("showArrows", True) and other is not None:
-        basis = (f"Arrows compare against {other['periodLabel']}, counted on "
-                 f"the same rule. Prior value in brackets.")
-    else:
-        base = w.get("publishedBaseline") or {}
-        basis = "Earliest week in this dashboard, so no comparison is drawn."
-        if base:
-            basis += (f" The {w['reportLabel']} report compared these against "
-                      f"06 to 12 Aug 2026: {base.get('trips')} vessel trips, "
-                      f"{base.get('truckMoves')} truck moves, "
-                      f"{base.get('activeRigs')} active rigs, nil overstay.")
-        if w["trucks"].get("publishedTotal"):
-            basis += (f" Truck moves read {truck_total(w)} here against the "
-                      f"{w['trucks']['publishedTotal']} that report published.")
-    if sparks:
-        basis += (' <span class="k-hint">Hover or tab a point on a line to '
-                  'read that week.</span>')
-    h += (f'  <div style="font-size:{FS["2xs"]};color:{INK_MUTED};'
-          f'padding:8px 2px 0;text-align:right;">{basis}</div>\n')
-
     h += "\n" + rig_strip(w)
 
     if all_weeks and email:
@@ -1049,21 +1297,24 @@ def week_body(w, other, log, with_comparison, email=False,
           f'padding-left:20px;line-height:1.6;">{lis}</ul>\n')
 
     # ── Everything below proves the above, and folds away ──────────────────
-    detail = ""
-    if with_comparison:
-        detail += comparison_table(w, other)
+    # Charts first, then the table. The shape is what a reader takes from
+    # this section; the table is what they check a single figure against, and
+    # they scroll to it deliberately. The table was on top, so the charts sat
+    # below sixty rows of numbers.
+    #
     # The daily shape is the one thing no other view carries, so it stays in
     # both formats. The trips and fluids charts are per-vessel and per-category
-    # views of totals the trend strip and the table already give, so the email
+    # views of totals the sparklines and the table already give, so the email
     # drops them: four base64 charts put it over Gmail's 102 KB clip, and a
     # clipped email loses the signature, not the chart.
-    detail += figure(chart_ground(w), alt_ground(w), email=email)
-    if not email:
-        detail += figure(chart_trips(w, other), alt_trips(w, other))
-        detail += figure(chart_fluids(w, other), alt_fluids(w, other),
-                         slops_caption(w, other))
-    n = ("every figure, and the daily shape" if email
-         else "every figure and the three detail charts")
+    if email:
+        detail = figure(chart_ground(w), alt_ground(w), email=True)
+    else:
+        detail = svg_ground(w) + svg_trips(w, other) + svg_fluids(w, other)
+    if with_comparison:
+        detail += comparison_table(w, other)
+    n = ("the daily shape, and every figure" if email
+         else "three charts, and every figure")
     h += collapsible("Full figures", detail, n, email=email)
 
     if log:
@@ -1087,7 +1338,7 @@ def week_body(w, other, log, with_comparison, email=False,
     h += (f'  <div style="background:{SURFACE};border:1px solid {RULE};'
           f'border-radius:{RADIUS_MD};padding:10px 12px;font-size:{FS["xs"]};'
           f'color:{INK_MUTED};margin-top:14px;line-height:1.5;">'
-          f'{METHOD}</div>\n')
+          f'{method_note(w)}</div>\n')
     return h
 
 
@@ -1124,7 +1375,7 @@ def build_email(cur, prev, all_weeks=None):
     </tr></table></td></tr>
   <tr><td style="padding:22px 28px 6px;">
     <p style="margin:0 0 6px;font-size:15px;">Salam Bu Khaled,</p>
-    <p style="margin:0;font-size:14px;color:{INK_MUTED};">Kindly find below the Offshore Logistics weekly summary. A one glance dashboard comes first, then the week on week comparison, then the supporting detail. Full daily port and vessel logs are in the attached workbook.</p>
+    <p style="margin:0;font-size:14px;color:{INK_MUTED};">Kindly find below the Offshore Logistics weekly summary. The week in one line and five figures comes first, then both rigs, then what happened, then the supporting charts and the full week on week comparison. Full daily port and vessel logs are in the attached workbook.</p>
   </td></tr>
   <tr><td style="padding:14px 28px 0;">
 {body}  </td></tr>
@@ -1184,6 +1435,43 @@ CSS = f""":root{{color-scheme:light}}
 details[open] summary{{border-radius:6px 6px 0 0}}
 summary::marker{{color:{INK_MUTED}}}
 table{{width:100%}}
+/* Detail charts: inline SVG, same grammar as the PNGs they replaced.
+   Fonts are declared here rather than per element so one rule changes the
+   whole set, and so print inherits them. */
+.cx{{margin:14px 0 22px}}
+.cx-svg{{display:block;width:100%;height:auto;border:1px solid {RULE};
+  border-radius:8px;background:{CARD};font-family:inherit}}
+.cx-title{{font-size:15px;font-weight:{FW['bold']};fill:{PRIMARY}}}
+.cx-ax{{font-size:11.5px;fill:{INK}}}
+.cx-yt,.cx-xt{{font-size:11.5px;fill:{INK}}}
+.cx-lg{{font-size:12px;fill:{INK}}}
+/* Recessive axes: y grid only, no top or right spine. */
+.cx-grid{{stroke:{RULE};stroke-width:1;vector-effect:non-scaling-stroke}}
+.cx-axis{{stroke:{INK_MUTED};stroke-width:1;vector-effect:non-scaling-stroke}}
+/* A white edge separates touching bars in a pair without a second hue. */
+.cx-bar{{stroke:{CARD};stroke-width:1.2;vector-effect:non-scaling-stroke;
+  transition:stroke {DUR_FAST} {EASE_OUT}}}
+.cx-sw{{stroke:{CARD};stroke-width:1}}
+/* Direct value labels. Required, not decorative: they are the relief that
+   discharges the sub-3:1 contrast of the pale fill. */
+.cx-vl{{font-size:11.5px;font-weight:{FW['bold']};
+  font-variant-numeric:tabular-nums}}
+.cx-hit{{fill:transparent;cursor:pointer}}
+.cx-bar,.cx-vl,.cx-grid,.cx-axis,.cx-xt,.cx-yt,.cx-title,.cx-ax,
+.cx-lg,.cx-sw{{pointer-events:none}}
+.cx-g{{outline:none}}
+/* Hover outlines the column's bars in ink rather than restyling the fill, so
+   the colour encoding is never touched by an interaction state. */
+.cx-g:hover .cx-bar{{stroke:{INK}}}
+.cx-g:focus-visible .cx-bar{{stroke:{INK}}}
+.cx-g:focus-visible .cx-hit{{fill:{tok('color.primary.100')};
+  fill-opacity:.45;stroke:{PRIMARY};stroke-width:2;
+  vector-effect:non-scaling-stroke}}
+.cx-read{{font-size:{FS['xs']};color:{INK};padding:7px 2px 0;
+  font-variant-numeric:tabular-nums;min-height:1.5em}}
+.cx-cap{{font-size:11px;color:{INK_MUTED};padding:2px 2px 0}}
+/* A nested fold is a child of the one above it, so it reads as one. */
+details details{{margin-left:18px}}
 /* Sparkline inside each KPI tile. Inline SVG, so it costs a tenth of a PNG,
    prints as vectors, and can be hovered or tabbed a point at a time. */
 /* overflow:visible so the hover halo around a point at the top or
@@ -1251,12 +1539,12 @@ table{{width:100%}}
      A long log has to be allowed to break across pages. */
   details,details table{{break-inside:auto}}
   summary{{list-style:none}}
-  .k{{break-inside:avoid}}
+  .k,.cx{{break-inside:avoid}}
   /* "Hover" means nothing on paper. */
-  .k-hint{{display:none}}
+  .k-hint,.cx-read{{display:none}}
 }}
 @media (prefers-reduced-motion:reduce){{
-  [role=tab],.k-spark .h{{transition:none}}
+  [role=tab],.k-spark .h,.cx-bar{{transition:none}}
 }}"""
 
 JS = """(function(){
@@ -1370,6 +1658,48 @@ JS = """(function(){
       sib[n].focus();
     });
   });
+})();
+
+(function(){
+  /* Detail charts. Hovering or focusing a column reads that whole category
+     out under the chart: every series, and for the two-week charts the change
+     between them. No floating tooltip -- it would repeat the value already
+     printed on the bar, be clipped by the edge of a SharePoint preview frame,
+     and be unreachable by keyboard or touch. The readout states the one thing
+     the bars do not, which is the difference.
+
+     Same constraint as above: nothing here touches localStorage,
+     sessionStorage, document.cookie or history.replaceState. */
+  var figs=Array.prototype.slice.call(document.querySelectorAll('figure.cx'));
+  if(!figs.length)return;
+  figs.forEach(function(fig){
+    var read=fig.querySelector('.cx-read');
+    var cols=Array.prototype.slice.call(fig.querySelectorAll('.cx-g'));
+    if(!read||!cols.length)return;
+    function show(g){ read.innerHTML=g.getAttribute('data-r'); }
+    function reset(){ read.innerHTML=read.getAttribute('data-default'); }
+    cols.forEach(function(g,i){
+      g.addEventListener('pointerenter',function(){show(g);});
+      g.addEventListener('pointerleave',reset);
+      g.addEventListener('focus',function(){show(g);});
+      g.addEventListener('blur',reset);
+      g.addEventListener('keydown',function(e){
+        /* One tab stop per chart, arrows across the columns. Eight days plus
+           four vessels plus six fluid categories would otherwise put eighteen
+           extra stops in the middle of the page. */
+        var n=null,k=e.key;
+        if(k==='ArrowRight'||k==='ArrowDown')n=Math.min(i+1,cols.length-1);
+        else if(k==='ArrowLeft'||k==='ArrowUp')n=Math.max(i-1,0);
+        else if(k==='Home')n=0;
+        else if(k==='End')n=cols.length-1;
+        if(n===null||n===i)return;
+        e.preventDefault();
+        cols.forEach(function(c){c.setAttribute('tabindex','-1');});
+        cols[n].setAttribute('tabindex','0');
+        cols[n].focus();
+      });
+    });
+  });
 })();"""
 
 
@@ -1406,7 +1736,6 @@ def build_dashboard(weeks, logs, with_notes=False, artifact=False):
       <div class="panel-head">
         <h2>{w['periodLabel']}</h2>
         <p>Report of {w['reportLabel']} &nbsp;&middot;&nbsp; {w['periodDays']} days &nbsp;&middot;&nbsp; MARSEC {w['marsec']}</p>
-        <p>{w['provenance']}</p>
       </div>
 {body}    </div>
 """

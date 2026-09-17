@@ -36,11 +36,11 @@ notes/      data-queries.md                            the open questions
 | --- | --- | --- |
 | Weeks | one | all of them, behind a tab strip |
 | Layout | nested tables, inline styles | CSS, sticky header |
-| Charts | 2 PNG, base64 | 3 PNG per week, base64, plus 5 inline SVG sparklines |
+| Charts | 1 PNG, base64 | 3 inline SVG per week |
 | Trend | raster small multiples | live sparkline inside each KPI tile |
-| Script | none | tab behaviour and sparkline scrub |
+| Script | none | tabs, sparkline scrub, chart readout |
 | Daily logs | in the attached workbook | in the page |
-| Size | 67 KB | 536 KB at four weeks |
+| Size | 67 KB | 326 KB at four weeks |
 
 The tab strip needs CSS and script, which is exactly what an Outlook-safe email
 cannot have, so those two cannot be the same file. The email is what Bu Khaled
@@ -195,7 +195,8 @@ off still gets the whole report.
    first, or pass every date on the command line. A date left out of that list
    is a week missing from the tab strip and from every sparkline, and nothing
    fails to warn you.
-7. Run the build.
+7. Run the build, then `python3 check_contrast.py` if you touched a chart
+   colour.
 
 ## Where the source disagrees with itself
 
@@ -407,7 +408,8 @@ and figure, and each line a `role="group"` label stating the series in words,
 so a screen reader gets the numbers without the geometry.
 
 **Print**: the lines print as vectors, the hover instruction is hidden, and
-`break-inside:avoid` keeps a tile whole. Page one of `--week latest` carries
+`break-inside:avoid` keeps a tile whole. Every chart in the PDF is vectors
+now; it reports zero embedded images. Page one of `--week latest` carries
 the headline, all five tiles with their lines, both rigs and the highlights.
 
 Two smaller things the sparklines forced:
@@ -424,40 +426,140 @@ Two smaller things the sparklines forced:
   attribute is a presentational hint and loses to the stylesheet without
   needing `!important`.
 
+## What the panel head does not say
+
+Three things were taken out of the top of each week and not thrown away.
+
+- **The source line** (`Email of 17.09.2026 from … .xlsx (report 25, sheets
+  Port and Vessel)`) sat third line down, above the headline, so the first
+  thing a reader met was a filename. It is an audit trail, not news. It is now
+  the last sentence of the METHOD footnote, with the rules the figures were
+  counted on, generated from the same `provenance` field.
+- **The arrows basis line** (`Arrows compare against 03 to 09 Sep 2026,
+  counted on the same rule. Prior value in brackets.`) explained a convention
+  the tiles already show. Each tile's own caption now reads **Last week**,
+  which is the whole of it.
+- **The baseline week's two extra facts** were in that same line. The
+  published-baseline comparison moved into the METHOD footnote, which only
+  states it on the week it applies to. The truck-count correction stayed on a
+  tile, but **moved to the right one**: it read `41 counted once each (46 as
+  published)` under *Vessel movements*, whose value is 22. `kpis()` wrote it to
+  `tiles[1]`, which was Truck moves until the vessel movements tile was
+  inserted at index 1 and pushed it to 2. The correction had been on the wrong
+  tile since movements were added.
+
+`vs 03 to 09 Sep` became `Last week` for the same reason: a reader does not
+need the dates of the week they are *not* reading. The panel head states the
+week they are on, and the comparison table below spells both out in full with
+day counts.
+
 ## Chart notes
 
-Both two-week charts share one grammar, so the reader learns it once: **this
-week is solid navy, the previous week is pale**, and the legend says which in
-words with the dates in brackets, rather than leaving two date ranges to be
-decoded. Bars are ordered by period and never by whose panel it is, so time
-reads left to right in every tab. Ordering by panel put the later week on the
-left in an older tab, which read as time running backwards.
+**All four chart types are inline SVG.** The sparklines in the KPI tiles and
+the three detail charts. matplotlib is still in `build.py`, but only the email
+path reaches it: Outlook strips `<svg>` and runs no script, so the mail keeps
+one rasterised chart.
+
+Three reasons, in the order they matter here:
+
+1. **It prints as vectors.** The single-week PDF now reports zero images and
+   306 vector drawings on its chart page, where it used to embed 140 dpi
+   rasters.
+2. **Bytes.** The dashboard went 536 KB → 326 KB carrying one more week than
+   it did at 536 KB. Nine base64 PNGs left.
+3. **A reader can interrogate it.** Hover or tab a column and the whole
+   category reads out under the chart: every series, and on the two-week
+   charts the change between them. That last part is the point — the value is
+   already printed on every bar, so a readout that only repeated it would earn
+   nothing. The difference is what the bars do not state.
+
+`svg_bars()` builds all three detail charts, because all three *are* the same
+chart: grouped bars, a categorical x axis, a direct label on every bar, a
+legend below the axis. One builder means the grammar cannot drift between
+them, which is what happened to the PNG versions twice.
+
+**No floating tooltip, in any chart.** It would repeat the printed value, get
+clipped by the edge of a SharePoint preview frame, be unreachable by keyboard,
+and have no hover to fire on a touch screen. The readout line is none of those
+things.
+
+**Keyboard**: one tab stop per chart, arrows across the columns. Seven days
+plus four vessels plus six fluid categories would otherwise drop eighteen
+extra tab stops into the middle of the page. They are inside a collapsed
+`<details>`, so they cost nothing until it is opened.
+
+Two things the hand-rolled axes had to get right that matplotlib did for free:
+
+- **A tick step a reader can do arithmetic in** — 1, 2, 2.5, 5 or 10 times a
+  power of ten, and forced to a whole number where the metric is counted in
+  units. That is `MaxNLocator`'s job; `_nice_step()` does it here.
+- **A ceiling that is a labelled tick and leaves room for the tallest label.**
+  First attempt left the trips chart topping out at 7 with its last gridline
+  at 6. Second attempt rounded every chart up a whole step, which left the
+  fluids chart a fifth empty. It now takes the first tick at or above the peak
+  and adds one more step only when that leaves under 20 units of room for the
+  label above the bar — which is the one thing that must not be clipped,
+  because it is the contrast relief.
+
+### The grammar, unchanged from the PNGs
+
+**This week is solid navy, the previous week is pale**, and the legend says
+which in words with the dates in brackets, rather than leaving two date ranges
+to be decoded. Bars are ordered by period and never by whose panel it is, so
+time reads left to right in every tab. Ordering by panel put the later week on
+the left in an older tab, which read as time running backwards.
 
 **The earliest week is the baseline and stands alone**: single-series charts in
-one colour, no arrows on the tiles, no comparison table. It has no predecessor
-in the set, and comparing it forward to a later week would draw a comparison
-backwards in time. The week its own report measured against, 06 to 12 Aug 2026,
-is not in the dashboard, so that stays a sentence under the tiles rather than
-becoming arrows to a week nobody can open.
+one colour, no legend, no arrows on the tiles, no comparison table, no
+sparklines. It has no predecessor in the set, and comparing it forward to a
+later week would draw a comparison backwards in time.
 
-Both charts' y-axis ceilings are the 26-08 report's values used as a **floor**,
+Both two-week charts' y ceilings use the 26-08 report's values as a **floor**,
 not a cap, so the weeks stay visually comparable but nothing clips. CA1 reached
-6 trips in report 24 against a fixed ceiling of 7.
+6 trips in report 24 against a floor of 7, and the ceiling grew to 8.
 
 The fluids chart is grouped rather than stacked, and split three fluids by two
-directions, because the interesting thing this week is a composition shift the
-totals hide: fuel moved from bunkering into delivery, 216 m³ to nil bunkered
-against nil to 200 m³ delivered, and drill water went the other way. A stack
-would bury that inside two columns.
-
-The palette was checked with the `dataviz` skill's validator. The pairs in use
-(`#1F3B57`/`#AEBECB`, `#1F3B57`/`#E0A73C`, `#2E8B8B`/`#1F3B57`) all clear CVD
-separation and the normal-vision floor with wide margins, worst case ΔE 24.3.
-They fail the validator's lightness-band and chroma-floor checks, which are
-properties of the inherited brand palette above. `#E0A73C` and `#AEBECB` sit
-below 3:1 against the surface; the printed value on every bar and the
-comparison table are the required relief.
+directions, because the interesting thing is a composition shift the totals
+hide: fuel moved from bunkering into delivery and drill water went the other
+way. A stack would bury that inside two columns.
 
 Colour carries meaning in each chart rather than repeating the axis. In the
 fluids chart it separates fluid bunkered into vessels from fluid delivered to
 rigs; the words are also in the axis labels, so identity is never colour alone.
+
+### Contrast: axe cannot see inside an SVG
+
+Switching the charts to SVG moved 86 nodes per tab from *pass* to
+**incomplete** in axe, for two reasons of axe's own: it treats an `<svg>` as an
+image node and cannot resolve what is behind the text, and it skips a
+one-character tick label like `0` as "too short to determine if it is actual
+text content".
+
+Incomplete is not a pass. `check_contrast.py` asserts the nine pairs instead,
+reading the same tokens `build.py` does:
+
+```bash
+python3 check_contrast.py     # 9 pairs, floor 4.5:1
+```
+
+Everything in these charts needs 4.5:1 — nothing is WCAG large text, since the
+biggest is a 15px bold title and large starts at 18.66px bold. Worst case is
+6.42:1. The pale `#BCC3CA` previous-week fill is 1.78:1 and the amber
+`#B06F00` is 4.10:1, both non-text and exempt from 1.4.3, and both the reason
+a direct value label on every bar is mandatory rather than decorative.
+
+The palette was also checked with the `dataviz` skill's validator: the pairs
+in use clear CVD separation and the normal-vision floor with wide margins,
+worst case ΔE 24.3. They fail its lightness-band and chroma-floor checks,
+which are properties of the inherited brand palette.
+
+## Reading order inside a week
+
+Charts above the table in **Full figures**. The shape is what a reader takes
+from that section; the table is what they check a single figure against, and
+they scroll to it deliberately. The table was on top, so the charts sat below
+sixty rows of numbers. The email is ordered the same way.
+
+A nested fold is indented 18px (`details details`), so **Port operations** and
+**Vessel movements** read as children of **Daily log** rather than as three
+peers.
