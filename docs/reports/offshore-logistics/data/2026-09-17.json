@@ -253,5 +253,22 @@
     "Port sheet E8 and E9 on 10.09 are one sentence split across two rows. The second row begins with a tab and no verb.",
     "Reporting window is 7 days, the same as the previous report, so the counts are directly comparable for the first time in this series."
   ],
-  "headline": "OD1 idle a second week, still awaiting BOUM-0001 clearance. Overstay down to 8, its lowest in the series, and the casing went back out to Ahmadi."
+  "headline": "OD1 idle a second week, still awaiting BOUM-0001 clearance. Overstay down to 8, its lowest in the series, and the casing went back out to Ahmadi.",
+  "dailyOperations": {
+    "label": "Wed 16 Sep 2026",
+    "source": "Daily Ground Operations, as circulated in the 17.09.2026 email",
+    "lines": [
+      "Cargo for Rig OD1 loaded on <b>CA1</b>, per manifest CM-OD-1004.",
+      "Two skips of OBM cuttings sent to KOC NCC for disposal.",
+      "One pickup dispatched to the KOC Ahmadi cementing hall at Mina Abdallah, carrying items received from OD1 (RCM-OD-933 to 935), per delivery RM-SP-8199.",
+      "One pickup dispatched to the Sperry SDL hall at Mina Abdallah, carrying a network switch and a landline handset received from OPH (RCM-OP-1195), per delivery RM-SP-9000.",
+      "One truck arrived from Reliance Subhan with <b>three full food containers for OPH</b>, per delivery ticket COSL-DT-OP-045.",
+      "One truck arrived from NCC SEK with <b>two empty mud skips</b>, per delivery ticket RDT-SP-8198.",
+      "One truck arrived from COSL Mina Abdallah with <b>three lifts for OD1</b> (call-off OD-BM1-E-2-3), per delivery ticket COSL-DT-OD-BM1-E-2-3.",
+      "All three arrivals offloaded: the three OPH food containers from Reliance, the two empty mud skips from the SEK treatment plant, and the three OD1 lifts from COSL."
+    ],
+    "extraNotes": [
+      "Vessel movements remain under <b>MARSEC Level 2</b>."
+    ]
+  }
 }

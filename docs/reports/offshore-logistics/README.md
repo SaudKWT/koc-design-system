@@ -37,6 +37,7 @@ notes/      data-queries.md                            the open questions
 | Weeks | one | all of them, behind a tab strip |
 | Layout | nested tables, inline styles | CSS, sticky header |
 | Charts | 1 PNG, base64 | 3 inline SVG per week |
+| KPI cards | 4 | 4 |
 | Trend | raster small multiples | live sparkline inside each KPI tile |
 | Script | none | tabs, sparkline scrub, chart readout |
 | Daily logs | in the attached workbook | in the page |
@@ -49,6 +50,13 @@ carries the full daily port and vessel logs itself.
 
 The dashboard filename carries no date. It covers every week, the tab strip says
 which, and each rebuild replaces it rather than leaving a trail of near-copies.
+
+### The queries are a file, not a section
+
+They are not rendered on the page at all now, in either format.
+`notes/data-queries.md` is generated from the same `dataNotes` fields and is
+the only place they appear. The METHOD footnote went the same way, so the
+counting rules live here in this README rather than at the foot of every week.
 
 ### Why the queries are a separate file
 
@@ -195,7 +203,12 @@ off still gets the whole report.
    first, or pass every date on the command line. A date left out of that list
    is a week missing from the tab strip and from every sparkline, and nothing
    fails to warn you.
-7. Run the build, then `python3 check_contrast.py` if you touched a chart
+7. Transcribe the covering email's `Daily Ground Operations` list into
+   `dailyOperations` — its `lines` reworded and nothing else, its `extraNotes`
+   for the MARSEC line, and a `label` naming the day the email's list actually
+   covers. Check the email's figures against the ones you entered first.
+   Without this key the week falls back to written `highlights`.
+8. Run the build, then `python3 check_contrast.py` if you touched a chart
    colour.
 
 ## Where the source disagrees with itself
@@ -425,6 +438,53 @@ Two smaller things the sparklines forced:
   re-declared in a media query that only a browser reads. The `width="20%"`
   attribute is a presentational hint and loses to the stylesheet without
   needing `!important`.
+
+## What "What happened" became
+
+For the week that has its covering email transcribed, that section is **the
+email's own `Daily Ground Operations` list, reworded and nothing else**. It was
+a written summary of the week, which is an interpretation, and an
+interpretation is a place for a mistake to live: the old bullets asserted
+things like "the busiest of the four weeks tracked" and "turned outbound
+again", which are conclusions, not records.
+
+Two things that matter about the substitution:
+
+- **The email's list is one day, not the week.** Its eight bullets match the
+  workbook's `16.09.2026` port lines exactly, one for one. So the heading
+  carries `Wed 16 Sep 2026` rather than implying seven days, and a source line
+  under the list says where it came from. Calling one day's operations the
+  week's story would be the same mistake in a new place.
+- **Eight in, eight out, same order.** No line merged, split, added or
+  inferred. The MARSEC note is carried separately, from the email's own
+  `Extra Notes`, because the strap line that used to state it is gone.
+
+Every figure in the 17.09 email was checked against `data/2026-09-17.json`
+before the transcription: four per-vessel trip counts and the total, both rig
+summary tables, personnel and visa counts, all three overstay figures, next
+steps, and the MARSEC level. All matched.
+
+The other three weeks keep their written bullets under **What happened**,
+because their covering emails are not in this repo. `dailyOperations` in the
+data file is what switches a week over; `week_body` falls back to `highlights`
+when it is absent, so adding one week changes only that week.
+
+**The headline above the cards is still a written summary.** It is the one
+interpretation left on the page.
+
+## Vessel movements is not a card
+
+Four cards, not five. The count is still carried — in the comparison table,
+per vessel and per day, under the rule it is counted on — but as a headline
+figure it sat next to vessel trips, and a reader has to hold two definitions
+apart to tell those two numbers apart.
+
+The truck-count correction is now looked up **by label**, not by index. It had
+been written to `tiles[1]`, which was Truck moves until the vessel movements
+tile was inserted ahead of it; the correction then sat under Vessel movements,
+a figure of 22, reading "41 counted once each". Removing the tile would have
+shifted it a second time. That is twice the same bug from the same cause, so
+the lookup no longer depends on position.
 
 ## What the panel head does not say
 

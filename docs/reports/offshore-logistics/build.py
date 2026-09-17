@@ -821,6 +821,11 @@ def kpis(w, other):
     """Four tiles, in the same order every week. Consistency across weeks is
     most of what makes a weekly dashboard readable, so the set never changes.
 
+    Vessel movements is not one of them. The count is still carried -- in the
+    comparison table, per vessel and per day, under the rule it is counted on
+    -- but it was the second of five headline figures and sat next to vessel
+    trips, which a reader has to hold two definitions apart to tell apart.
+
     The oldest week in the set is the baseline and carries no arrows. Comparing
     it forward to a later week would read as time running backwards, and the
     week it was originally measured against is not in the dashboard at all."""
@@ -836,10 +841,6 @@ def kpis(w, other):
              **dict(zip(("delta_html", "delta_colour"),
                         cmp(trips(w), "trips",
                             trips(other) if other else 0, "pct")))),
-        dict(value=movements(w), label="Vessel movements", colour=PRIMARY,
-             **dict(zip(("delta_html", "delta_colour"),
-                        cmp(movements(w), "movements",
-                            movements(other) if other else 0)))),
         dict(value=truck_total(w), label="Truck moves", colour=PRIMARY,
              **dict(zip(("delta_html", "delta_colour"),
                         cmp(truck_total(w), "truckMoves",
@@ -858,11 +859,16 @@ def kpis(w, other):
     # The corrected truck figure cannot be compared to a baseline counted under
     # the old rule, so that one tile states both numbers instead of an arrow.
     if not arrows and w["trucks"].get("publishedTotal"):
-        tiles[2]["delta_html"] = (
+        # By label, not by index. It was written to tiles[1], which was Truck
+        # moves until the vessel movements tile was inserted ahead of it, and
+        # the correction then sat under a figure it did not describe. Removing
+        # that tile would have shifted it a second time.
+        truck = next(t for t in tiles if t["label"] == "Truck moves")
+        truck["delta_html"] = (
             f'{truck_total(w)} counted once each &nbsp;'
             f'<span style="font-weight:400;">'
             f'({w["trucks"]["publishedTotal"]} as published)</span>')
-        tiles[2]["delta_colour"] = DANGER
+        truck["delta_colour"] = DANGER
     return tiles
 
 
@@ -1086,15 +1092,6 @@ def rig_table(rig, accent, name):
             f'font-size:13px;border-collapse:collapse;">\n{body}  </table>\n')
 
 
-def note_box(title, items):
-    lis = "".join(f"<li>{i}</li>" for i in items)
-    return (f'  <div style="background:{NOTE_BG};border:1px solid {NOTE_RULE};'
-            f'border-radius:6px;padding:12px 14px;font-size:12px;'
-            f'color:{NOTE_INK};margin-top:14px;"><b>{title}</b>'
-            f'<ul style="margin:8px 0 0;padding-left:18px;line-height:1.55;">'
-            f'{lis}</ul></div>\n')
-
-
 def heading(text, accent):
     return (f'  <div style="font-size:15px;font-weight:700;color:{PRIMARY};'
             f'border-left:4px solid {accent};padding-left:10px;">{text}</div>\n')
@@ -1171,35 +1168,6 @@ def signature(w):
     </p>
 """
 
-METHOD = ("One trip is one outbound voyage from Shuaiba Port plus its return; "
-          "a rig to rig transit is not a new trip. A vessel movement is a "
-          "transit between locations -- port to rig, rig to port or rig to "
-          "rig -- so a pull-out and re-berth at the same rig is not one. A "
-          "truck move counts one truck unit per dispatch or arrival, and a "
-          "truck loaded on one day and dispatched the next is one movement, "
-          "counted on dispatch. Every week is counted on that one rule, which "
-          "is why 20 to 25 Aug reads 41 truck moves here against the 46 its "
-          "own report published.")
-
-
-def method_note(w):
-    """Counting rules and provenance, at the foot where provenance belongs.
-
-    The source line used to sit in the panel head, third line down, above the
-    headline -- so the first thing a reader met was a filename. It is an audit
-    trail, not news: it belongs here, with the rules the figures were counted
-    on. Nothing was dropped."""
-    txt = METHOD + f" Source: {w['provenance']}"
-    base = w.get("publishedBaseline") or {}
-    if base and not w.get("showArrows", True):
-        txt += (f" This is the earliest week tracked here, so no comparison is "
-                f"drawn. The {w['reportLabel']} report compared it against 06 "
-                f"to 12 Aug 2026: {base.get('trips')} vessel trips, "
-                f"{base.get('truckMoves')} truck moves, "
-                f"{base.get('activeRigs')} active rigs, nil overstay.")
-    return txt
-
-
 def slops_caption(mine, theirs):
     s = mine["slops"]
     txt = ("Slops: none recorded" if not s["dischargedBbl"]
@@ -1263,7 +1231,7 @@ def figure(b64, alt, caption="", email=False):
 
 
 def week_body(w, other, log, with_comparison, email=False,
-              with_notes=False, all_weeks=None):
+              all_weeks=None):
     """One week, ordered for the person with the least time.
 
     Headline, five numbers, both rigs, the four-week shape, then what happened.
@@ -1290,11 +1258,26 @@ def week_body(w, other, log, with_comparison, email=False,
                         "are this week, to the left the first week tracked.",
                         email=True)
 
-    h += "\n" + heading("What happened", PRIMARY)
-    lis = "".join(f"<li style='padding-bottom:5px;'>{x}</li>"
-                  for x in w["highlights"])
+    # Where the covering email's own operations list has been transcribed,
+    # that is what this section shows: its lines, reworded and nothing else.
+    # The alternative was a written summary of the week, which is an
+    # interpretation, and an interpretation is a place for a mistake to live.
+    # The email's list covers the last day of the period, not all seven, so
+    # the heading carries that date rather than implying a week.
+    ops = w.get("dailyOperations")
+    if ops:
+        h += "\n" + heading(f"Daily ground operations &nbsp;&middot;&nbsp; "
+                            f"{ops['label']}", PRIMARY)
+        items = list(ops["lines"]) + list(ops.get("extraNotes") or [])
+    else:
+        h += "\n" + heading("What happened", PRIMARY)
+        items = w["highlights"]
+    lis = "".join(f"<li style='padding-bottom:5px;'>{x}</li>" for x in items)
     h += (f'  <ul style="font-size:{FS["base"]};color:{INK};margin:10px 0 0;'
           f'padding-left:20px;line-height:1.6;">{lis}</ul>\n')
+    if ops:
+        h += (f'  <div style="font-size:{FS["2xs"]};color:{INK_MUTED};'
+              f'padding:7px 2px 0;">{ops["source"]}.</div>\n')
 
     # ── Everything below proves the above, and folds away ──────────────────
     # Charts first, then the table. The shape is what a reader takes from
@@ -1324,21 +1307,6 @@ def week_body(w, other, log, with_comparison, email=False,
                   for d in log[k]["days"])
         h += collapsible("Daily log", inner, f"{ops} operations", email=email)
 
-    if with_notes and w.get("dataNotes"):
-        lis = "".join(f"<li style='padding-bottom:4px;'>{i}</li>"
-                      for i in w["dataNotes"])
-        inner = (f'  <div style="background:{NOTE_BG};border:1px solid '
-                 f'{NOTE_RULE};border-radius:{RADIUS_MD};padding:12px 14px;'
-                 f'font-size:{FS["xs"]};color:{NOTE_INK};margin-top:10px;">'
-                 f'<ul style="margin:0;padding-left:18px;line-height:1.55;">'
-                 f'{lis}</ul></div>\n')
-        h += collapsible("Open data queries", inner,
-                         f"{len(w['dataNotes'])} to confirm", email=email)
-
-    h += (f'  <div style="background:{SURFACE};border:1px solid {RULE};'
-          f'border-radius:{RADIUS_MD};padding:10px 12px;font-size:{FS["xs"]};'
-          f'color:{INK_MUTED};margin-top:14px;line-height:1.5;">'
-          f'{method_note(w)}</div>\n')
     return h
 
 
@@ -1709,7 +1677,7 @@ JS = """(function(){
 })();"""
 
 
-def build_dashboard(weeks, logs, with_notes=False, artifact=False):
+def build_dashboard(weeks, logs, artifact=False):
     """weeks: newest first. The first is the current report.
 
     Each week is compared against its own predecessor, so adding a week does
@@ -1737,7 +1705,7 @@ def build_dashboard(weeks, logs, with_notes=False, artifact=False):
                  f'{" &middot; current" if is_current else ""}</span></button>\n')
         body = week_body(w, other, logs.get(wid),
                          with_comparison=has_predecessor,
-                         with_notes=with_notes, all_weeks=weeks)
+                         all_weeks=weeks)
         panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">
       <div class="panel-head">
         <h2>{w['periodLabel']}</h2>
@@ -1927,7 +1895,7 @@ def main():
         # as a body fragment for the Artifact host. The circulated copy in
         # dashboard/ stays clean, which is why the queries came out at all.
         write("artifact", "dashboard.artifact.html",
-              build_dashboard(weeks, logs, with_notes=True, artifact=True))
+              build_dashboard(weeks, logs, artifact=True))
 
 
 if __name__ == "__main__":
