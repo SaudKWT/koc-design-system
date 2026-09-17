@@ -36,10 +36,11 @@ notes/      data-queries.md                            the open questions
 | --- | --- | --- |
 | Weeks | one | all of them, behind a tab strip |
 | Layout | nested tables, inline styles | CSS, sticky header |
-| Charts | 3 PNG, base64 | one set per week, base64 |
-| Script | none | tab behaviour only |
+| Charts | 2 PNG, base64 | 3 PNG per week, base64, plus 5 inline SVG sparklines |
+| Trend | raster small multiples | live sparkline inside each KPI tile |
+| Script | none | tab behaviour and sparkline scrub |
 | Daily logs | in the attached workbook | in the page |
-| Size | 91 KB | 310 KB at three weeks |
+| Size | 67 KB | 536 KB at four weeks |
 
 The tab strip needs CSS and script, which is exactly what an Outlook-safe email
 cannot have, so those two cannot be the same file. The email is what Bu Khaled
@@ -190,7 +191,11 @@ off still gets the whole report.
    `dataNotes` and reaches `notes/data-queries.md` on its own.
 4. Set `showArrows` true on the new week and false on the one before it.
 5. `periodDays` must equal the length of `trucks.byDay`. The build asserts it.
-6. Run the build with the new date and the previous one.
+6. Add the new date to the `dates` default at the top of `main()`, newest
+   first, or pass every date on the command line. A date left out of that list
+   is a week missing from the tab strip and from every sparkline, and nothing
+   fails to warn you.
+7. Run the build.
 
 ## Where the source disagrees with itself
 
@@ -358,6 +363,66 @@ renders neutral. A fall in overstay crew is unambiguously good, so it renders
 green even though the tile stays in its alert treatment, because 10 crew are
 still overstaying. Rendering that fall in red, as the old palette would have
 forced, states the opposite of the truth.
+
+## The KPI sparklines
+
+Each of the five tiles carries the whole series to date as an inline SVG line
+under its number. **Hover, tap or tab a point and the tile shows that week
+instead**: the big number becomes that week's figure, and the two lines under
+it swap from the delta to the week's dates and its position in the series.
+Move away and it snaps back.
+
+Four decisions in that, each of which was the second attempt:
+
+- **Inline SVG, not a PNG.** A tenth of the bytes, it prints as vectors rather
+  than a 140 dpi raster, and it is the only version a reader can interrogate.
+  Email still gets the raster small multiples, because Outlook strips `<svg>`
+  and runs no script.
+- **In the tile, not beside it.** The lines began as a strip of their own under
+  the KPI row, which meant the page stated the same five figures twice, 400px
+  apart. Upper management reading a weekly report does not need to be told
+  twice. One block, nothing dropped.
+- **No floating tooltip.** A tooltip would be clipped by the edge of a
+  SharePoint preview frame, cannot be reached by keyboard, and has no hover to
+  fire on a touch screen. Scrubbing the tile reads identically on all three.
+- **The scrubbed week replaces the delta, not the caption.** A delta describes
+  this week against last. Put an older week's figure above it and the two
+  contradict each other. Swapping which pair of lines is displayed also keeps
+  the tile the same height, so nothing below it moves.
+
+Verified inside a sandboxed `srcdoc` frame with a `null` origin, the same
+harness as the SharePoint section above: markup paints, `:hover` applies,
+script runs, zero console errors. All four of the APIs that throw in that
+origin -- `localStorage`, `sessionStorage`, `document.cookie`,
+`history.replaceState` -- are still throwing there, which is why none of them
+appears in the scrub script.
+
+**Keyboard**: one tab stop per sparkline, arrows within it, which is the same
+roving-tabindex pattern as the tab strip. Twenty extra tab stops across five
+tiles would make the route through the page worse, not better. The entry point
+is the last mark, the week being read, so focusing it changes nothing on
+screen. Focus draws a 2px ring on the hit target itself, which marks exactly
+the area that responds. Each mark also carries an `aria-label` naming its week
+and figure, and each line a `role="group"` label stating the series in words,
+so a screen reader gets the numbers without the geometry.
+
+**Print**: the lines print as vectors, the hover instruction is hidden, and
+`break-inside:avoid` keeps a tile whole. Page one of `--week latest` carries
+the headline, all five tiles with their lines, both rigs and the highlights.
+
+Two smaller things the sparklines forced:
+
+- **A metric that did not move draws across the middle of the band**, not
+  along its floor. On the floor an unchanged figure reads as a low one, which
+  is what the flat two-week trips line did.
+- **The KPI row now wraps below 760px.** A five-column table cannot, and at a
+  400px viewport it was 503px wide inside a 400px page, so the fifth tile --
+  overstay crew -- was clipped off and unreachable. That predates the
+  sparklines; taller tiles made it obvious. The table markup has to stay for
+  Outlook, which will not lay out a flex or grid row, so the browser layout is
+  re-declared in a media query that only a browser reads. The `width="20%"`
+  attribute is a presentational hint and loses to the stylesheet without
+  needing `!important`.
 
 ## Chart notes
 

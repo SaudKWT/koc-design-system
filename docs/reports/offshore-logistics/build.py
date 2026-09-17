@@ -397,6 +397,97 @@ def chart_fluids(mine, theirs):
     return _png(fig)
 
 
+TREND_SERIES = [
+    ("Vessel trips", lambda w: trips(w), "{:g}"),
+    ("Vessel movements", lambda w: movements(w), "{:g}"),
+    ("Truck moves", lambda w: truck_total(w), "{:g}"),
+    ("Fluids handled, m³", lambda w: fluid_total(w), "{:,g}"),
+    ("Overstay crew", lambda w: overstay(w), "{:g}"),
+]
+
+
+def _trend_weeks(weeks, upto):
+    """Only weeks up to and including this panel's own, so an older tab never
+    shows figures that had not happened when it was written."""
+    return [w for w in sorted(weeks, key=lambda w: w["periodStart"])
+            if w["periodStart"] <= upto["periodStart"]]
+
+
+def spark_svgs(weeks, upto):
+    """One sparkline per KPI, keyed by the tile's label, to be drawn inside the
+    tile rather than beside it.
+
+    It started life as a strip of its own under the KPI row, which meant the
+    page carried the same five figures twice, 400px apart. Putting the line in
+    the tile that already holds the number is one block instead of two, with
+    nothing dropped.
+
+    Inline SVG rather than a PNG for three reasons: a tenth of the bytes, it
+    prints as vectors instead of a 140 dpi raster, and a reader can hover or
+    tab a point to read that week. Verified inside a sandboxed srcdoc frame
+    with a null origin, which is how SharePoint previews an uploaded file:
+    markup paints, :hover applies and script runs there. Four APIs do throw in
+    that origin -- localStorage, sessionStorage, document.cookie and
+    history.replaceState -- so none of them appear here or in the script.
+
+    There is no floating tooltip on purpose. Hovering a point scrubs the
+    tile's own number and the two lines under it, which reads the same on
+    mouse, touch and keyboard, and cannot be clipped by the edge of a narrow
+    preview frame."""
+    order = _trend_weeks(weeks, upto)
+    if len(order) < 2:
+        return {}
+
+    # viewBox units. Fixed geometry, scaled by CSS, so the stroke and the marks
+    # keep their weight and stay round at any tile width.
+    W, H, PX, PT, PB = 160.0, 34.0, 9.5, 6.0, 8.0
+    out = {}
+    for label, get, fmt in TREND_SERIES:
+        ys = [get(w) for w in order]
+        lo, hi = min(ys), max(ys)
+        step = (W - 2 * PX) / (len(ys) - 1)
+
+        def at(i, lo=lo, hi=hi):
+            # A metric that did not move draws across the middle, not along
+            # the floor. On the floor an unchanged figure reads as a low one.
+            frac = 0.5 if hi == lo else (ys[i] - lo) / (hi - lo)
+            return PX + step * i, PT + (H - PT - PB) * (1 - frac)
+
+        pts = [at(i) for i in range(len(ys))]
+        poly = " ".join(f"{x:.2f},{y:.2f}" for x, y in pts)
+        dots, hits = "", ""
+        for i, (x, y) in enumerate(pts):
+            last = i == len(pts) - 1
+            dots += (f'<circle class="d{" dl" if last else ""}" '
+                     f'cx="{x:.2f}" cy="{y:.2f}" r="{3.4 if last else 2.2}"/>')
+            # A generous hit target, and a roving tabindex: one tab stop per
+            # sparkline, not one per point. Twenty extra stops across five
+            # tiles would make the keyboard route through this page worse, not
+            # better. The entry point is the last -- the week being read --
+            # so focusing it shows the number already on screen.
+            hits += (f'<circle class="h" cx="{x:.2f}" cy="{y:.2f}" r="9" '
+                     f'tabindex="{0 if last else -1}" role="img" '
+                     f'aria-label="{order[i]["periodLabel"]}: '
+                     f'{fmt.format(ys[i])} {label.lower()}" '
+                     f'data-v="{fmt.format(ys[i])}" '
+                     f'data-a="{order[i]["periodLabel"]}" '
+                     f'data-b="week {i + 1} of {len(ys)} tracked"/>')
+
+        name = (f"{label} over {len(ys)} weeks, {fmt.format(ys[0])} in "
+                f"{order[0]['tabLabel']} to {fmt.format(ys[-1])} in "
+                f"{order[-1]['tabLabel']}")
+        out[label] = (
+            f'<svg class="k-spark" viewBox="0 0 {W:g} {H:g}" role="group"\n'
+            f'             aria-label="{name}">\n'
+            f'          <line class="base" x1="0" y1="{H - 0.5:g}" '
+            f'x2="{W:g}" y2="{H - 0.5:g}"/>\n'
+            f'          {hits}<polyline class="ln" points="{poly}"/>{dots}\n'
+            f'        </svg>\n'
+            f'        <div class="k-spark-foot">{len(ys)} wks, '
+            f'from {fmt.format(ys[0])}</div>')
+    return out
+
+
 def chart_trend(weeks, upto):
     """One small panel per metric, every week to date, each on its own scale.
 
@@ -408,15 +499,8 @@ def chart_trend(weeks, upto):
 
     Only weeks up to and including the panel's own are drawn, so an older tab
     does not show figures that had not happened yet when it was written."""
-    series = [
-        ("Vessel trips", lambda w: trips(w), "{:g}"),
-        ("Vessel movements", lambda w: movements(w), "{:g}"),
-        ("Truck moves", lambda w: truck_total(w), "{:g}"),
-        ("Fluids handled, m³", lambda w: fluid_total(w), "{:,g}"),
-        ("Overstay crew", lambda w: overstay(w), "{:g}"),
-    ]
-    order = [w for w in sorted(weeks, key=lambda w: w["periodStart"])
-             if w["periodStart"] <= upto["periodStart"]]
+    series = TREND_SERIES
+    order = _trend_weeks(weeks, upto)
     if len(order) < 2:
         return None
 
@@ -538,9 +622,15 @@ def kpis(w, other):
     return tiles
 
 
-def kpi_row(w, other):
+def kpi_row(w, other, sparks=None):
     """One table row of tiles. A table, not flex, because the email format has
-    to render it too and Outlook's engine will not lay out a flex row."""
+    to render it too and Outlook's engine will not lay out a flex row.
+
+    sparks adds the week-on-week line inside each tile, and with it the two
+    hidden lines the scrub swaps in. Email passes nothing: Outlook strips
+    <svg> and runs no script, so it keeps the raster small-multiples chart
+    further down instead. Every style stays inline for the same reason -- the
+    classes are there for the stylesheet and are inert in a mail client."""
     default_caption = (f"vs {other['tabLabel']}"
                        if other is not None and w.get("showArrows", True)
                        else "baseline week")
@@ -552,11 +642,20 @@ def kpi_row(w, other):
         bg = ALERT_BG if alert else SURFACE
         edge = f"border:1px solid {ALERT_RULE};" if alert else \
                f"border:1px solid {RULE};"
-        cells += f"""      <td width="{width}" valign="top" style="background:{bg};border-radius:{RADIUS_MD};padding:14px 14px 12px;{edge}">
-        <div style="font-size:{FS['2xs']};color:{INK_MUTED};letter-spacing:.06em;text-transform:uppercase;font-weight:{FW['semibold']};">{t['label']}</div>
-        <div style="font-size:{FS['3xl']};font-weight:{FW['bold']};color:{t['colour']};line-height:1.15;padding:6px 0 4px;font-variant-numeric:tabular-nums;">{t['value']}</div>
-        <div style="font-size:{FS['2xs']};font-weight:{FW['semibold']};color:{t['delta_colour']};">{t['delta_html']}</div>
-        <div style="font-size:{FS['2xs']};color:{INK_MUTED};">{t.get('caption') or default_caption}</div></td>
+        spark = (sparks or {}).get(t["label"], "")
+        # The scrubbed week goes in its own pair of lines rather than
+        # overwriting the delta. A delta describes this week against last; put
+        # an older week's figure above it and the two contradict each other.
+        # Swapping which pair is displayed keeps the tile the same height.
+        swap = ("" if not spark else
+                f'\n        <div class="k-week"></div>'
+                f'\n        <div class="k-wsub"></div>')
+        cells += f"""      <td class="k" width="{width}" valign="top" style="background:{bg};border-radius:{RADIUS_MD};padding:14px 14px 12px;{edge}">
+        <div class="k-label" style="font-size:{FS['2xs']};color:{INK_MUTED};letter-spacing:.06em;text-transform:uppercase;font-weight:{FW['semibold']};">{t['label']}</div>
+        <div class="k-value" data-default="{t['value']}" style="font-size:{FS['3xl']};font-weight:{FW['bold']};color:{t['colour']};line-height:1.15;padding:6px 0 4px;font-variant-numeric:tabular-nums;">{t['value']}</div>
+        <div class="k-delta" style="font-size:{FS['2xs']};font-weight:{FW['semibold']};color:{t['delta_colour']};">{t['delta_html']}</div>
+        <div class="k-cap" style="font-size:{FS['2xs']};color:{INK_MUTED};">{t.get('caption') or default_caption}</div>{swap}
+        {spark}</td>
 """
     return cells
 
@@ -904,7 +1003,12 @@ def week_body(w, other, log, with_comparison, email=False,
     the detail charts, the daily log, the open queries -- folds away below.
     Nothing was dropped to get there; it was reordered and disclosed."""
     h = status_line(w)
-    h += f'  <table width="100%" cellspacing="10" cellpadding="0"><tr>\n{kpi_row(w, other)}  </tr></table>\n'
+    # On screen each tile carries its own sparkline, so the five figures are
+    # stated once. Email keeps flat tiles and the raster chart further down.
+    sparks = spark_svgs(all_weeks, w) if (all_weeks and not email) else {}
+    h += (f'  <table class="kpis" width="100%" cellspacing="10" '
+          f'cellpadding="0"><tr>\n{kpi_row(w, other, sparks)}'
+          f'  </tr></table>\n')
 
     if w.get("showArrows", True) and other is not None:
         basis = (f"Arrows compare against {other['periodLabel']}, counted on "
@@ -920,18 +1024,23 @@ def week_body(w, other, log, with_comparison, email=False,
         if w["trucks"].get("publishedTotal"):
             basis += (f" Truck moves read {truck_total(w)} here against the "
                       f"{w['trucks']['publishedTotal']} that report published.")
+    if sparks:
+        basis += (' <span class="k-hint">Hover or tab a point on a line to '
+                  'read that week.</span>')
     h += (f'  <div style="font-size:{FS["2xs"]};color:{INK_MUTED};'
           f'padding:8px 2px 0;text-align:right;">{basis}</div>\n')
 
     h += "\n" + rig_strip(w)
 
-    if all_weeks:
+    if all_weeks and email:
+        # The raster small multiples, for Outlook only. The browser gets the
+        # same five series as live sparklines inside the KPI tiles above.
         trend = chart_trend(all_weeks, w)
         if trend:
             h += figure(trend, alt_trend(all_weeks, w),
-                        "Each panel on its own scale. Figures to the right are "
-                        "this week, to the left the first week tracked.",
-                        email=email)
+                        "Each panel on its own scale. Figures to the right "
+                        "are this week, to the left the first week tracked.",
+                        email=True)
 
     h += "\n" + heading("What happened", PRIMARY)
     lis = "".join(f"<li style='padding-bottom:5px;'>{x}</li>"
@@ -1075,10 +1184,59 @@ CSS = f""":root{{color-scheme:light}}
 details[open] summary{{border-radius:6px 6px 0 0}}
 summary::marker{{color:{INK_MUTED}}}
 table{{width:100%}}
+/* Sparkline inside each KPI tile. Inline SVG, so it costs a tenth of a PNG,
+   prints as vectors, and can be hovered or tabbed a point at a time. */
+/* overflow:visible so the hover halo around a point at the top or
+   bottom of the band is a full circle, not a clipped one. It only
+   ever reaches into this element's own 9px top margin. */
+.k-spark{{display:block;width:100%;height:auto;margin:9px 0 0;
+  overflow:visible}}
+/* width:100% with height:auto keeps the viewBox aspect, so the marks stay
+   round at any tile width. preserveAspectRatio="none" would oval them. */
+.k-spark .base{{stroke:{RULE};stroke-width:1;vector-effect:non-scaling-stroke}}
+.k-spark .ln{{fill:none;stroke:{PRIMARY};stroke-width:1.6;
+  stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}}
+.k-spark .d{{fill:{PRIMARY};stroke:{CARD};stroke-width:1}}
+.k-spark .dl{{stroke-width:1.4}}
+/* The visual marks are painted over the hit targets, so they must not swallow
+   the pointer events the hit targets exist to receive. */
+.k-spark .base,.k-spark .ln,.k-spark .d{{pointer-events:none}}
+.k-spark .h{{fill:transparent;stroke:none;cursor:pointer;
+  transition:fill {DUR_FAST} {EASE_OUT}}}
+.k-spark .h:hover{{fill:{tok('color.primary.100')}}}
+/* A ring on the hit target itself is the focus indicator: it marks exactly
+   the area that responds, which an outline on an SVG shape cannot. */
+.k-spark .h:focus-visible{{outline:none;fill:{tok('color.primary.100')};
+  stroke:{PRIMARY};stroke-width:2;vector-effect:non-scaling-stroke}}
+.k-spark-foot{{font-size:{FS['2xs']};color:{INK_MUTED};padding-top:2px;
+  font-variant-numeric:tabular-nums}}
+/* Two lines' worth of room whether the label needs one or two, so every
+   sparkline in the row starts at the same height. Four of the five labels
+   wrap at print width, and a ragged row of lines is harder to compare. */
+.k-label{{line-height:1.15;min-height:2.3em}}
+/* The scrubbed week swaps in for the delta pair, so the tile keeps its
+   height and a figure from an older week is never sitting above a delta that
+   describes this one. */
+.k-week,.k-wsub{{display:none;font-size:{FS['2xs']};
+  font-variant-numeric:tabular-nums}}
+.k-week{{font-weight:{FW['semibold']};color:{INK}}}
+.k-wsub{{color:{INK_MUTED}}}
+.k[data-scrub] .k-delta,.k[data-scrub] .k-cap{{display:none}}
+.k[data-scrub] .k-week,.k[data-scrub] .k-wsub{{display:block}}
 @media (max-width:760px){{
   [role=tabpanel]{{padding:16px 12px 20px}}
   .top h1{{font-size:17px}}
   [role=tab]{{flex:1 1 auto;font-size:12.5px;padding:8px 10px 9px}}
+  /* A five-column table cannot wrap, so below this width it was 503px wide
+     inside a 400px page: the fifth tile -- overstay crew -- was clipped off
+     and unreachable. The table markup has to stay for Outlook, which will
+     not lay out a flex or grid row, so the layout is re-declared here where
+     only a browser reads it. The width="20%" attribute is a presentational
+     hint and loses to this stylesheet without needing !important. */
+  .kpis,.kpis tbody{{display:block}}
+  .kpis tr{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:10px}}
+  .kpis td.k{{display:block;width:auto}}
 }}
 @media print{{
   .top{{position:static}}
@@ -1093,9 +1251,12 @@ table{{width:100%}}
      A long log has to be allowed to break across pages. */
   details,details table{{break-inside:auto}}
   summary{{list-style:none}}
+  .k{{break-inside:avoid}}
+  /* "Hover" means nothing on paper. */
+  .k-hint{{display:none}}
 }}
 @media (prefers-reduced-motion:reduce){{
-  [role=tab]{{transition:none}}
+  [role=tab],.k-spark .h{{transition:none}}
 }}"""
 
 JS = """(function(){
@@ -1155,6 +1316,60 @@ JS = """(function(){
   tabs.forEach(function(t,i){if(t.getAttribute('aria-selected')==='true')initial=i;});
   var start=fromHash();
   select(start>-1?start:initial,false);
+})();
+
+(function(){
+  /* KPI sparklines. Hovering, tapping or focusing a point scrubs that
+     tile's own number and caption; there is no floating tooltip. A tooltip
+     would be clipped by the edge of a SharePoint preview frame, is
+     unreachable by keyboard, and has no hover state to fire on a touch
+     screen. Scrubbing the tile reads identically on all three.
+
+     Nothing below touches localStorage, sessionStorage, document.cookie or
+     history.replaceState. All four throw a SecurityError in the null origin
+     SharePoint previews an uploaded file in, and one of them already put a
+     "some content didn't load" banner over this report once. */
+  var hits=Array.prototype.slice.call(document.querySelectorAll('.k-spark .h'));
+  if(!hits.length)return;
+  function tile(h){return h.parentNode&&h.parentNode.parentNode;}  /* circle > svg > td.k */
+  function set(h,live){
+    var k=tile(h);
+    if(!k||!k.querySelector)return;
+    var v=k.querySelector('.k-value'),
+        a=k.querySelector('.k-week'),
+        b=k.querySelector('.k-wsub');
+    if(!v)return;
+    if(live){
+      v.textContent=h.getAttribute('data-v');
+      if(a)a.textContent=h.getAttribute('data-a');
+      if(b)b.textContent=h.getAttribute('data-b');
+      k.setAttribute('data-scrub','');
+    }else{
+      v.textContent=v.getAttribute('data-default');
+      k.removeAttribute('data-scrub');
+    }
+  }
+  hits.forEach(function(h){
+    h.addEventListener('pointerenter',function(){set(h,true);});
+    h.addEventListener('pointerleave',function(){set(h,false);});
+    h.addEventListener('focus',function(){set(h,true);});
+    h.addEventListener('blur',function(){set(h,false);});
+    h.addEventListener('keydown',function(e){
+      /* One tab stop per sparkline, arrows within it: the roving tabindex
+         pattern, same as the tab strip above. */
+      var sib=Array.prototype.slice.call(h.parentNode.querySelectorAll('.h'));
+      var i=sib.indexOf(h),n=null,k=e.key;
+      if(k==='ArrowRight'||k==='ArrowUp')n=Math.min(i+1,sib.length-1);
+      else if(k==='ArrowLeft'||k==='ArrowDown')n=Math.max(i-1,0);
+      else if(k==='Home')n=0;
+      else if(k==='End')n=sib.length-1;
+      if(n===null||n===i)return;
+      e.preventDefault();
+      sib.forEach(function(c){c.setAttribute('tabindex','-1');});
+      sib[n].setAttribute('tabindex','0');
+      sib[n].focus();
+    });
+  });
 })();"""
 
 
@@ -1331,7 +1546,8 @@ def main():
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
-    dates = args or ["2026-09-10", "2026-09-03", "2026-08-26"]
+    dates = args or ["2026-09-17", "2026-09-10", "2026-09-03",
+                     "2026-08-26"]
 
     picked = flags & {"--dashboard", "--email", "--notes", "--artifact"}
     want = {name: (f"--{name}" in flags or not picked)
