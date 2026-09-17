@@ -203,7 +203,7 @@
   ],
   "dataNotes": [
     "<b>Trips are taken from the covering email (13), which supersedes the workbook.</b> Settled 10 Sep. The workbook narrative yields 8 on the rule used for the two earlier weeks, one outbound voyage from Shuaiba plus its return; the difference is 4 further rig calls by CA1 and 1 by CA3, so the email appears to count rig calls rather than port voyages. For the two earlier weeks the email and the workbook agree exactly, so the 13 against 9 rise may reflect the change of basis as well as activity. Worth confirming once with the author so later weeks stay comparable.",
-    "Vessel sheet 06.09: CA1 is recorded STBY at OPH, but on 05.09 it was approaching OD1 at 23:48 and on 07.09 it heaved up at OPH. One of the two rig names is likely wrong, which also affects where the 260.2 m³ of fuel went.",
+    "<b>Settled 17 Sep: the 06.09 fuel went to OPH.</b> Report 25's Port sheet (E32) records a 300.12 m³ bunkering to CA1 as an adjustment \"to balance the quantity which was given to Oriental Phoenix (294.2 M3) on 06.09.2026 & 07.09.2026\". CA1 transferred 260.2 m³ on 06.09 and 34 m³ on 07.09, which is exactly 294.2. So CA1 was at OPH, and the 05.09 line reading \"approaching Rig OD1\" is the error. No movement is missing after all: the week stands at 18.",
     "Vessel sheet 09.09: Charlie-3 casts off at 11:25 and is alongside OPH at 11:30. That transit is not possible in five minutes.",
     "The well is named BOUM-0001, BM-0001 and BM-001 across the email and the workbook. Confirm the correct designation.",
     "Port sheet 07.09 rows E30 and E33 are word for word identical, same call-off OD-BM1-A-1-4. They are counted as two trucks because E35 records two trucks with chemical containers offloaded, which confirms two.",
@@ -217,5 +217,48 @@
     "CA3": 1,
     "CA5": 0,
     "Charlie-3": 5
-  }
+  },
+  "vesselMovements": {
+    "CA1": 5,
+    "CA3": 2,
+    "CA5": 0,
+    "Charlie-3": 11
+  },
+  "movementRule": "One movement is one transfer between locations: port to rig, rig to port, or rig to rig. Repositioning at the rig already occupied does not count, nor does a shift between two port-side locations.",
+  "movementsAudit": {
+    "CA1": "5. OPH to Shuaiba (03.09); Shuaiba to OPH (05.09, see the note on the rig name); OPH to Shuaiba (07.09); Shuaiba to OD1 and OD1 to OPH (09.09).",
+    "CA3": "2. Shuaiba to OPH (03.09); OPH to Shuaiba (09.09).",
+    "CA5": "0. On station at OD1 for all seven days.",
+    "Charlie-3": "11. Five on 03.09, two each on 05.09, 08.09 and 09.09. The berth 20 to south pier leg is port to port and excluded."
+  },
+  "movementsByDay": [
+    {
+      "label": "Thu 03",
+      "n": 7
+    },
+    {
+      "label": "Fri 04",
+      "n": 0
+    },
+    {
+      "label": "Sat 05",
+      "n": 3
+    },
+    {
+      "label": "Sun 06",
+      "n": 0
+    },
+    {
+      "label": "Mon 07",
+      "n": 1
+    },
+    {
+      "label": "Tue 08",
+      "n": 2
+    },
+    {
+      "label": "Wed 09",
+      "n": 5
+    }
+  ]
 }

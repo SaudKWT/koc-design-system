@@ -1,0 +1,108 @@
+{
+  "reportDate": "2026-09-17",
+  "reportLabel": "17 Sep 2026",
+  "tabLabel": "10 to 16 Sep",
+  "periodStart": "2026-09-10",
+  "periodEnd": "2026-09-16",
+  "periodLabel": "10 to 16 Sep 2026",
+  "periodDays": 7,
+  "marsec": "Level 2",
+  "provenance": "Email of 17.09.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_17.09.2026.xlsx (report 25, sheets Port and Vessel).",
+  "showArrows": true,
+
+  "vesselTrips": { "CA1": 6, "CA3": 4, "CA5": 0, "Charlie-3": 6 },
+  "tripRule": "Trips are as reported in the covering email, which supersedes the workbook derivation.",
+
+  "vesselMovements": { "CA1": 7, "CA3": 3, "CA5": 0, "Charlie-3": 13 },
+  "movementRule": "One movement is one transfer between locations: port to rig, rig to port, or rig to rig. Repositioning at the rig already occupied does not count, nor does a shift between two port-side locations.",
+  "movementsAudit": {
+    "CA1": "7. OPH to OD1 (10.09); OD1 to Mina Al Ahmadi anchorage (11.09); anchorage to OD1 and OD1 to Shuaiba (12.09); Shuaiba to OPH (14.09); OPH to Shuaiba (15.09); Shuaiba to OD1 (16.09). Excludes the OD1 to CA5 and back shuttle on 11.09, both within the OD1 field, and the DP trial run on 16.09.",
+    "CA3": "3. Shuaiba to OPH (10.09); OPH to Shuaiba and Shuaiba to OPH (15.09). The alongside manoeuvres at OPH on 11.09, 13.09 and 16.09 all begin and end at OPH.",
+    "CA5": "0. On station at OD1 for all seven days. It came alongside OD1 on 11.09, 15.09 and 16.09 and returned to the OD1 anchorage each time.",
+    "Charlie-3": "13. Two on 10.09, two on 11.09, two on 13.09, three on 14.09, two on 15.09, two on 16.09. Excludes the Shuaiba to Jal Boot Village and Shuaiba to Khiran Marina legs, which are port to port."
+  },
+  "movementsByDay": [
+    { "label": "Thu 10", "n": 4 }, { "label": "Fri 11", "n": 3 },
+    { "label": "Sat 12", "n": 2 }, { "label": "Sun 13", "n": 2 },
+    { "label": "Mon 14", "n": 4 }, { "label": "Tue 15", "n": 5 },
+    { "label": "Wed 16", "n": 3 }
+  ],
+
+  "trucks": {
+    "rule": "Count truck and pickup units per movement. A dispatch counts as out, an arrival counts as in. An offload of a unit already counted on arrival is not a second movement, and a duplicated row sharing a delivery ticket is counted once.",
+    "byDay": [
+      { "label": "Thu 10", "date": "10.09.2026", "out": 4, "in": 3,
+        "audit": ["E4 out 1", "E5 out 1", "E6 out 1", "E7 out 1", "E8+E9 in 1 (one line split over two rows)", "E10 in 1", "E11 in 1", "E12 duplicate of E11, same delivery ticket", "E13 duplicate of E10", "E14 fluid", "E15 vessel op", "E16 offload of the arrivals above"] },
+      { "label": "Fri 11", "date": "11.09.2026", "out": 3, "in": 0,
+        "audit": ["E19 out 1", "E20 out 1", "E21 out 1 (three distinct plate numbers and delivery notes)", "E18 offload"] },
+      { "label": "Sat 12", "date": "12.09.2026", "out": 6, "in": 3,
+        "audit": ["E24 out 1", "E26 out 1", "E28 out 1", "E29 out 1", "E30 out 1", "E31 out 1", "E23 in 1", "E25 in 1", "E27 in 1", "E32 E33 fluid"] },
+      { "label": "Sun 13", "date": "13.09.2026", "out": 5, "in": 1,
+        "audit": ["E35 out 1", "E36 out 1 pickup", "E37 out 1", "E38 out 1", "E39 out 1", "E40 in 1"] },
+      { "label": "Mon 14", "date": "14.09.2026", "out": 2, "in": 5,
+        "audit": ["E45 out 1", "E46 duplicate of E45, same delivery ticket 2026/9/14/1129", "E47 out 1", "E42 in 1", "E43 in 1", "E44 in 1", "E48 in 1", "E49 in 1", "E50 fluid", "E51 bulk", "E52 the E45 truck being loaded"] },
+      { "label": "Tue 15", "date": "15.09.2026", "out": 3, "in": 4,
+        "audit": ["E54 out 1", "E55 out 1", "E56 out 1", "E57 in 1", "E58 in 1", "E61 in 2 (offload of two trucks with no matching arrival line)", "E59 fluid", "E60 vessel op"] },
+      { "label": "Wed 16", "date": "16.09.2026", "out": 2, "in": 3,
+        "audit": ["E65 out 1 pickup", "E66 out 1 pickup", "E67 in 1", "E68 in 1", "E69 in 1", "E63 vessel op", "E64 skips sent, no truck unit stated", "E70 offload of E67 to E69"] }
+    ]
+  },
+
+  "fluids": {
+    "bunkered": { "Fresh water": 162, "Fuel": 336, "Drill water": 0 },
+    "delivered": { "Fresh water": 320, "Fuel": 0, "Drill water": 0 },
+    "audit": {
+      "Fresh water bunkered": "Vessel E12 72 CA1; Port E50 18 Charlie-3; Port E59 72 CA3",
+      "Fuel bunkered": "Port E14 36 CA3; Port E32 300.12 CA1 from MT SEDRA-II",
+      "Fresh water delivered": "Vessel E9 120 to OPH; Vessel E10 100 CA5 to OD1; Vessel E30 100 CA5 to OD1",
+      "Bentonite": "23 MT pumped for OD1 on 14.09, recorded on CA3 by the Port sheet and on CA1 by the Vessel sheet. Dry bulk in tonnes, so not in the cubic-metre totals."
+    }
+  },
+  "slops": { "receivedBbl": 0, "dischargedBbl": 0, "note": "No slops in barrels recorded. Two skips of OBM cuttings went to KOC NCC on 16.09, and two full mud skips to NCC SEK on 15.09." },
+
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "STBY waiting for BOUM-0001 location clearance, to start jack-down and move to BM-0001",
+      "lastWeek": "Nil",
+      "personnelOnboard": 78,
+      "visaHolders": 58,
+      "overstay": { "KOC": 0, "HLB": 1, "COSL": 7 },
+      "nextSteps": "Rig preparation for move; rig move for new well BOUM-0001"
+    },
+    "OPH": {
+      "currentOperation": "Rig off-hired",
+      "lastWeek": "Nil",
+      "personnelOnboard": 0,
+      "visaHolders": 0,
+      "overstay": { "KOC": 0, "HLB": 0, "COSL": 0 },
+      "nextSteps": "Nil"
+    }
+  },
+
+  "highlights": [
+    "<b>OD1 was idle for a second week</b>, still waiting on BOUM-0001 location clearance to start jack-down. Last week activities are again recorded as Nil.",
+    "<b>Overstay crew fell from 11 to 8.</b> COSL came down from 11 to 7, and HLB now holds 1 where it held none.",
+    "OD1 personnel onboard eased from 79 to 78, and visa holders rose from 57 to 58.",
+    "<b>CA1 took 300 m³ of fuel from the bunker barge MT SEDRA-II</b> at Mina Al Ahmadi anchorage on Sat 12. The workbook records it as an adjustment to balance the 294.2 m³ given to OPH on 06 and 07 Sep, which settles where last week's fuel went.",
+    "Vessel movements were <b>23 against 18</b>, the busiest of the four weeks tracked. Charlie-3 made 13 of them.",
+    "<b>CA5 has now spent 14 straight days on station at OD1</b> without moving between locations, across both this week and last.",
+    "Truck and pickup moves held at 44, but turned outbound again: <b>25 out against 19 in</b>, where the week before ran 12 out and 32 in as the BM-0001 casing arrived.",
+    "Casing went back out: 30\", 24\" and 36\" and 38\" R3 joints returned to KOC Ahmadi Yard 4 across Sat 12, Sun 13 and Mon 14, and 18-5/8\" R3 went to HETCO for inspection and came back to the Shuaiba pipe yard.",
+    "Charlie-3 ran crew changes through <b>two new transfer points, Jal Boot Village and Khiran Marina</b>, alongside the usual Shuaiba runs.",
+    "Vessel movements remain under <b>MARSEC Level 2</b>."
+  ],
+
+  "dataNotes": [
+    "<b>Vessel sheet 11.09 has two CA1 rows and no CA3 row.</b> The second (E9, fresh water 120 m³ to OPH) is CA3: CA1 was at OD1 that day, and CA3 had anchored at OPH the evening before. Read as CA3 here.",
+    "<b>Vessel sheet 13.09 Charlie-3 repeats 11.09 word for word</b>, including every timestamp: cast off 04:50, 500 m zone 05:55, alongside 06:00, departed 06:40, secured Shuaiba 07:55, same 7 Pax, same 1 lift discharged, same 3 lifts loaded. One of the two days is almost certainly a copied row. Both are counted as written. Confirm.",
+    "Port sheet 10.09: E11 and E12 are identical and share delivery ticket COSL-DT-OP-RI3-N-21-3C, so they are counted as one truck. E10 and E13 are also identical, and only one truck of 10 casing joints was dispatched to HETCO that day (E6), so they are counted as one.",
+    "Port sheet 14.09: E45 and E46 are identical and share delivery ticket 2026/9/14/1129, counted as one. Ticket HPM-DT-1583 is used twice, on E43 and E48, for different cargo.",
+    "Port sheet 15.09 E61 offloads two trucks of X-Overs and Landing Joints that have no arrival line anywhere in the sheet. Counted as two arrivals so they are not lost.",
+    "Bentonite, 23 MT on 14.09 for OD1: the Port sheet (E51) says it was pumped on CA3, the Vessel sheet (E20) says CA1 received it. Confirm which vessel carried it.",
+    "Two port-side locations are new this week, Jal Boot Village and Khiran Marina, both used for crew transfer by taxi boat. Neither is a rig, so runs to them are not counted as vessel movements.",
+    "CA1 on 11.09 came alongside CA5 in DP mode to collect a modified flange. Vessel to vessel, inside the OD1 field, so not counted as a movement. CA1 also ran a DP trial from Shuaiba on 16.09 and returned, which is not a rig call.",
+    "Port sheet E8 and E9 on 10.09 are one sentence split across two rows. The second row begins with a tab and no verb.",
+    "Reporting window is 7 days, the same as the previous report, so the counts are directly comparable for the first time in this series."
+  ]
+}

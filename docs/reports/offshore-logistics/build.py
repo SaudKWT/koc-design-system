@@ -102,6 +102,10 @@ def fluid_total(w):
     return sum(f["bunkered"].values()) + sum(f["delivered"].values())
 
 
+def movements(w):
+    return sum(w.get("vesselMovements", {}).values())
+
+
 def overstay(w):
     return sum(w["rigs"][r]["overstay"][k]
                for r in ("OD1", "OPH") for k in ("KOC", "HLB", "COSL"))
@@ -448,6 +452,18 @@ def comparison_table(cur, prev):
     for v in ("CA1", "CA3", "CA5", "Charlie-3"):
         h += line(v, cur["vesselTrips"][v], prev["vesselTrips"][v])
     h += line("Total vessel trips", trips(cur), trips(prev), bold=True)
+
+    if cur.get("vesselMovements") and prev.get("vesselMovements"):
+        h += section_row("Vessel movements &nbsp;<span style='font-weight:400;"
+                         "text-transform:none;letter-spacing:0;'>port to rig, "
+                         "rig to port, rig to rig</span>")
+        for v in ("CA1", "CA3", "CA5", "Charlie-3"):
+            h += line(v, cur["vesselMovements"][v], prev["vesselMovements"][v])
+        h += line("Total vessel movements", movements(cur), movements(prev),
+                  bold=True)
+        h += line("Movements per day",
+                  round(movements(cur) / cur["periodDays"], 1),
+                  round(movements(prev) / prev["periodDays"], 1), fmt="{:.1f}")
 
     h += section_row("Ground transport")
     h += line("Dispatched (out)", c_out, p_out)
