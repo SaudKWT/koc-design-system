@@ -428,7 +428,18 @@ Two smaller things the sparklines forced:
 
 ## What the panel head does not say
 
-Three things were taken out of the top of each week and not thrown away.
+The head is the week and nothing else: `10 to 16 Sep 2026`, a rule, then the
+one sentence that matters. Four things were taken out of it and none was
+thrown away.
+
+- **The strap line** (`Report of 17 Sep 2026 · 7 days · MARSEC Level 2`)
+  repeated three facts the page already carried, above the headline. The
+  report date is on the tab directly above it. The day count is readable off
+  the date range, and stated again with its own sub-line in the comparison
+  table's header, where it is doing real work: 6, 8, 7 and 7 days is why some
+  rows are compared per day as well as per week. **MARSEC is a highlight in
+  every one of the four weeks** — checked, not assumed, before the line came
+  out.
 
 - **The source line** (`Email of 17.09.2026 from … .xlsx (report 25, sheets
   Port and Vessel)`) sat third line down, above the headline, so the first

@@ -23,9 +23,15 @@ table{font-variant-numeric:tabular-nums}
 [role=tab]:focus-visible{outline:2px solid #FFFFFF;outline-offset:-2px}
 [role=tabpanel]{padding:20px 24px 26px}
 [role=tabpanel]:focus-visible{outline:2px solid #0060A9;outline-offset:-2px}
-.panel-head{border-bottom:1px solid #D4D9DE;padding-bottom:12px;margin-bottom:4px}
-.panel-head h2{margin:0;font-size:24px;color:#14181B;letter-spacing:-.015em}
-.panel-head p{margin:5px 0 0;font-size:12px;color:#55606B}
+/* The head is the week and nothing else. The report date is on the tab above
+   it, the day count is readable off the date range and stated again in the
+   comparison table's own header, and the MARSEC level is a highlight in every
+   week -- so the strap line under the heading repeated three facts the page
+   already carried, above the one sentence that matters. */
+.panel-head{border-bottom:1px solid #D4D9DE;padding-bottom:10px;
+  margin-bottom:2px}
+.panel-head h2{margin:0;font-size:24px;color:#14181B;
+  letter-spacing:-.015em}
 .sig{border-top:1px solid #D4D9DE;padding:18px 24px 24px}
 details[open] summary{border-radius:6px 6px 0 0}
 summary::marker{color:#55606B}
@@ -159,7 +165,6 @@ details details{margin-left:18px}
     <div role="tabpanel" id="panel-2026-08-26" aria-labelledby="tab-2026-08-26" tabindex="0">
       <div class="panel-head">
         <h2>20 to 25 Aug 2026</h2>
-        <p>Report of 26 Aug 2026 &nbsp;&middot;&nbsp; 6 days &nbsp;&middot;&nbsp; MARSEC Level 2</p>
       </div>
   <div style="border-left:3px solid #0060A9;padding:2px 0 2px 14px;margin:4px 0 18px;"><div style="font-size:16px;line-height:1.5;color:#14181B;">OD1 finished the wellhead N/D and is preparing to move to BOUM-0001. OPH off-hired, and overstay crew appeared for the first time at 13.</div></div>
   <table class="kpis" width="100%" cellspacing="10" cellpadding="0"><tr>
@@ -375,7 +380,6 @@ details details{margin-left:18px}
     <div role="tabpanel" id="panel-2026-09-03" aria-labelledby="tab-2026-09-03" tabindex="0">
       <div class="panel-head">
         <h2>26 Aug to 02 Sep 2026</h2>
-        <p>Report of 03 Sep 2026 &nbsp;&middot;&nbsp; 8 days &nbsp;&middot;&nbsp; MARSEC Level 2</p>
       </div>
   <div style="border-left:3px solid #0060A9;padding:2px 0 2px 14px;margin:4px 0 18px;"><div style="font-size:16px;line-height:1.5;color:#14181B;">OD1 cut the 38" conductor and was released to BOUM-0001, now waiting on location clearance. Overstay down to 10, OPH still off-hired.</div></div>
   <table class="kpis" width="100%" cellspacing="10" cellpadding="0"><tr>
@@ -699,7 +703,6 @@ details details{margin-left:18px}
     <div role="tabpanel" id="panel-2026-09-10" aria-labelledby="tab-2026-09-10" tabindex="0">
       <div class="panel-head">
         <h2>03 to 09 Sep 2026</h2>
-        <p>Report of 10 Sep 2026 &nbsp;&middot;&nbsp; 7 days &nbsp;&middot;&nbsp; MARSEC Level 2</p>
       </div>
   <div style="border-left:3px solid #0060A9;padding:2px 0 2px 14px;margin:4px 0 18px;"><div style="font-size:16px;line-height:1.5;color:#14181B;">OD1 idle all week awaiting BOUM-0001 clearance. The BM-0001 casing arrived: ground transport reversed to 32 arrivals against 12 dispatches.</div></div>
   <table class="kpis" width="100%" cellspacing="10" cellpadding="0"><tr>
@@ -1007,7 +1010,6 @@ details details{margin-left:18px}
     <div role="tabpanel" id="panel-2026-09-17" aria-labelledby="tab-2026-09-17" tabindex="0">
       <div class="panel-head">
         <h2>10 to 16 Sep 2026</h2>
-        <p>Report of 17 Sep 2026 &nbsp;&middot;&nbsp; 7 days &nbsp;&middot;&nbsp; MARSEC Level 2</p>
       </div>
   <div style="border-left:3px solid #0060A9;padding:2px 0 2px 14px;margin:4px 0 18px;"><div style="font-size:16px;line-height:1.5;color:#14181B;">OD1 idle a second week, still awaiting BOUM-0001 clearance. Overstay down to 8, its lowest in the series, and the casing went back out to Ahmadi.</div></div>
   <table class="kpis" width="100%" cellspacing="10" cellpadding="0"><tr>

@@ -1428,9 +1428,15 @@ CSS = f""":root{{color-scheme:light}}
 [role=tab]:focus-visible{{outline:2px solid {ON_PRIMARY};outline-offset:-2px}}
 [role=tabpanel]{{padding:20px 24px 26px}}
 [role=tabpanel]:focus-visible{{outline:2px solid {PRIMARY};outline-offset:-2px}}
-.panel-head{{border-bottom:1px solid {RULE};padding-bottom:12px;margin-bottom:4px}}
-.panel-head h2{{margin:0;font-size:{FS['2xl']};color:{INK};letter-spacing:-.015em}}
-.panel-head p{{margin:5px 0 0;font-size:{FS['xs']};color:{INK_MUTED}}}
+/* The head is the week and nothing else. The report date is on the tab above
+   it, the day count is readable off the date range and stated again in the
+   comparison table's own header, and the MARSEC level is a highlight in every
+   week -- so the strap line under the heading repeated three facts the page
+   already carried, above the one sentence that matters. */
+.panel-head{{border-bottom:1px solid {RULE};padding-bottom:10px;
+  margin-bottom:2px}}
+.panel-head h2{{margin:0;font-size:{FS['2xl']};color:{INK};
+  letter-spacing:-.015em}}
 .sig{{border-top:1px solid {RULE};padding:18px 24px 24px}}
 details[open] summary{{border-radius:6px 6px 0 0}}
 summary::marker{{color:{INK_MUTED}}}
@@ -1735,7 +1741,6 @@ def build_dashboard(weeks, logs, with_notes=False, artifact=False):
         panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">
       <div class="panel-head">
         <h2>{w['periodLabel']}</h2>
-        <p>Report of {w['reportLabel']} &nbsp;&middot;&nbsp; {w['periodDays']} days &nbsp;&middot;&nbsp; MARSEC {w['marsec']}</p>
       </div>
 {body}    </div>
 """
