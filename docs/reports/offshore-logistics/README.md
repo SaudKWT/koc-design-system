@@ -136,6 +136,38 @@ Three things the PDF path has to get right, each of which was wrong first:
 `to_pdf.py` asserts that every panel it kept is visible under print media, so a
 broken print rule fails loudly instead of shipping a truncated PDF.
 
+## On a phone
+
+Below 760px the layout changes in five ways. Each change fixes something that
+was measured, not guessed.
+
+- **The header is not pinned.** Pinned, with five tabs wrapping to three rows,
+  it held 222px of an 844px screen and 237px of a 740px one, and nearly half
+  of the shorter SharePoint preview frame. It now scrolls away with the page,
+  and it is 96px tall. Desktop keeps the pinned header: there it is one row,
+  102px.
+- **The tabs are one row that scrolls sideways**, and each tab shows only its
+  week label. The report date under each label made every tab twice as tall.
+  The newest week opens at the far end of the row. The script scrolls the row
+  so that tab is in view. It scrolls the row only, not the page, because
+  `scrollIntoView` would also move the page vertically on load.
+- **The rig cards stack.** Side by side they were 114 to 158px wide, and the
+  ON HIRE chip wrapped under the rig name. The selectors use child
+  combinators (`.rigs>tbody>tr`). A descendant selector also matched the
+  key/value table inside each card and put every label on top of its value.
+  The screenshot caught this; the width measurement did not.
+- **Charts keep a 680px minimum width and scroll sideways.** A 950-unit chart
+  drawn 330px wide shrinks its 11.5-unit labels to about 4px. At 680px they
+  stay at about 8px. The readout under the chart stays full size, because it
+  sits in the scroll box, not in the SVG.
+- **A tap holds.** On a touch screen `pointerleave` fires the moment the
+  finger lifts. So a tapped week or column showed for an instant and snapped
+  back. Only a mouse leaving now resets the readout. A tap holds until the
+  next tap, on the chart or anywhere else.
+
+None of this reaches the PDF. The charts print at full width, and the page
+count is unchanged.
+
 ## The tab strip
 
 Proper ARIA tabs: `role="tablist"` / `tab` / `tabpanel`, `aria-selected`,

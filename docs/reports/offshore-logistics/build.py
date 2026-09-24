@@ -594,7 +594,7 @@ def svg_ground(w):
     return svg_bars(
         f"ground-{w['reportDate']}", [d["label"] for d in days], series,
         "Trucks / tankers", title,
-        "Hover or tab a day to read its dispatches and arrivals.",
+        "Tap or hover over a day to read its dispatches and arrivals.",
         alt_ground(w), floor=12, integer=True)
 
 
@@ -637,8 +637,10 @@ def _two_week_series(mine_w, mine_v, other_w, other_v):
 
 
 def _readout_hint(n):
-    return ("Hover or tab a column to read it." if n == 1 else
-            "Hover or tab a column to read both weeks and the change.")
+    # "Tap or hover", not "hover or tab": on a phone there is no hover, and
+    # a keyboard user finds the columns by tabbing whether told to or not.
+    return ("Tap or hover over a column to read it." if n == 1 else
+            "Tap or hover over a column to read both weeks and the change.")
 
 
 TREND_SERIES = [
@@ -941,9 +943,9 @@ def rig_strip(w):
                f'{r["personnelOnboard"]} <span style="font-size:{FS["2xs"]};'
                f'color:{INK_MUTED};font-weight:{FW["normal"]};">'
                f'incl. {r["visaHolders"]} visa</span>')
-        cells += f"""      <td width="50%" valign="top" style="background:{CARD};border:1px solid {RULE};border-radius:{RADIUS_MD};padding:14px 16px;">
+        cells += f"""      <td class="rig" width="50%" valign="top" style="background:{CARD};border:1px solid {RULE};border-radius:{RADIUS_MD};padding:14px 16px;">
         <div><span style="font-size:{FS['lg']};font-weight:{FW['bold']};color:{INK};">Rig {rig_id}</span>
-          <span style="font-size:{FS['2xs']};font-weight:{FW['bold']};color:{chip_ink};background:{chip_bg};border-radius:{RADIUS};padding:3px 8px;letter-spacing:.05em;margin-left:8px;">{chip}</span></div>
+          <span style="font-size:{FS['2xs']};font-weight:{FW['bold']};color:{chip_ink};background:{chip_bg};border-radius:{RADIUS};padding:3px 8px;letter-spacing:.05em;margin-left:8px;white-space:nowrap;">{chip}</span></div>
         <div style="font-size:{FS['sm']};color:{INK};padding:8px 0 10px;line-height:1.45;">{r['currentOperation']}</div>
         <table width="100%" style="font-size:{FS['xs']};border-collapse:collapse;">
           <tr><td style="color:{INK_MUTED};padding:3px 0;width:42%;">Personnel onboard</td><td style="color:{INK};font-weight:{FW['semibold']};font-variant-numeric:tabular-nums;">{pob}</td></tr>
@@ -952,8 +954,8 @@ def rig_strip(w):
           <tr><td style="color:{INK_MUTED};padding:3px 0;vertical-align:top;">Next steps</td><td style="color:{INK};">{r['nextSteps']}</td></tr>
         </table></td>
 """
-    return (f'  <table width="100%" cellspacing="10" cellpadding="0">'
-            f'<tr>\n{cells}  </tr></table>\n')
+    return (f'  <table class="rigs" width="100%" cellspacing="10" '
+            f'cellpadding="0"><tr>\n{cells}  </tr></table>\n')
 
 
 def collapsible(title, inner, sub="", open_it=False, email=False):
@@ -1383,7 +1385,7 @@ CSS = f""":root{{color-scheme:light}}
 .top-in{{max-width:1000px;margin:0 auto;padding:16px 16px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}}
 .top h1{{margin:0;color:{ON_PRIMARY};font-size:{FS['xl']};font-weight:{FW['bold']};letter-spacing:-.015em}}
 .top .sub{{color:{tok('color.primary.100')};font-size:{FS['xs']};margin:0}}
-[role=tablist]{{max-width:1000px;margin:0 auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;gap:4px}}
+[role=tablist]{{max-width:1000px;margin:0 auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;gap:4px;position:relative}}
 [role=tab]{{appearance:none;background:transparent;border:0;border-bottom:3px solid transparent;
   color:{tok('color.primary.100')};font:inherit;font-size:{FS['sm']};font-weight:{FW['semibold']};text-align:left;
   padding:8px 14px 9px;cursor:pointer;border-radius:{RADIUS} {RADIUS} 0 0;
@@ -1487,18 +1489,49 @@ details details{{margin-left:18px}}
 .k[data-scrub] .k-week,.k[data-scrub] .k-wsub{{display:block}}
 @media (max-width:760px){{
   [role=tabpanel]{{padding:16px 12px 20px}}
+  /* On a phone the header is not pinned. Pinned, with five tabs wrapping to
+     three rows, it held 222 to 237px of a 740 to 844px screen, and nearly half
+     the smaller SharePoint preview frame, above everything being read. It now
+     scrolls away with the page, and it is also shorter: the tabs are one row
+     that scrolls sideways instead of three rows that wrap. */
+  .top{{position:static}}
+  .top-in{{padding:12px 16px 0}}
   .top h1{{font-size:17px}}
-  [role=tab]{{flex:1 1 auto;font-size:12.5px;padding:8px 10px 9px}}
+  .top .sub{{font-size:{FS['2xs']}}}
+  [role=tablist]{{flex-wrap:nowrap;overflow-x:auto;gap:2px;padding:8px 12px 0;
+    scrollbar-width:none;overscroll-behavior-x:contain}}
+  [role=tablist]::-webkit-scrollbar{{display:none}}
+  [role=tab]{{flex:0 0 auto;white-space:nowrap;font-size:13px;
+    padding:9px 12px 10px}}
+  /* The report date under each tab label is dropped here. The label names the
+     week and the underline marks the selected tab, so the second line only
+     made each tab twice as tall. */
+  [role=tab] .rep{{display:none}}
   /* A five-column table cannot wrap, so below this width it was 503px wide
      inside a 400px page: the fifth tile -- overstay crew -- was clipped off
      and unreachable. The table markup has to stay for Outlook, which will
      not lay out a flex or grid row, so the layout is re-declared here where
      only a browser reads it. The width="20%" attribute is a presentational
      hint and loses to this stylesheet without needing !important. */
-  .kpis,.kpis tbody{{display:block}}
-  .kpis tr{{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-    gap:10px}}
-  .kpis td.k{{display:block;width:auto}}
+  .kpis,.kpis>tbody{{display:block}}
+  .kpis>tbody>tr{{display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}}
+  .kpis>tbody>tr>td.k{{display:block;width:auto}}
+  /* The two rig cards stack. Side by side they were 114 to 158px wide, and the
+     ON HIRE chip wrapped onto its own line under the rig name. */
+  /* Child combinators, not descendants: each card holds its own key/value
+     table, and ".rigs tr" also turned those rows into one-column grids, so
+     every label landed on top of its value. */
+  .rigs,.rigs>tbody{{display:block}}
+  .rigs>tbody>tr{{display:grid;grid-template-columns:1fr;gap:10px}}
+  .rigs>tbody>tr>td.rig{{display:block;width:auto}}
+  /* A 950-unit chart drawn 330px wide shrinks 11.5-unit labels to about 4px.
+     Below this width the chart keeps a 680px floor and scrolls sideways, so
+     its labels stay at about 8px or larger. The readout under it stays at
+     full size and full width, because it is a block in the scroll container,
+     not in the SVG. */
+  .cx{{overflow-x:auto;overscroll-behavior-x:contain}}
+  .cx-svg{{min-width:680px}}
 }}
 @media print{{
   .top{{position:static}}
@@ -1535,7 +1568,16 @@ JS = """(function(){
       panels[j].hidden=!on;
     });
     if(focus)tabs[i].focus();
+    reveal(tabs[i]);
     setHash(tabs[i].dataset.week);
+  }
+  function reveal(t){
+    /* On a phone the tabs are one row that scrolls sideways, and the week
+       that opens is the newest, at the far end. Scroll the row, not the page:
+       scrollIntoView would also move the page vertically on load. On a wide
+       screen the row does not overflow and this does nothing. */
+    if(list.scrollWidth<=list.clientWidth)return;
+    list.scrollLeft=Math.max(0,t.offsetLeft-(list.clientWidth-t.offsetWidth)/2);
   }
   function setHash(week){
     /* SharePoint previews an uploaded .html inside a sandboxed srcdoc iframe,
@@ -1613,7 +1655,11 @@ JS = """(function(){
   }
   hits.forEach(function(h){
     h.addEventListener('pointerenter',function(){set(h,true);});
-    h.addEventListener('pointerleave',function(){set(h,false);});
+    /* Only a mouse leaves. On a touch screen pointerleave fires the moment
+       the finger lifts, so a tapped week showed for an instant and snapped
+       back. A tap now holds until the next tap, here or anywhere else. */
+    h.addEventListener('pointerleave',function(e){
+      if(e.pointerType==='mouse')set(h,false);});
     h.addEventListener('focus',function(){set(h,true);});
     h.addEventListener('blur',function(){set(h,false);});
     h.addEventListener('keydown',function(e){
@@ -1631,6 +1677,11 @@ JS = """(function(){
       sib[n].setAttribute('tabindex','0');
       sib[n].focus();
     });
+  });
+  document.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='mouse')return;
+    var inside=e.target&&e.target.closest&&e.target.closest('.k-spark .h');
+    hits.forEach(function(h){if(h!==inside)set(h,false);});
   });
 })();
 
@@ -1654,7 +1705,8 @@ JS = """(function(){
     function reset(){ read.innerHTML=read.getAttribute('data-default'); }
     cols.forEach(function(g,i){
       g.addEventListener('pointerenter',function(){show(g);});
-      g.addEventListener('pointerleave',reset);
+      g.addEventListener('pointerleave',function(e){
+        if(e.pointerType==='mouse')reset();});
       g.addEventListener('focus',function(){show(g);});
       g.addEventListener('blur',reset);
       g.addEventListener('keydown',function(e){
@@ -1672,6 +1724,16 @@ JS = """(function(){
         cols[n].setAttribute('tabindex','0');
         cols[n].focus();
       });
+    });
+  });
+  /* A tapped column holds until the next tap, as with the sparklines. */
+  document.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='mouse')return;
+    var g=e.target&&e.target.closest&&e.target.closest('.cx-g');
+    figs.forEach(function(fig){
+      if(g&&fig.contains(g))return;
+      var read=fig.querySelector('.cx-read');
+      if(read)read.innerHTML=read.getAttribute('data-default');
     });
   });
 })();"""
