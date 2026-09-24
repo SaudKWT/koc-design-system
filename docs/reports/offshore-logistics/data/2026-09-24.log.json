@@ -1,0 +1,275 @@
+{
+  "reportDate": "2026-09-24",
+  "source": "r26.xlsx",
+  "port": {
+    "from": "17.09.2026",
+    "to": "23.09.2026",
+    "days": [
+      {
+        "day": "Thursday",
+        "date": "17.09.2026",
+        "status": "Normal",
+        "lines": [
+          "One truck was dispatched with Odfjell-TRS tools received from Odfjell (OD-BM1-F-1-13 & OD-BM1-E-1-13) return as it is to Odfjell Mina Abdallah Facility , as per delivery RM-SP-9001",
+          "One truck was dispatched with Odfjell-TRS tools received from Odfjell (OD-BM1-F-1-13 & OD-BM1-E-1-13) return as it is to Odfjell Mina Abdallah Facility , as per delivery RM-SP-9002",
+          "One truck was dispatched with Odfjell-TRS tools received from Odfjell (OD-BM1-F-1-13 & OD-BM1-E-1-13) return as it is to Odfjell Mina Abdallah Facility , as per delivery RM-SP-9003",
+          "One truck was dispatched with COSL backloads received from OD1 & OPH (OD-JL3-N-13-3) to COSL Mina Abdallah Facility , as per delivery RM-SP-9003",
+          "One Pickup was dispatched with 8 x lose lifts(InsideTSDR052) received from OPH(RCM-OP-1195) to HPM IT Hall. Mina Abdallah Facility , as per delivery RM-SP-900",
+          "Water bunkering to CA5 (108 M3)"
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          4,
+          10
+        ],
+        "iso": "2026-09-17"
+      },
+      {
+        "day": "Friday",
+        "date": "18.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Unbundling and stacking of 3.5\" Tubing at Pipe Yard",
+          "Filling of Sandbags with Sand for the Bomb Shelter",
+          "Water bunkering to CA5 (252 M3)"
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          11,
+          14
+        ],
+        "iso": "2026-09-18"
+      },
+      {
+        "day": "Saturday",
+        "date": "19.09.2026",
+        "status": "Normal",
+        "lines": [
+          "One truck was dispatched with 2 x lifts received from OD1 as per manifest RCM-OD-937 to COSL Mina Abdallah Facility , as per delivery ticket RM-SP-9005",
+          "Loaded 1 x Truck with Backloads from Rig OD1 and sent to COSL",
+          "Water bunkering to CA1 (144 M3)"
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          15,
+          18
+        ],
+        "iso": "2026-09-19"
+      },
+      {
+        "day": "Sunday",
+        "date": "20.09.2026",
+        "status": "Normal",
+        "lines": [
+          "One truck was dispatched with 2 x lifts received from OPH via Charlie-3 to COSL Mina Abdallah Facility , as per delivery RM-SP-9006",
+          "One pickup was dispatched with 3 x H-Carry received from OD1, CA-1 & CA-5 to HPM & BAROID Lab Hall Mina Abdallah Facility , as per delivery RM-SP-9007",
+          "Completed loading of casing cut pieces on 4 trucks at the pipe yard for sending to the KOC scrap yard-3",
+          "One call off truck was dispatched with 3 x 24’’ Cut casing from Shuaiba Port Pipe Yard to deliver at KOC Y-3 Ahmadi location , as per delivery 2026/9/20/1084",
+          "One truck was dispatched with 6 x 13-5/8’’ Cut casing from Shuaiba Port Pipe Yard to deliver at KOC Y-3 Ahmadi location , as per delivery 2026/9/20/0985",
+          "One truck was dispatched with 5 x 7-5/8’’ Cut casing from Shuaiba Port Pipe Yard to deliver at KOC Y-3 Ahmadi location , as per delivery 2026/9/20/1320",
+          "One truck was dispatched with 4 x 10-3/4’’ Cut casing from Shuaiba Port Pipe Yard to deliver at KOC Y-3 Ahmadi location , as per delivery 2026/9/20/1006"
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          19,
+          26
+        ],
+        "iso": "2026-09-20"
+      },
+      {
+        "day": "Monday",
+        "date": "21.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Completed loading of casing cut pieces (well No JL-0003, 36\", 30”, 18-5/8\") on 3 trucks at the pipe yard for sending to the KOC scrap yard-3.",
+          "Loaded Empty food container on one truck.",
+          "Offloaded cargo at berth 20.",
+          "One truck was dispatched with 3 x OD1 Empty food containers to Reliance Subhan Facility , as per delivery RM-SP-9008.",
+          "One call off truck was dispatched with 3 x 36’’ Cut casing from Shuaiba Port Pipe Yard to deliver at KOC Y-3 Ahmadi location , as per delivery 2026/9/20/0815",
+          "One truck was dispatched with 4 x 18-5/8’’ Cut casing from Shuaiba Port Pipe Yard to deliver at KOC Y-3 Ahmadi location , as per delivery 2026/9/20/0762.",
+          "One truck was dispatched with 7 x 30’’ Cut casing from Shuaiba Port Pipe Yard to deliver at KOC Y-3 Ahmadi location , as per delivery 2026/9/20/0794.",
+          "One truck arrived with 2 x Lifts for OD1 as per Call Off: OD-BM1-E-4-3 from COSL Mina Abdallah Yard, as per delivery ticket COSL-DT- OD-BM1-E-4-3.",
+          "One truck arrived with 2 x Empty baskets from WPS Burgan Gun Shop facility, as per delivery ticket HPM-DT-1584."
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          27,
+          36
+        ],
+        "iso": "2026-09-21"
+      },
+      {
+        "day": "Tuesday",
+        "date": "22.09.2026",
+        "status": "Normal",
+        "lines": [
+          "One truck arrived with 1 x 6mtr. basket C/w Hetco Tank Cleaning tools for CA1 from Hetco Stevedoring Yard",
+          "Water bunkering to CA5 (72 M3)",
+          "Loaded Cargo as per manifest CM-OD-1006 for Rig OD1 on Charlie-3",
+          "Loaded Cargo as per manifest CM-OP-1263 for Rig OPH on Charlie-3"
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          37,
+          41
+        ],
+        "iso": "2026-09-22"
+      },
+      {
+        "day": "Wednesday",
+        "date": "23.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Loaded Cargo for Rig OD1 on Charlie-3 as per manifest CM-OD-1008",
+          "Loaded 24\" Corrosion Cap on truck at Pipe Yard",
+          "One Boom truck was dispatched with 24\" Corrosion cap from Shuaiba Port Pipe Yard to KOC Ahmadi DWS facility , as per delivery 2026/9/22/1286",
+          "One pickup was dispatched with Documents received from OD1 to CMT Hall Mina Abdallah facility , as per delivery ticket RM-SP-9009",
+          "One truck was dispatched with 3 x lifts received from OPH as per manifest RCM-OP-1199 to HPM IT / Gulfsat Mina Abdallah facility, as per delivery RM-SP-9010",
+          "One Boom truck was dispatched with 4 x 6-5/8'' Crossovers & 2 x Near Bit subs received from OD1(RCM-OD-939) to COSL Mina Abdallah, as per delivery RM-SP-9011",
+          "One truck arrived with 1 x Empty basket from WPS Burgan Gun Shop facility, as per delivery ticket HPM-DT-1585",
+          "One truck arrived with 3 x Empty baskets from WPS Burgan facility, as per delivery ticket HPM-DT-1586",
+          "One truck arrived with Empty baskets & Mini Container from Gulfsat facility, as per delivery ticket HPM-DT-1587",
+          "Fuel bunkering to CA5 (147 M3)"
+        ],
+        "defects": [],
+        "nightShift": false,
+        "_rows": [
+          42,
+          52
+        ],
+        "iso": "2026-09-23"
+      }
+    ]
+  },
+  "vessel": {
+    "from": "17.09.2026",
+    "to": "23.09.2026",
+    "days": [
+      {
+        "day": "Thursday",
+        "date": "17.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- vessel enroute to OD1, arrived 500 m zone, alongside OD-1@ 02:10, cargo operation completed with 6 lifts cargo OUT, pullout, 02:45–17:36 vessel proceeded to anchorage, dropped anchor and remained STB. anchor hove up@17:36, vessel returned to OD-1, freshwater bunkering carried out with 150 m³ (transferred)@19:14–21:50 , pulledout@21:55,vessel returned to anchorage near OD1 and remained STBY.",
+          "Vessel CA3- Vessel STBY,anchored at OPH location",
+          "Vessel CA5- Vessel standby anchored at OD1 Location, heave up anchor@01:25,Vessel sailed to Shuaiba, alongside at berth 20 @05:50, cargo operation, received fresh water(72 M3) and drilling water (36M3) , castoff for DP trial, completed DP trail at A1 anchorage, alongside at berth 20 @17:30, STBY at berth 20",
+          "Vessel Charlie 3- Vessel STBY at berth 4 , cargo loaded, crew embarked,castoff @11:15, alongside STBD side of OPH@12:25, cargo transfer, Pax disembarked, pullout@13:05, alongside of berth 4 @14:15,Vessel STBY at berth 4"
+        ],
+        "defects": [],
+        "_rows": [
+          4,
+          7
+        ],
+        "iso": "2026-09-17"
+      },
+      {
+        "day": "Friday",
+        "date": "18.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- vessel STBY at OD1 location, nchor heaved up@09:02,Vessel under Port side Crane of OD1@10:45, cargo operation completed with 2 lifts cargo IN, Fuel bunkering carried out with 100 m³(transferred), Vessel pulled out from@14:26, vessel proceeded to anchorage, dropped anchor and remained STBY, Anchor heaved up@22:00 and proceed to Shuaiba port.",
+          "Vessel CA3- Vessel standby anchored at OPH Location.",
+          "Vessel CA5- Vessel STBY at berth 20, received fres water(252 M2), Cast off and Departed to OD 1@18:45, Arrived at OD 1 anchorage location @21:45 and STBY",
+          "Vessel Charlie 3- Vessel STBY at berth 4"
+        ],
+        "defects": [],
+        "_rows": [
+          8,
+          11
+        ],
+        "iso": "2026-09-18"
+      },
+      {
+        "day": "Saturday",
+        "date": "19.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel arrived and secured Starboard side alongside at Jetty No.20 Shuaiba Port@01:12, cargo operation completed with 2 lifts cargo OUT, freshwater bunkering carried out with 144 m³ (received), Vessel remain STBY at berth 20",
+          "Vessel CA3- Vessel standby anchored at OPH Location, heave up anchor@10:00,Vessel in position on the port side of OPH@11:20, transferred crew to OPH, pullout@11:38, standby anchored at OPH Location 500m away.",
+          "Vessel CA5- Vessel STBY,anchored at OD1 location",
+          "Vessel Charlie 3- Vessel STBY at berth 4 ,crew embarked,castoff @08:35, alongside port side of OD1@09:55, Pax disembarked, pullout@10:07,alongside STBD side of OPH@ 11:35, cargo operation , pax transfer,pullout@13:05 alongside of berth 4 @14:15, Pax disembarked, cargo operation, Vessel STBY at berth 4"
+        ],
+        "defects": [],
+        "_rows": [
+          12,
+          15
+        ],
+        "iso": "2026-09-19"
+      },
+      {
+        "day": "Sunday",
+        "date": "20.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel remain STBY at berth 20",
+          "Vessel CA3- Vessel STBY,anchored at OPH Location",
+          "Vessel CA5- Vessel STBY,anchored at OD1 location",
+          "Vessel Charlie 3- Vessel STBY at berth 4 ,castoff @05:15,arrived Khairan , 4 Pax in, proceed to OD1, alongside port side of OD1@ 11:10, crew transferred and received,pullout@ 11:41, alongside PORT side of OPH@13:20, crew transferred and received, pullout@13:34, arrived Khairan@ 16:15, crew transfer to taxi boat, proceed to berth 4,alongside of berth 4 @ 18:50, PAx disembarked,Vessel STBY at berth 4"
+        ],
+        "defects": [],
+        "_rows": [
+          16,
+          19
+        ],
+        "iso": "2026-09-20"
+      },
+      {
+        "day": "Monday",
+        "date": "21.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel remain STBY at berth 20,Vessel cast off from berth 20 @22:52",
+          "Vessel CA3- Vessel STBY,anchored at OPH Location",
+          "Vessel CA5- Vessel STBY,anchored at OD1 location",
+          "Vessel Charlie 3- Vessel STBY at berth 4"
+        ],
+        "defects": [],
+        "_rows": [
+          20,
+          23
+        ],
+        "iso": "2026-09-21"
+      },
+      {
+        "day": "Tuesday",
+        "date": "22.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel enroute to OD1, arrived OD1@01:50, vessel STBY at anchorage area untill@09:07, 2 x HSSE KOC Passenger embarked for conducting evacuation drill,Anchor heaved up@09:21, transferred 02 KOC HSE crews to OD1, Vessel at Port side Crane of OD1,Vessel pulled out@10:55, Vessel STBY 400 meters from OD-1,essel proceeds back to portside of OD-1@11:40, received 2 x HSSE KOC Passenger, Vessel pulled out@11:43, Vessel outside 500 meters of OD-1@11:55, transferred KOC HSE crews to KOC Failaka vessel, vessel arrived anchorage @12:30 and STBY at OD1 location",
+          "Vessel CA3- Vessel standby anchored at OPH Location, heave up anchor@15:00,Vessel in position on the port side of OPH@17:24, received 17 crews from OPH, Cargo operations, pullout@19:00, standby anchored at OPH Location 500m away.",
+          "Vessel CA5- Vessel STBY,anchored at OD1 location , heave up anchor@02:00,Vessel sailed to Shuaiba, alongside at berth 20 @05:45, cargo operation, received fresh water(72 M3) , STBY at berth 20",
+          "Vessel Charlie 3- Vessel STBY at berth 4 ,cargo loaded,crew embarked,castoff @08:45, alongside port side of OD1@11:55, Pax disembarked,cargo offloaded pullout@12:50, alongside of berth 4 @14:15, Pax disembarked, cargo operation, cargo loaded,crew embarked, castoff @14:40, alongside STBD side of OPH@ 15:45,cargo operation , pax transfer,pullout@ 16:50,alongside of berth 4 @ 18:00, Vessel STBY at berth 4"
+        ],
+        "defects": [],
+        "_rows": [
+          24,
+          27
+        ],
+        "iso": "2026-09-22"
+      },
+      {
+        "day": "Wednesday",
+        "date": "23.09.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel STBY,anchored at OD1 location",
+          "Vessel CA3- Vessel STBY,anchored at OPH Location, Mud Tank-1 cleaning is in progress.",
+          "Vessel CA5- Vessel remain STBY at berth 20, received fuel (147 M3)",
+          "Vessel Charlie 3- Vessel STBY at berth 4 ,cargo loaded,castoff @09:00, alongside port side of OD1@10:15,cargo offloaded and loaded, pullout@12:16, alongside of berth 4 @13:40, cargo offloaded and Vessel STBY at berth 4"
+        ],
+        "defects": [],
+        "_rows": [
+          28,
+          31
+        ],
+        "iso": "2026-09-23"
+      }
+    ]
+  }
+}

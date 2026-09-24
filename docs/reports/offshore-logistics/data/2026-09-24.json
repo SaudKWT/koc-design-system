@@ -1,0 +1,251 @@
+{
+  "reportDate": "2026-09-24",
+  "reportLabel": "24 Sep 2026",
+  "tabLabel": "17 to 23 Sep",
+  "periodStart": "2026-09-17",
+  "periodEnd": "2026-09-23",
+  "periodLabel": "17 to 23 Sep 2026",
+  "periodDays": 7,
+  "marsec": "Level 2",
+  "provenance": "Email of 24.09.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_24.09.2026.xlsx (report 26, sheets Port and Vessel).",
+  "showArrows": true,
+  "vesselTrips": {
+    "CA1": 3,
+    "CA3": 0,
+    "CA5": 4,
+    "Charlie-3": 8
+  },
+  "tripRule": "Trips are as reported in the covering email, which supersedes the workbook derivation.",
+  "vesselMovements": {
+    "CA1": 2,
+    "CA3": 0,
+    "CA5": 3,
+    "Charlie-3": 14
+  },
+  "movementRule": "One movement is one transfer between locations: port to rig, rig to port, or rig to rig. Repositioning at the rig already occupied does not count, nor does a shift between two port-side locations.",
+  "movementsAudit": {
+    "CA1": "2. OD1 to Shuaiba (dep 18.09 22:00, alongside berth 20 19.09 01:12, Vessel E8/E12); Shuaiba to OD1 (cast off 21.09 22:52, arrived OD1 22.09 01:50, E20/E24). The 17.09 arrival at OD1 (E4) completes the Shuaiba to OD1 transit counted on 16.09 in report 25. Excludes the OD1 to anchorage and back repositionings on 17.09 and 18.09, and the 22.09 standoff to 400 m and back.",
+    "CA3": "0. At OPH all seven days. The alongside manoeuvres on 19.09 (E13) and 22.09 (E25) begin and end at OPH.",
+    "CA5": "3. OD1 to Shuaiba (17.09, E6); Shuaiba to OD1 (18.09, E10); OD1 to Shuaiba (22.09, E26). Excludes the 17.09 DP trial from berth 20 to A1 anchorage and back, which is port to port.",
+    "Charlie-3": "14. Two on 17.09 (OPH round, E7); three on 19.09 (Shuaiba to OD1 to OPH to Shuaiba, E15); three on 20.09 (Khiran to OD1, OD1 to OPH, OPH to Khiran, E19); four on 22.09 (OD1 round and OPH round, E27); two on 23.09 (OD1 round, E31). Excludes the Shuaiba to Khiran and Khiran to Shuaiba legs on 20.09, which are port to port, as in report 25."
+  },
+  "movementsByDay": [
+    {
+      "label": "Thu 17",
+      "n": 3
+    },
+    {
+      "label": "Fri 18",
+      "n": 2
+    },
+    {
+      "label": "Sat 19",
+      "n": 3
+    },
+    {
+      "label": "Sun 20",
+      "n": 3
+    },
+    {
+      "label": "Mon 21",
+      "n": 1
+    },
+    {
+      "label": "Tue 22",
+      "n": 5
+    },
+    {
+      "label": "Wed 23",
+      "n": 2
+    }
+  ],
+  "trucks": {
+    "rule": "Count truck and pickup units per movement. A dispatch counts as out, an arrival counts as in. An offload of a unit already counted on arrival is not a second movement, and a duplicated row sharing a delivery ticket is counted once.",
+    "byDay": [
+      {
+        "label": "Thu 17",
+        "date": "17.09.2026",
+        "out": 5,
+        "in": 0,
+        "audit": [
+          "E4 out 1",
+          "E5 out 1",
+          "E6 out 1",
+          "E7 out 1 (shares RM-SP-9003 with E6, but different cargo and destination: two trucks, not a duplicated row)",
+          "E8 out 1 pickup (delivery number truncated to RM-SP-900)",
+          "E9 fluid",
+          "E10 no night shift"
+        ]
+      },
+      {
+        "label": "Fri 18",
+        "date": "18.09.2026",
+        "out": 0,
+        "in": 0,
+        "audit": [
+          "E11 yard work",
+          "E12 yard work",
+          "E13 fluid",
+          "E14 no night shift"
+        ]
+      },
+      {
+        "label": "Sat 19",
+        "date": "19.09.2026",
+        "out": 1,
+        "in": 0,
+        "audit": [
+          "E15 out 1",
+          "E16 the E15 truck being loaded, same day, same destination",
+          "E17 fluid",
+          "E18 no night shift"
+        ]
+      },
+      {
+        "label": "Sun 20",
+        "date": "20.09.2026",
+        "out": 6,
+        "in": 0,
+        "audit": [
+          "E19 out 1",
+          "E20 out 1 pickup",
+          "E21 loading of the four E22 to E25 trucks",
+          "E22 out 1",
+          "E23 out 1",
+          "E24 out 1",
+          "E25 out 1",
+          "E26 no night shift"
+        ]
+      },
+      {
+        "label": "Mon 21",
+        "date": "21.09.2026",
+        "out": 4,
+        "in": 2,
+        "audit": [
+          "E27 loading of the three E31 to E33 trucks",
+          "E28 loading of the E30 truck",
+          "E29 vessel op",
+          "E30 out 1",
+          "E31 out 1",
+          "E32 out 1",
+          "E33 out 1",
+          "E34 in 1",
+          "E35 in 1",
+          "E36 no night shift"
+        ]
+      },
+      {
+        "label": "Tue 22",
+        "date": "22.09.2026",
+        "out": 0,
+        "in": 1,
+        "audit": [
+          "E37 in 1",
+          "E38 fluid",
+          "E39 vessel op",
+          "E40 vessel op",
+          "E41 no night shift"
+        ]
+      },
+      {
+        "label": "Wed 23",
+        "date": "23.09.2026",
+        "out": 4,
+        "in": 3,
+        "audit": [
+          "E42 vessel op",
+          "E43 loading of the E44 truck",
+          "E44 out 1 boom truck",
+          "E45 out 1 pickup",
+          "E46 out 1",
+          "E47 out 1 boom truck",
+          "E48 in 1",
+          "E49 in 1",
+          "E50 in 1",
+          "E51 fluid",
+          "E52 no night shift"
+        ]
+      }
+    ]
+  },
+  "fluids": {
+    "bunkered": {
+      "Fresh water": 540,
+      "Fuel": 147,
+      "Drill water": 36
+    },
+    "delivered": {
+      "Fresh water": 150,
+      "Fuel": 100,
+      "Drill water": 0
+    },
+    "audit": {
+      "Fresh water bunkered": "Vessel E6 72 CA5 (17.09); Vessel E10 252 CA5 (18.09, Port E13); Vessel E12 144 CA1 (19.09, Port E17); Vessel E26 72 CA5 (22.09, Port E38)",
+      "Drill water bunkered": "Vessel E6 36 CA5 (17.09). Port E9 records the 17.09 CA5 bunkering as one 108 m³ water line; the Vessel sheet splits it 72 fresh and 36 drilling water, and 72 + 36 = 108.",
+      "Fuel bunkered": "Port E51 147 CA5 (23.09, Vessel E30)",
+      "Fresh water delivered": "Vessel E4 150 CA1 to OD1 (17.09)",
+      "Fuel delivered": "Vessel E8 100 CA1 to OD1 (18.09)"
+    }
+  },
+  "slops": {
+    "receivedBbl": 0,
+    "dischargedBbl": 0,
+    "note": "No slops in barrels recorded."
+  },
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "STBY waiting for SH-0001 location clearance, to start jack-down and move to SH-0001",
+      "lastWeek": "Nil",
+      "personnelOnboard": 80,
+      "visaHolders": 57,
+      "overstay": {
+        "KOC": 0,
+        "HLB": 1,
+        "COSL": 11
+      },
+      "nextSteps": "Rig preparation for move; rig move for new well SH-0001"
+    },
+    "OPH": {
+      "currentOperation": "Rig off-hired",
+      "lastWeek": "Nil",
+      "personnelOnboard": 0,
+      "visaHolders": 0,
+      "overstay": {
+        "KOC": 0,
+        "HLB": 0,
+        "COSL": 0
+      },
+      "nextSteps": "Nil"
+    }
+  },
+  "highlights": [],
+  "dataNotes": [
+    "<b>Vessel trips: the email and the Vessel sheet disagree.</b> The email reports CA1 3, CA3 0, CA5 4, Charlie-3 8 (15). Applying the trip rule to the Vessel sheet gives CA1 1, CA3 0, CA5 1, Charlie-3 6 (8). The email's figures are used, per the standing rule. The same gap appeared in report 24 (13 against 8).",
+    "<b>OD1's target well changed between reports.</b> Report 25 had OD1 awaiting BOUM-0001 clearance; this email says SH-0001, in both the current operation and next steps. Port E34 on 21.09 still carries a BM1 call-off (OD-BM1-E-4-3). Confirm the target.",
+    "<b>RM-SP-9003 is used twice on 17.09.</b> Port E6 (Odfjell TRS tools to Odfjell) and E7 (COSL backloads from OD1 and OPH to COSL) carry the same delivery number with different cargo and destinations. Counted as two trucks.",
+    "<b>Port E8 delivery number reads RM-SP-900.</b> It is truncated. The numbers around it run 9001, 9002, 9003 and then 9005 on 19.09.",
+    "<b>Vessel E10 records CA5 fresh water as 252 M2.</b> Port E13 records the same bunkering as 252 M3. Read as cubic metres."
+  ],
+  "headline": "OD1 on standby, awaiting SH-0001 location clearance to start jack-down. OPH remains off hired.",
+  "dailyOperations": {
+    "label": "Wed 23 Sep 2026",
+    "source": "Daily Ground Operations, as circulated in the 24.09.2026 email",
+    "lines": [
+      "Cargo for Rig OD1 loaded on <b>Charlie-3</b>, per manifest CM-OD-1008.",
+      "A 24\" corrosion cap loaded on a truck at the pipe yard.",
+      "One boom truck dispatched from the Shuaiba Port pipe yard to the KOC Ahmadi DWS facility with the <b>24\" corrosion cap</b>, per delivery 2026/9/22/1286.",
+      "One pickup dispatched to the CMT hall at Mina Abdallah with documents received from OD1, per delivery ticket RM-SP-9009.",
+      "One truck dispatched to HPM IT / Gulfsat at Mina Abdallah with <b>three lifts received from OPH</b> (manifest RCM-OP-1199), per delivery RM-SP-9010.",
+      "One boom truck dispatched to COSL Mina Abdallah with <b>four 6-5/8\" crossovers and two near-bit subs</b> received from OD1 (RCM-OD-939), per delivery RM-SP-9011.",
+      "One truck arrived from the WPS Burgan gun shop with one empty basket, per delivery ticket HPM-DT-1585.",
+      "One truck arrived from WPS Burgan with three empty baskets, per delivery ticket HPM-DT-1586.",
+      "One truck arrived from Gulfsat with empty baskets and a mini container, per delivery ticket HPM-DT-1587.",
+      "<b>147 m³ of fuel</b> bunkered to CA5."
+    ],
+    "extraNotes": [
+      "Vessel movements remain under <b>MARSEC Level 2</b>."
+    ]
+  }
+}

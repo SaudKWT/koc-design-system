@@ -1848,8 +1848,8 @@ def main():
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
-    dates = args or ["2026-09-17", "2026-09-10", "2026-09-03",
-                     "2026-08-26"]
+    dates = args or ["2026-09-24", "2026-09-17", "2026-09-10",
+                     "2026-09-03", "2026-08-26"]
 
     picked = flags & {"--dashboard", "--email", "--notes", "--artifact"}
     want = {name: (f"--{name}" in flags or not picked)
