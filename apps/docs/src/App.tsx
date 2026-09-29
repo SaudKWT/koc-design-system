@@ -18,6 +18,7 @@ import { ListViewPattern } from "./sections/ListViewPattern";
 import { KpiDashboard } from "./sections/KpiDashboard";
 import { DetailViewPattern } from "./sections/DetailViewPattern";
 import BaseUiProbe from "./bakeoff/BaseUiProbe";
+import { LandingDirections } from "./bakeoff/landing/LandingDirections";
 
 const SECTIONS = [
   { id: "overview", label: "Overview", group: "Start", el: Overview },
@@ -33,6 +34,7 @@ const SECTIONS = [
   { id: "kpi", label: "KPI dashboard", group: "Patterns", el: KpiDashboard },
   { id: "a11y", label: "Accessibility", group: "Quality", el: Accessibility },
   // Evaluation only — not part of the system. See src/bakeoff/README.md.
+  { id: "landing", label: "D&W landing directions", group: "Evaluation", el: LandingDirections },
   { id: "ledger", label: "Staging ledger", group: "Evaluation", el: Ledger },
   { id: "bakeoff", label: "Sidebar bake-off", group: "Evaluation", el: Bakeoff },
   { id: "space", label: "shadcn-space audit", group: "Evaluation", el: SpaceCandidates },

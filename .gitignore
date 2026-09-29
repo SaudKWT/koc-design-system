@@ -9,6 +9,7 @@ node_modules/
 # cannot re-include a file whose parent directory is excluded, so a blanket
 # `dist/` would take packages/tokens/dist with it and no `!` rule could rescue it.
 apps/docs/dist/
+apps/docs/dist-landing/
 
 # packages/tokens/dist IS committed, deliberately. Consumers resolve the package
 # through the workspace with no publish step, so dist must be present — and a diff

@@ -1,0 +1,820 @@
+/*
+ * Direction A — "Multilateral". The section drawing's linework, its colour mapping and every
+ * piece of motion Tailwind utilities cannot express.
+ *
+ * Colour: tokens only (var(--…) and color-mix of them). `transparent` is the empty stop.
+ * Geometry: every line is a CSS line or a fixed-size per-row SVG. Nothing here is measured —
+ * no ResizeObserver, no getBoundingClientRect — so zoom, late font loads and 125/150 %
+ * Windows scaling cannot detach a kick-off from the bore or a lateral from its row.
+ * Motion: durations and easings are the KOC scale (var(--duration-*), var(--ease-*)); the only
+ * literals are the draw-on's stagger offsets, which the scale has no step for.
+ */
+
+/* The lateral's stroke width, registered so the 1 → 1.5px hover change can transition. */
+@property --ms-lw {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 1px;
+}
+
+/* ── Geometry and colour mapping ─────────────────────────────────────────────────────── */
+.ms {
+  /* Phone first: the bore is a line in the page gutter, stations hang below each header. */
+  --ms-pad: 16px;
+  --ms-ruler: 16px; /* gutter left of the bore: the bore at x 32 on a phone, so the 32px phone
+                       wellhead centred on it starts at the 16px page gutter, never the edge */
+  --ms-bore: 1px; /* the mother bore: a 1px gutter line on a phone, 2px on the drawing */
+  --ms-kick: 20px; /* horizontal run of the kick-off: bore → lateral start */
+  --ms-st-h: 34px; /* station height; the lateral sits on its bottom pixel row */
+  --ms-st-gap: 12px; /* gap between a lateral and its continuation hairline */
+  --ms-indent: 28px; /* continuation hairlines start indented by this much */
+  --ms-lat-o: 0.7; /* lateral strength at rest — decorative linework, /70 per the brief */
+  --ms-lw: 1px;
+  --ms-sheet-top: 38px; /* ground line → first row: room for the ruler caption and the key */
+
+  /* Light: the subsurface IS KOC blue; linework and text are primary-foreground on it. */
+  --ms-ground: var(--primary);
+  --ms-ink: var(--primary-foreground);
+  --ms-text: var(--primary-foreground);
+  /* /90 for anything under 12px; /85 (5.14:1) is the floor for 12px and up. */
+  --ms-text-90: color-mix(in oklch, var(--primary-foreground) 90%, transparent);
+  --ms-text-85: color-mix(in oklch, var(--primary-foreground) 85%, transparent);
+  --ms-rule: color-mix(in oklch, var(--primary-foreground) 45%, transparent);
+  --ms-tint: color-mix(in oklch, var(--primary-foreground) 10%, transparent);
+}
+/* Dark: bg-primary re-maps to a pale slab that glares, so the ground is a navy mix instead.
+   Measured on it: foreground 13.05:1, muted 7.99:1, primary 5.54:1. */
+.dark .ms {
+  --ms-ground: color-mix(in oklch, var(--primary) 16%, var(--background));
+  --ms-ink: var(--primary);
+  --ms-text: var(--foreground);
+  --ms-text-90: var(--foreground);
+  --ms-text-85: var(--muted-foreground);
+  --ms-rule: color-mix(in oklch, var(--primary) 45%, transparent);
+  --ms-tint: color-mix(in oklch, var(--primary) 12%, transparent);
+}
+@media (min-width: 768px) {
+  .ms {
+    --ms-pad: 24px;
+    --ms-ruler: 72px;
+    --ms-kick: 48px;
+    --ms-bore: 2px;
+  }
+}
+/* 32px pad up to 1440, so EN11's seven stations hold one lateral at 1366 — the commonest
+   Windows laptop width. At 1280 its last station continues on a second hairline. */
+@media (min-width: 1280px) {
+  .ms {
+    --ms-pad: 32px;
+  }
+}
+@media (min-width: 1440px) {
+  .ms {
+    --ms-pad: 40px;
+  }
+}
+
+.ms-wrap {
+  padding-inline: var(--ms-pad);
+}
+
+/* Text colours on the ground. */
+.ms-t {
+  color: var(--ms-text);
+}
+.ms-t90 {
+  color: var(--ms-text-90);
+}
+.ms-t85 {
+  color: var(--ms-text-85);
+}
+
+/* The logo tile: KOC blue in light; in dark the navy ground with a primary hairline, because
+   dark `bg-primary` is pale and the white mark would vanish on it. */
+.ms-logo-tile {
+  background: var(--primary);
+}
+.dark .ms-logo-tile {
+  background: color-mix(in oklch, var(--primary) 16%, var(--background));
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--primary) 55%, transparent);
+}
+
+/* ── Surface readings: each stands on the ground line on a short leader tick ───────── */
+/* Each reading is four rows of its parent's grid (label, value, change, leader) via subgrid,
+   so when a label wraps to two lines at a narrower width, every value on that row still
+   sits on one line — a drawing's callouts share a baseline. */
+.ms-reading {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+}
+.ms-leader {
+  position: relative;
+  display: block;
+  min-height: 14px;
+  margin-top: 8px;
+  width: 1px;
+  background: color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+/* Only a reading on the bottom row stands on the ground; the rows above are plain callouts
+   (a leader that stops short of the line reads as a stray mark). Deterministic per
+   breakpoint — the grid has a fixed column count, so the bottom row is the last N items. */
+.ms-readings > li:nth-child(-n + 6) .ms-leader {
+  visibility: hidden;
+  min-height: 12px;
+}
+@media (min-width: 768px) {
+  .ms-readings > li:nth-child(-n + 6) .ms-leader {
+    visibility: visible;
+    min-height: 14px;
+  }
+  .ms-readings > li:nth-child(-n + 4) .ms-leader {
+    visibility: hidden;
+    min-height: 12px;
+  }
+}
+@media (min-width: 1280px) {
+  .ms-readings > li:nth-child(-n + 4) .ms-leader {
+    visibility: visible;
+    min-height: 14px;
+  }
+}
+
+/* ── The subsurface: ground, ground line, bore ───────────────────────────────────────── */
+.ms-sub {
+  position: relative;
+  background: var(--ms-ground);
+  color: var(--ms-text);
+  /* The toe eraser (below) runs off to the right; clip it here, never the stations. */
+  overflow-x: clip;
+}
+/* Dark: the surface/subsurface step is too soft without a drawn ground line. */
+.dark .ms-sub {
+  box-shadow: inset 0 1px 0 var(--primary);
+}
+/* The default ring is --primary: invisible on a primary ground. */
+.ms-sub :focus-visible {
+  outline-color: var(--ms-ink);
+}
+
+.ms-sheet {
+  position: relative;
+  padding-top: var(--ms-sheet-top);
+}
+
+/* The mother bore: one continuous line from the ground to TD, on the <ol>. */
+.ms-ol {
+  position: relative;
+}
+.ms-ol::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--ms-ruler) - 1px);
+  width: var(--ms-bore);
+  top: calc(-1 * var(--ms-sheet-top)); /* up to the ground line (.ms-sheet's padding) */
+  bottom: -14px; /* on past the last row to TD — kept short, so at 1440×900 the TD mark and its
+                    label end above the viewer bar (top ≈ 846) instead of half under it */
+  background: var(--ms-ink);
+  transform-origin: top;
+  pointer-events: none;
+}
+
+/* Surface casing under the wellhead: two walls and their shoes. */
+.ms-casing {
+  position: absolute;
+  top: 0;
+  left: calc(var(--ms-pad) + var(--ms-ruler) - 6px);
+  width: 12px;
+  height: 20px;
+  border-inline: 1px solid var(--ms-ink);
+  pointer-events: none;
+}
+.ms-shoe {
+  position: absolute;
+  display: block;
+  fill: var(--ms-ink);
+  pointer-events: none;
+}
+.ms-shoe--surface {
+  top: 15px;
+  left: calc(var(--ms-pad) + var(--ms-ruler) - 11px);
+}
+/* The liner shoe sits in the gap above one row's kick-off (rendered by that row). */
+.ms-liner {
+  position: absolute;
+  top: -22px;
+  left: calc(var(--ms-ruler) - 4px);
+  width: 8px;
+  height: 24px;
+  border-inline: 1px solid var(--ms-ink);
+  pointer-events: none;
+}
+.ms-shoe--liner {
+  top: -3px;
+  left: calc(var(--ms-ruler) - 9px);
+}
+
+.ms-td {
+  position: relative;
+  height: 44px;
+  pointer-events: none;
+}
+/* On the drawing, the sheet runs on past TD so the first viewport at 1440×900 ends in blue
+   ground rather than on a sliver of footer. */
+@media (min-width: 768px) {
+  .ms-td {
+    height: 88px;
+  }
+}
+.ms-td::before {
+  content: "";
+  position: absolute;
+  top: 14px; /* = the bore's overrun below the <ol> */
+  left: calc(var(--ms-ruler) - 7px);
+  width: 14px;
+  height: 2px;
+  background: var(--ms-ink);
+}
+
+/* ── A row: code on the ruler, kick-off off the bore, the lateral with its stations ───── */
+.ms-row {
+  position: relative;
+  padding-left: calc(var(--ms-ruler) + var(--ms-kick));
+  padding-bottom: 22px;
+}
+.ms-head {
+  position: relative;
+}
+/* Phone: the kick-off is a short tick from the bore to each team header. */
+.ms-head::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: calc(-1 * var(--ms-kick));
+  width: calc(var(--ms-kick) - 6px);
+  height: 1px;
+  background: var(--ms-ink);
+  transform-origin: left;
+}
+
+.ms-lat {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 6px;
+}
+/* Phone: the lateral hangs from the header as a short vertical line. */
+.ms-lat::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 5px;
+  width: 1px;
+  background: var(--ms-ink);
+  opacity: var(--ms-lat-o);
+  transform-origin: top;
+  pointer-events: none;
+}
+
+.ms-stations {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 10px 0;
+}
+.ms-station {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding-left: 20px;
+}
+/* The station tick: phone, a short horizontal tick from the lateral. */
+.ms-station::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 9px;
+  height: 1px;
+  background: var(--ms-ink);
+  opacity: var(--ms-lat-o);
+  transform-origin: left;
+  pointer-events: none;
+}
+.ms-station-a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  color: var(--ms-text);
+}
+.ms-glyph {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--ms-text-90);
+}
+.ms-arrow {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  color: var(--ms-text-85);
+}
+/* The underline grows by background-size, never by text-decoration (Hanwha). */
+.ms-label {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+}
+
+/* The toe: a perpendicular tick just past the last station. */
+.ms-toe {
+  position: absolute;
+  pointer-events: none;
+}
+.ms-toe::before {
+  content: "";
+  position: absolute;
+  background: var(--ms-ink);
+  opacity: var(--ms-lat-o);
+}
+.ms-toe {
+  left: 2px;
+  bottom: -11px;
+  width: 11px;
+  height: 1px;
+}
+.ms-toe::before {
+  inset: 0;
+}
+
+.ms-kick,
+.ms-bit-track {
+  display: none;
+}
+
+/* ── Desktop drawing (≥768): the code ruler, the curved kick-offs, horizontal laterals ─ */
+@media (min-width: 768px) {
+  .ms-row {
+    padding-bottom: 2px; /* pitch: 22 header + 2 + 34 station + 2 = 60 */
+  }
+  /* One line, always: the header's fixed 22px is what keeps the code on its ruler tick. Where
+     the blurb cannot fit (768–1023) it truncates rather than wrapping onto the stations. */
+  .ms-head {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    gap: 0 12px;
+    height: 22px;
+    line-height: 22px;
+    white-space: nowrap;
+  }
+  .ms-head::before {
+    content: none;
+  }
+  /* The code span of the h2 sits on the ruler, at the kick-off depth. */
+  .ms-code {
+    position: absolute;
+    left: calc(-1 * (var(--ms-ruler) + var(--ms-kick)));
+    width: calc(var(--ms-ruler) - 16px);
+    top: 0;
+    text-align: right;
+  }
+  .ms-lat {
+    margin-top: 2px;
+  }
+  /* The lateral: one hairline under the first line of stations, and — only if a row wraps —
+     parallel continuation hairlines beneath it, indented. Pure background geometry on the
+     fixed station pitch, so it cannot detach. */
+  .ms-lat::before {
+    inset: 0;
+    left: 0;
+    width: auto;
+    background:
+      linear-gradient(var(--ms-ink), var(--ms-ink)) 0 calc(var(--ms-st-h) - 1px) / 100% var(--ms-lw) no-repeat,
+      repeating-linear-gradient(
+          to bottom,
+          transparent 0 calc(var(--ms-st-h) + var(--ms-st-gap) - var(--ms-lw)),
+          var(--ms-ink) 0 calc(var(--ms-st-h) + var(--ms-st-gap))
+        )
+        var(--ms-indent) var(--ms-st-h) / calc(100% - var(--ms-indent)) calc(100% - var(--ms-st-h)) no-repeat;
+    transform-origin: left;
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      --ms-lw var(--duration-fast) var(--ease-out);
+  }
+  .ms-stations {
+    flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: var(--ms-st-gap);
+    padding: 0 0 0 var(--ms-indent);
+  }
+  .ms-station {
+    --p: 4px;
+    display: block;
+    height: var(--ms-st-h);
+    min-height: 0;
+    padding: 0 16px 0 var(--p);
+  }
+  .ms-station:first-child {
+    --p: 14px;
+    margin-left: calc(-1 * var(--ms-indent));
+  }
+  .ms-station:last-child {
+    padding-right: 18px;
+  }
+  /* The station tick rises from the lateral to the platform glyph sitting on it. */
+  .ms-station::before {
+    left: calc(var(--p) + 7px);
+    top: 16px;
+    bottom: 0;
+    width: 1px;
+    height: auto;
+    transform-origin: bottom;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+  .ms-station-a {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    height: calc(var(--ms-st-h) - 3px);
+    min-height: 0;
+    padding: 0 4px 5px 20px;
+    line-height: 18px;
+  }
+  .ms-glyph {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    width: 13px;
+    height: 13px;
+  }
+  .ms-arrow {
+    margin-left: 3px;
+    margin-bottom: 3px;
+  }
+  .ms-toe {
+    left: auto;
+    right: 0;
+    bottom: -5px;
+    width: 1px;
+    height: 11px;
+  }
+  /* On a wrapped lateral the continuation hairline is drawn to the edge; this erases it past
+     the toe, in the ground colour. Clipped by .ms-sub. */
+  .ms-toe::after {
+    content: "";
+    position: absolute;
+    left: 1px;
+    bottom: 3px;
+    width: 100vw;
+    height: 4px;
+    background: var(--ms-ground);
+  }
+
+  /* The kick-off: a fixed 58×50 box whose right edge is the lateral's start. Its path leaves
+     the bore (x 10) vertically and lands horizontal on the lateral's pixel row (y 48.5). */
+  .ms-kick {
+    display: block;
+    position: absolute;
+    right: 100%;
+    top: calc(var(--ms-st-h) - 49px);
+    width: 58px;
+    height: 50px;
+    pointer-events: none;
+  }
+  .ms-kick svg {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+  .ms-kick-path,
+  .ms-kick-tick {
+    fill: none;
+    stroke: var(--ms-ink);
+    stroke-dasharray: 1; /* with pathLength=1: one solid dash — only the draw-on moves it */
+    stroke-dashoffset: 0;
+  }
+  .ms-kick-path {
+    stroke-width: var(--ms-lw);
+    stroke-opacity: var(--ms-lat-o);
+    transition:
+      stroke-opacity var(--duration-fast) var(--ease-out),
+      stroke-width var(--duration-fast) var(--ease-out);
+  }
+  .ms-kick-tick {
+    stroke-width: 1px;
+  }
+  .ms-kop {
+    position: absolute;
+    left: 17px;
+    top: 5px;
+    font-size: var(--text-2xs);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    color: var(--ms-text-90);
+  }
+
+  /* The bit: a short capsule, oriented along its path. */
+  .ms-bit-curve,
+  .ms-bit {
+    position: absolute;
+    width: 9px;
+    height: 4px;
+    border-radius: 2px; /* glyph geometry, not a UI radius: a capsule is half its height round */
+    background: var(--ms-ink);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .ms-bit-curve {
+    left: 0;
+    top: 0;
+    offset-path: path("M10 0.5A48 48 0 0 0 58 48.5");
+    offset-rotate: auto;
+    offset-anchor: center;
+  }
+  .ms-bit-track {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: calc(var(--ms-st-h) - 3px);
+    width: 100%;
+    height: 4px;
+    pointer-events: none;
+    /* Parked on the lateral's start; the run moves it to 0 (the toe) and leaves it there. */
+    transform: translateX(-100%);
+  }
+  /* It comes to rest butting against the toe tick, never across it. */
+  .ms-bit {
+    right: 1px;
+    top: 0;
+  }
+}
+
+/* Short desktop viewports. KOC is Windows + Edge at 125–150 %: 1920×1080 at 125 % is 1536×864,
+   at 150 % 1280×720, and the commonest laptop panel is 1366×768. At ≤880px tall, tighten the
+   title and the row pitch to 56 so the whole section clears the fold; the kick-off keeps its
+   fixed 48px build radius, and the code rides up 2px to stay on its ruler tick. 1440×900 and
+   taller keep the full 60px pitch. */
+@media (min-width: 768px) and (max-height: 880px) {
+  .ms-title {
+    padding-top: 12px;
+  }
+  .ms-surface {
+    padding-top: 14px;
+  }
+  .ms-row {
+    padding-bottom: 0;
+  }
+  .ms-lat {
+    margin-top: 0;
+  }
+  .ms-code {
+    top: -2px;
+  }
+}
+/* ≤800px tall (1366×768, 1280×720): take the last slack out of the surface — the title's inner
+   spacing, the readings' leaders and the sheet's head room — never the row pitch, which a 48px
+   build radius needs. */
+@media (min-width: 768px) and (max-height: 800px) {
+  .ms {
+    --ms-sheet-top: 32px;
+  }
+  .ms-title {
+    padding-top: 8px;
+  }
+  .ms-title h1,
+  .ms-title h1 ~ p {
+    margin-top: 2px;
+  }
+  .ms-surface {
+    padding-top: 10px;
+  }
+  .ms-leader,
+  .ms-readings > li .ms-leader {
+    min-height: 10px;
+    margin-top: 6px;
+  }
+  .ms-sheet > p:first-of-type,
+  .ms-sheet > ul {
+    top: 6px;
+  }
+}
+
+/* Row hover / focus-within: the row's lateral comes up to full strength and 1.5px. Hover only
+   where hover is real; mirrored on focus. */
+@media (hover: hover) and (pointer: fine) {
+  .ms-row:hover {
+    --ms-lat-o: 1;
+    --ms-lw: 1.5px;
+  }
+  .ms-station-a:hover {
+    background: var(--ms-tint);
+  }
+  .ms-station-a:hover .ms-label {
+    background-size: 100% 1px;
+  }
+  .ms-station-a:hover .ms-arrow {
+    transform: translate(2px, -2px);
+  }
+}
+.ms-row:focus-within {
+  --ms-lat-o: 1;
+  --ms-lw: 1.5px;
+}
+.ms-station-a:focus-visible {
+  background: var(--ms-tint);
+}
+.ms-station-a:focus-visible .ms-label {
+  background-size: 100% 1px;
+}
+.ms-station-a:focus-visible .ms-arrow {
+  transform: translate(2px, -2px);
+}
+
+/* ── Jump strip (phone): a mini scale with a tick per team, never boxes ─────────────── */
+.ms-strip > li {
+  position: relative;
+  border-top: 1px solid color-mix(in oklch, var(--foreground) 35%, transparent);
+}
+.ms-strip > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 1px;
+  height: 7px;
+  background: color-mix(in oklch, var(--foreground) 60%, transparent);
+}
+
+/* ── Title block (footer): hairline-ruled cells on the sheet's corner ─────────────────── */
+.ms-titleblock > div {
+  border-top: 1px solid var(--ms-rule);
+  border-left: 1px solid var(--ms-rule);
+}
+.ms-footrule {
+  border-top: 1px solid var(--ms-rule);
+}
+
+/* ── MOTION ─────────────────────────────────────────────────────────────────────────────
+ * AMBIENT: the construction draw-on. The well is drawn once, when the section first comes into
+ * view: the bore down from the wellhead, then each row's kick-off and lateral in code order,
+ * 40ms apart. LINES ONLY — stations and text are never hidden. The base style is the drawn
+ * state and every keyframe animates only `from`; [data-draw] is removed once it has run.
+ * `armed` holds each line at its from-state (paused, backwards fill) until the section is in
+ * view, so nothing flashes drawn and then undraws.
+ */
+@keyframes ms-draw-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes ms-draw-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes ms-draw-stroke {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+.ms-sheet[data-draw] .ms-ol::before {
+  animation: ms-draw-y var(--duration-slower) var(--ease-out) backwards;
+}
+.ms-sheet[data-draw] .ms-head::before {
+  animation: ms-draw-x var(--duration-fast) var(--ease-out) calc(var(--i) * 40ms + 60ms) backwards;
+}
+.ms-sheet[data-draw] .ms-lat::before {
+  animation: ms-draw-y var(--duration-slower) var(--ease-out) calc(var(--i) * 40ms + 120ms) backwards;
+}
+.ms-sheet[data-draw] .ms-station::before {
+  animation: ms-draw-x var(--duration-fast) var(--ease-out) calc(var(--i) * 40ms + 160ms + var(--j) * 30ms) backwards;
+}
+@media (min-width: 768px) {
+  .ms-sheet[data-draw] .ms-kick-path,
+  .ms-sheet[data-draw] .ms-kick-tick {
+    animation: ms-draw-stroke var(--duration-slower) var(--ease-out) calc(var(--i) * 40ms) backwards;
+  }
+  .ms-sheet[data-draw] .ms-lat::before {
+    animation: ms-draw-x var(--duration-slower) var(--ease-out) calc(var(--i) * 40ms + 90ms) backwards;
+  }
+  .ms-sheet[data-draw] .ms-station::before {
+    animation: ms-draw-y var(--duration-fast) var(--ease-out) calc(var(--i) * 40ms + 140ms + var(--j) * 30ms)
+      backwards;
+  }
+  /* The toe is ruled as the lateral reaches it. */
+  .ms-sheet[data-draw] .ms-toe::before {
+    animation: ms-draw-y var(--duration-fast) var(--ease-out)
+      calc(var(--i) * 40ms + 90ms + var(--duration-slower) - var(--duration-fast)) backwards;
+  }
+}
+.ms-sheet[data-draw="armed"] .ms-ol::before,
+.ms-sheet[data-draw="armed"] .ms-head::before,
+.ms-sheet[data-draw="armed"] .ms-lat::before,
+.ms-sheet[data-draw="armed"] .ms-station::before,
+.ms-sheet[data-draw="armed"] .ms-toe::before,
+.ms-sheet[data-draw="armed"] .ms-kick-path,
+.ms-sheet[data-draw="armed"] .ms-kick-tick {
+  animation-play-state: paused;
+}
+
+/*
+ * The bit run — not ambient: it answers a dwell or a focus, once per row per page view. It
+ * follows the kick-off curve (offset-path, the Animated Badge technique), then runs the
+ * lateral to the toe (a transform on a full-width track: at -100% the bit sits on the
+ * lateral's start, at 0 on its toe), then fades.
+ */
+@keyframes ms-bit-curve {
+  from {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  to {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+}
+@keyframes ms-bit-travel {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes ms-bit-on {
+  from,
+  to {
+    opacity: 1;
+  }
+}
+@keyframes ms-bit-off {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@media (min-width: 768px) {
+  .ms-row[data-bit="run"] .ms-bit-curve {
+    animation: ms-bit-curve var(--duration-fast) var(--ease-in);
+  }
+  .ms-row[data-bit="run"] .ms-bit-track {
+    animation: ms-bit-travel var(--duration-slower) var(--ease-out) var(--duration-fast) forwards;
+  }
+  .ms-row[data-bit="run"] .ms-bit {
+    animation:
+      ms-bit-on var(--duration-slower) var(--ease-out) var(--duration-fast),
+      ms-bit-off var(--duration-fast) var(--ease-out) calc(var(--duration-fast) + var(--duration-slower));
+  }
+}
+
+/* Interaction transitions, on the scale. */
+.ms-station-a {
+  transition: background-color var(--duration-fast) var(--ease-out);
+}
+.ms-label {
+  transition: background-size var(--duration-fast) var(--ease-out);
+}
+.ms-arrow {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.ms-toe::before {
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+/* Reduced motion — the OS setting AND the viewer's flag. The base layer clamps durations but
+   not delays, so this is an explicit `animation: none`; the bit is removed outright, or the
+   clamp would park a stray capsule at 0 %. Hover and focus changes become instant. */
+@media (prefers-reduced-motion: reduce) {
+  .ms *,
+  .ms *::before,
+  .ms *::after {
+    animation: none !important;
+    transition-duration: 0s !important;
+  }
+  .ms .ms-bit,
+  .ms .ms-bit-curve,
+  .ms .ms-bit-track {
+    display: none !important;
+  }
+}
+html[data-force-reduced-motion="true"] .ms *,
+html[data-force-reduced-motion="true"] .ms *::before,
+html[data-force-reduced-motion="true"] .ms *::after {
+  animation: none !important;
+  transition-duration: 0s !important;
+}
+html[data-force-reduced-motion="true"] .ms .ms-bit,
+html[data-force-reduced-motion="true"] .ms .ms-bit-curve,
+html[data-force-reduced-motion="true"] .ms .ms-bit-track {
+  display: none !important;
+}

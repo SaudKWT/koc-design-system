@@ -1,0 +1,308 @@
+/*
+ * Direction C v2 — "Drill Floor", daily use. What Tailwind utilities cannot express: the page
+ * grid that lets one faceplate span the <header> and the first block of <main>, the graticule's
+ * colour and mask, the footer needle's one swing, the viewfinder's corners, and the find states.
+ *
+ * Every global name here is `df2-` (classes, keyframes, custom properties, containers and data
+ * hooks), so this sheet can never restyle v1's `c-` page when both have been viewed in a session.
+ *
+ * Colour: tokens only. `transparent` is used as the empty stop of masks, and a mask's colour is
+ * irrelevant — only its alpha is read.
+ *
+ * Motion: interaction transitions are scale steps. The one ambient motion is the footer needle's
+ * damped swing (marked AMBIENT below); it stops under both reduced-motion conditions.
+ */
+
+/* ── Page grid ──────────────────────────────────────────────────────────────────────────────
+ * The top faceplate is one dark band, but it holds two landmarks: the <header> (identity and
+ * find) and the readings + presets, which belong in <main>. So the band's surface, graticule
+ * and corners are one decorative layer spanning rows 1–2, <main> joins the page grid as a
+ * subgrid, and the directory sits in row 3 on the light page. The footer console is row 4. */
+.df2-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+.df2-plate {
+  grid-row: 1 / 3;
+  grid-column: 1;
+  z-index: -1;
+}
+.df2-page > header {
+  grid-row: 1;
+  grid-column: 1;
+}
+.df2-page > main {
+  grid-row: 2 / 4;
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.df2-page > footer {
+  grid-row: 4;
+  grid-column: 1;
+}
+/* Placed, not auto-flowed: when a phone-width find sets the readings aside, the directory must
+ * stay on the light row rather than slide up under the faceplate. */
+.df2-page > main > .df2-idle {
+  grid-row: 1;
+}
+.df2-page > main > #df2-directory {
+  grid-row: 2;
+}
+
+/* ── Graticule (static) ─────────────────────────────────────────────────────────────────────
+ * Solid lines only. Minor every 16px at 6 %, major every 5th at 12 %. Fades toward the edges so
+ * a band reads as a lit plate rather than graph paper. The footer's is lit round the gauge. */
+.df2-graticule-minor {
+  stroke: color-mix(in oklch, var(--foreground) 6%, transparent);
+  stroke-width: 1;
+}
+.df2-graticule-major {
+  stroke: color-mix(in oklch, var(--foreground) 12%, transparent);
+  stroke-width: 1;
+}
+.df2-graticule {
+  -webkit-mask-image: radial-gradient(ellipse 75% 110% at 28% 55%, var(--foreground) 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 110% at 28% 55%, var(--foreground) 35%, transparent 100%);
+}
+.df2-graticule.df2-graticule-foot {
+  -webkit-mask-image: radial-gradient(ellipse 55% 95% at 22% 45%, var(--foreground) 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 55% 95% at 22% 45%, var(--foreground) 30%, transparent 100%);
+}
+
+/* ── L-bracket corners (static frames + the moving viewfinder share the shape) ────────────── */
+.df2-corner {
+  position: absolute;
+  width: var(--df2-arm, 10px);
+  height: var(--df2-arm, 10px);
+  border-color: currentColor;
+  border-style: solid;
+  border-width: 0;
+}
+.df2-corner[data-df2-at="tl"] { top: 0; left: 0; border-top-width: var(--df2-stroke, 1.5px); border-left-width: var(--df2-stroke, 1.5px); }
+.df2-corner[data-df2-at="tr"] { top: 0; right: 0; border-top-width: var(--df2-stroke, 1.5px); border-right-width: var(--df2-stroke, 1.5px); }
+.df2-corner[data-df2-at="bl"] { bottom: 0; left: 0; border-bottom-width: var(--df2-stroke, 1.5px); border-left-width: var(--df2-stroke, 1.5px); }
+.df2-corner[data-df2-at="br"] { bottom: 0; right: 0; border-bottom-width: var(--df2-stroke, 1.5px); border-right-width: var(--df2-stroke, 1.5px); }
+
+/* ── The footer needle ──────────────────────────────────────────────────────────────────────
+ * The base style IS the reading: under reduced motion, or before the page's script runs, the
+ * needle is simply drawn at 73 %. */
+.df2-needle {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  rotate: var(--df2-needle-angle);
+}
+
+/* AMBIENT: the footer is the page's showpiece and the one place motion may live (V2 brief §5).
+ * A real weight indicator's needle, picking up load, swings past its reading and damps onto it;
+ * this is that, once, the first time the gauge is well into view — never again, never looping,
+ * and over nothing a reader uses (no link, figure or field sits on the gauge). 1350ms is longer
+ * than the interaction scale allows, hence the declaration. Each leg eases out of the swing.
+ * Both reduced-motion conditions skip the park and the swing: the needle is drawn at rest. */
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-force-reduced-motion="true"]) .df2-gauge:not([data-df2-live]) .df2-needle {
+    rotate: 0deg;
+  }
+  html:not([data-force-reduced-motion="true"]) .df2-gauge[data-df2-live] .df2-needle {
+    animation-name: df2-needle-swing;
+    animation-duration: 1350ms;
+    animation-delay: var(--duration-slow);
+    animation-fill-mode: both;
+    animation-iteration-count: 1;
+  }
+}
+@keyframes df2-needle-swing {
+  0% {
+    rotate: 0deg;
+    animation-timing-function: var(--ease-out);
+  }
+  40% {
+    rotate: calc(var(--df2-needle-angle) * 1.075);
+    animation-timing-function: var(--ease-in-out);
+  }
+  61% {
+    rotate: calc(var(--df2-needle-angle) * 0.972);
+    animation-timing-function: var(--ease-in-out);
+  }
+  78% {
+    rotate: calc(var(--df2-needle-angle) * 1.011);
+    animation-timing-function: var(--ease-in-out);
+  }
+  91% {
+    rotate: calc(var(--df2-needle-angle) * 0.997);
+    animation-timing-function: var(--ease-out);
+  }
+  100% {
+    rotate: var(--df2-needle-angle);
+  }
+}
+
+/* ── Viewfinder ─────────────────────────────────────────────────────────────────────────────
+ * One frame for the whole grid, moved by transform and sized by width/height at duration-base
+ * with ease-spring. Travel is armed (`data-df2-armed`) only while the frame is showing: every
+ * appearance lands on its panel and fades in at duration-fast. */
+.df2-viewfinder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+.df2-viewfinder[data-df2-visible="true"] {
+  opacity: 1;
+}
+.df2-viewfinder[data-df2-armed="true"] {
+  transition-property: opacity, transform, width, height;
+  transition-duration: var(--duration-fast), var(--duration), var(--duration), var(--duration);
+  transition-timing-function: var(--ease-out), var(--ease-spring), var(--ease-spring), var(--ease-spring);
+}
+
+/* ── Reduced motion: the viewfinder jumps ───────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .df2-viewfinder,
+  .df2-viewfinder[data-df2-armed="true"] {
+    transition: none;
+  }
+}
+html[data-force-reduced-motion="true"] .df2-viewfinder,
+html[data-force-reduced-motion="true"] .df2-viewfinder[data-df2-armed="true"] {
+  transition: none;
+}
+/* The token base layer makes every transition instant under the OS setting only. Mirror it for
+ * the viewer's toggle, so row fills, pins and the ↗ nudge are instant under either. */
+html[data-force-reduced-motion="true"] .df2-page *,
+html[data-force-reduced-motion="true"] .df2-page *::before,
+html[data-force-reduced-motion="true"] .df2-page *::after {
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Find field ─────────────────────────────────────────────────────────────────────────────
+ * The field box, not the bare input inside it, carries the focus ring — the same 2px ring the
+ * token base layer gives every control, drawn round the whole instrument. Chromium's own clear
+ * glyph is replaced by the field's Clear button and Escape. */
+.df2-find:focus-visible {
+  outline: none;
+}
+.df2-find::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.df2-find-box:has(.df2-find:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* ── Directory rows while finding ───────────────────────────────────────────────────────────
+ * A rule sits above every row that has a visible row before it, so hiding rows never leaves a
+ * doubled or dangling rule. The armed row (Enter opens it) is tinted and keyed in primary. */
+.df2-rowli:not([hidden]) ~ .df2-rowli {
+  border-top: 1px solid var(--border);
+}
+.df2-row[data-df2-first] {
+  background-color: color-mix(in oklch, var(--primary) 8%, transparent);
+  box-shadow: inset 2px 0 0 var(--primary);
+}
+
+/* From 768 up the directory keeps its resting height while finding (Directory.tsx measures it):
+ * the matches rise to the top of the grid, and the footer console stays where it was. */
+@media (min-width: 48rem) {
+  .df2-page[data-df2-finding] #df2-directory {
+    min-height: var(--df2-rest-h, 0px);
+  }
+}
+
+/* Phones: while a query is in the field, the channel keys, readings and presets step aside so
+ * the matches sit directly under it — no scrolling to see what the find found. */
+@media (max-width: 47.999rem) {
+  .df2-page[data-df2-finding] .df2-idle {
+    display: none;
+  }
+}
+
+/* ── Panel foot and nameplate (static) ──────────────────────────────────────────────────────
+ * The last visible link closes with a full-width rule, painted on the foot slot (a border would
+ * double the panel's own bottom edge where the slot has no height). Where the slot has room,
+ * the channel's nameplate closes it: the team's full MyPortal name, bottom-aligned, like the
+ * engraved label under an instrument channel. Size containment means the nameplate can never
+ * add height to a panel, a row, or the one-screen page. */
+.df2-slots {
+  container: df2-slot / size;
+  display: flex;
+  align-items: flex-end;
+  background-image: linear-gradient(var(--border), var(--border));
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+}
+.df2-nameplate {
+  display: none;
+}
+@container df2-slot (min-height: 3.5rem) {
+  .df2-nameplate {
+    display: block;
+  }
+}
+
+/* ── Page theme: dark ────────────────────────────────────────────────────────────────────────
+ * On a light page the two-tone idea is free: the bands are dark card, the panels light card. On
+ * a dark page both would be the same dark card, so the bands drop to a surface of their own,
+ * between the page and the card — recessed consoles the lifted panels sit between. */
+:root.dark .df2-plate,
+:root.dark .df2-foot {
+  background-color: color-mix(in oklch, var(--card) 45%, var(--background));
+}
+:root.dark .df2-plate {
+  border-bottom-color: color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+:root.dark .df2-foot {
+  border-top-color: color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+
+/* ── Narrow panels (static) ─────────────────────────────────────────────────────────────────
+ * Where the auto-fill grid's panels drop under 20rem — four columns at 1280, three at 1024 —
+ * the rows tighten their padding and gap, and the platform chip steps aside (the glyph still
+ * names the platform, and DashboardAnchor says it aloud) so the pin fits beside the label with
+ * the longest labels on one line. Queried on the GRID, never on a panel: in Chromium
+ * `container-type` also applies layout containment, which would stop a panel being a subgrid. */
+.df2-teams {
+  container: df2-teams / inline-size;
+}
+@container df2-teams (min-width: 55.5rem) and (max-width: 82.2rem) {
+  .df2-panel-head,
+  .df2-nameplate {
+    padding-inline: 0.625rem;
+  }
+  .df2-row {
+    padding-left: 0.625rem;
+    column-gap: 0.5rem;
+  }
+  .df2-chip {
+    display: none;
+  }
+}
+
+/* An abbreviation that only echoes the short name ("HSE & DE" beside "HSE & Drilling
+ * Excellence") drops to a header line of its own wherever a panel is under ~336px, and through
+ * the subgrid that line lengthens all four panels of its row. There it leaves the eye, not the
+ * accessibility tree: the same span, visually hidden. Names that are not echoes ("DWOS" beside
+ * "Operational Support") always stay. */
+@container df2-teams ((min-width: 55.5rem) and (max-width: 64.5rem)) or ((min-width: 74.25rem) and (max-width: 86.5rem)) {
+  .df2-abbr[data-df2-echo] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}

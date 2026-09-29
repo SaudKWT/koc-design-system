@@ -1,0 +1,210 @@
+/*
+ * Direction B — "Wireline". What Tailwind utilities cannot say, plus the page's one piece of
+ * ambient motion (marked AMBIENT, stopped under both reduced-motion switches).
+ *
+ * Colour: tokens only. `transparent` is the empty end of colour-mixes. Unlayered on purpose:
+ * the compact-height overrides below must beat the Tailwind utilities they adjust.
+ */
+
+/* ── Ground ─────────────────────────────────────────────────────────────────────────── */
+
+/* Paper: card-white in light, the page background in dark (the same pair as the root's
+   `bg-card dark:bg-background`). Scrims read it, so they always match the sheet. */
+.wl-root {
+  --wl-ground: var(--card);
+}
+.dark .wl-root {
+  --wl-ground: var(--background);
+}
+
+/* The KOC glyph is white-only. Dark mode lightens --primary so it reads as TEXT on a dark
+   ground, which leaves the white glyph at 2.57:1 on a bg-primary tile. The tile takes a deeper
+   mix of the same two tokens instead: white on it is 6.41:1, and it still reads as the brand
+   tile (ΔE 26 from the ground). Measured with culori. A shared tile token is requested. */
+.dark .wl-logo {
+  background-color: color-mix(in oklch, var(--primary) 55%, var(--background));
+}
+
+/* ── The finding line ───────────────────────────────────────────────────────────────── */
+
+/* The browser's own ✕ in a search input duplicates our labelled Clear button. */
+.wl-find::-webkit-search-cancel-button,
+.wl-find::-webkit-search-decoration {
+  appearance: none;
+}
+/* Weight 300 is only ever set in --foreground on this page. The placeholder has to be muted
+   (it must not read as a typed value), so it takes 350 instead — a touch more stroke to make
+   up for the lighter ink, and the same display voice. It is a variable because the page
+   measures the placeholder to pick the longest form that fits (useFittingPlaceholder), and
+   the measurement must use the weight the text is drawn in. */
+.wl-find {
+  --wl-ph-weight: 350;
+}
+.wl-find::placeholder {
+  color: var(--muted-foreground);
+  font-weight: var(--wl-ph-weight);
+  opacity: 1;
+}
+
+/* ── The index ─────────────────────────────────────────────────────────────────────── */
+
+/* At 390 the eight codes do not fit: the bar scrolls sideways inside itself (the page never
+   does). Its links are focusable, so axe's scrollable-region-focusable holds. */
+.wl-jumpbar {
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+.wl-jumpbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* <mark>: the highlight fades in when a match appears. Duration comes from the `duration-fast`
+   utility on the element (it sets animation-duration); only the name and easing live here. */
+@keyframes wl-mark-in {
+  from {
+    background-color: transparent;
+  }
+}
+.wl-mark {
+  animation-name: wl-mark-in;
+  animation-timing-function: var(--ease-out);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ── The wireline log strip ─────────────────────────────────────────────────────────── */
+
+.wl-gr-fill {
+  fill: color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+.wl-gr-line {
+  stroke: color-mix(in oklch, var(--foreground) 58%, transparent);
+}
+.wl-gr-base {
+  stroke: color-mix(in oklch, var(--foreground) 22%, transparent);
+}
+.wl-res-deep {
+  stroke: color-mix(in oklch, var(--foreground) 62%, transparent);
+}
+.wl-res-shallow {
+  stroke: color-mix(in oklch, var(--foreground) 30%, transparent);
+}
+.wl-rop {
+  stroke: color-mix(in oklch, var(--foreground) 52%, transparent);
+}
+
+/* The track header (set at the deep end, like a log's repeat header): solid paper, and a
+   paper run-on to the page edge, so the traces stop at the header instead of leaking past
+   its labels as clipped stubs. It covers only the lane interiors (the column has 1px gaps),
+   so the lane rules still run full-bleed. The strip's overflow clips the run-on. */
+.wl-track-head {
+  background: var(--wl-ground);
+}
+.wl-track-head::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 100%;
+  width: 100vw;
+  background: var(--wl-ground);
+}
+
+/* Marker tops sit on whole pixels, so a 1px line stays one crisp blue pixel, not two grey ones. */
+.wl-top {
+  left: var(--at);
+}
+@supports (left: round(1%, 1px)) {
+  .wl-top {
+    left: round(var(--at), 1px);
+  }
+}
+
+/* AMBIENT: the recorder wipe — the log is "recorded" once, left to right, when the page opens.
+   It is the page's single flourish on a screen people open daily, so it is one-shot, under a
+   second, and never loops. The base style is the fully drawn log; the keyframes animate only
+   `from`, so if the animation never runs, nothing is ever hidden. */
+@keyframes wl-record {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes wl-head {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+}
+.wl-trace {
+  clip-path: inset(0 0 0 0);
+  animation: wl-record 780ms var(--ease-out) 120ms backwards;
+}
+/* The recording head: a 1px --primary line riding the wipe's leading edge. Its base style is
+   hidden, so it vanishes the moment the wipe ends (fill-mode `backwards`, never `forwards`). */
+.wl-head {
+  opacity: 0;
+  animation: wl-head 780ms var(--ease-out) 120ms backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wl-trace,
+  .wl-head,
+  .wl-mark {
+    animation: none;
+  }
+  .wl-head {
+    display: none;
+  }
+  .wl-indicator {
+    transition: none;
+  }
+}
+html[data-force-reduced-motion="true"] .wl-trace,
+html[data-force-reduced-motion="true"] .wl-head,
+html[data-force-reduced-motion="true"] .wl-mark {
+  animation: none;
+}
+html[data-force-reduced-motion="true"] .wl-head {
+  display: none;
+}
+/* The jump-bar indicator jumps instead of gliding. */
+html[data-force-reduced-motion="true"] .wl-indicator {
+  transition: none;
+}
+/* The OS switch zeroes every interaction transition through the base layer's
+   prefers-reduced-motion rule. The viewer's switch never reaches that rule, so the page
+   mirrors it for its own transitions (row hovers, the field's rule, facets, codes, links):
+   under either switch, a colour change is simply there. */
+html[data-force-reduced-motion="true"] .wl-root *,
+html[data-force-reduced-motion="true"] .wl-root *::before,
+html[data-force-reduced-motion="true"] .wl-root *::after {
+  transition-duration: 0s;
+  scroll-behavior: auto;
+}
+
+/* ── Short laptop screens (1280×720, 1366×768, 1024×768) ──────────────────────────────────── */
+/* Keep all eight team rows above the fold: tighter rows, the field at its clamp minimum. */
+@media (min-width: 1024px) and (max-height: 800px) {
+  .wl-find {
+    font-size: 2rem;
+  }
+  .wl-team-row {
+    height: 2.5rem;
+  }
+  .wl-ledger-row {
+    min-height: 2.75rem;
+    padding-block: 0.25rem;
+  }
+  .wl-ledger-value {
+    font-size: var(--text-2xl, 1.5rem);
+  }
+  .wl-hero-title {
+    padding-top: 0.75rem;
+  }
+  .wl-lists {
+    margin-top: 1.25rem;
+  }
+}

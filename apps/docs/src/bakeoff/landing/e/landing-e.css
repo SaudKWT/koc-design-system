@@ -1,0 +1,170 @@
+/*
+ * Direction E — only what utilities cannot say: the stage's dot field and the
+ * labels the WebGL scene creates at runtime. Colours are KOC tokens only.
+ */
+
+.dwe-stage {
+  background-color: var(--background);
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in oklch, var(--foreground) 13%, transparent) 1px,
+    transparent 1.5px
+  );
+  background-size: 24px 24px;
+}
+
+/* Soft falloff so the dot field recedes behind the well. */
+.dwe-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 70% 65% at 64% 46%,
+    transparent 0%,
+    color-mix(in oklch, var(--background) 70%, transparent) 72%,
+    var(--background) 100%
+  );
+}
+
+/* On wide screens the copy sits over the left of the scene; this keeps the
+   headline legible over bright steel without boxing it. */
+.dwe-sidescrim {
+  background: linear-gradient(
+    to right,
+    color-mix(in oklch, var(--background) 88%, transparent) 0%,
+    color-mix(in oklch, var(--background) 62%, transparent) 55%,
+    transparent 100%
+  );
+}
+
+/* Readability scrim behind the copy on narrow screens only — on wide ones the
+   well is framed to the right of the copy instead. */
+@media (max-width: 1023.98px) {
+  .dwe-scrim {
+    background: linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--background) 92%, transparent) 0%,
+      color-mix(in oklch, var(--background) 60%, transparent) 60%,
+      transparent 100%
+    );
+  }
+}
+
+.well-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.well-label-dot {
+  position: absolute;
+  left: -4px;
+  top: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 28%, transparent);
+}
+
+.well-label-text {
+  position: absolute;
+  top: -0.8rem;
+  left: 16px;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  padding: 0.45rem 0.55rem;
+  background: color-mix(in oklch, var(--background) 76%, transparent);
+  border: 1px solid color-mix(in oklch, var(--foreground) 16%, transparent);
+  border-radius: 2px;
+  backdrop-filter: blur(6px);
+}
+
+.well-label-text::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  width: 12px;
+  height: 1px;
+  background: color-mix(in oklch, var(--foreground) 45%, transparent);
+}
+
+.well-label[data-side="left"] .well-label-text {
+  left: auto;
+  right: 16px;
+}
+
+.well-label[data-side="below"] .well-label-text {
+  top: 16px;
+  left: -10px;
+}
+
+.well-label[data-side="below"] .well-label-text::before {
+  top: -12px;
+  left: 10px;
+  width: 1px;
+  height: 12px;
+}
+
+.well-label[data-kind="tick"] .well-label-text {
+  top: -0.55rem;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.625rem;
+  color: var(--muted-foreground);
+  background: none;
+  border: 0;
+  backdrop-filter: none;
+}
+
+.well-label[data-kind="tick"] .well-label-dot {
+  left: -2.5px;
+  top: -2.5px;
+  width: 5px;
+  height: 5px;
+  box-shadow: none;
+  background: var(--muted-foreground);
+}
+
+.well-label[data-side="left"] .well-label-text::before {
+  left: auto;
+  right: -12px;
+}
+
+/* sstr-style bracket eyebrow, drawn with borders rather than their glyph. */
+.dwe-bracket {
+  position: relative;
+  padding-inline: 0.7em;
+}
+
+.dwe-bracket::before,
+.dwe-bracket::after {
+  content: "";
+  position: absolute;
+  top: -0.15em;
+  bottom: -0.15em;
+  width: 0.35em;
+  border: 1.5px solid currentColor;
+}
+
+.dwe-bracket::before {
+  left: 0;
+  border-right: 0;
+}
+
+.dwe-bracket::after {
+  right: 0;
+  border-left: 0;
+}

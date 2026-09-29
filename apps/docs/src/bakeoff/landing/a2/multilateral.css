@@ -1,0 +1,992 @@
+/*
+ * Direction A v2 — "Multilateral", daily use. The section drawing's linework, its colour mapping,
+ * the head-of-sheet shelves, the footer's Section A–A and every piece of motion Tailwind
+ * utilities cannot express.
+ *
+ * NAMES: every global name in this file — classes, @keyframes, custom properties (including
+ * @property) and data-attribute hooks — carries the `ms2` prefix. CSS is global; v1 (`a/`) uses
+ * `ms`, and a copy sharing its names would restyle v1 the moment both were viewed in one session.
+ *
+ * Colour: tokens only (var(--…) and color-mix of them). `transparent` is the empty stop.
+ * Geometry: every line is a CSS line or a fixed-size SVG. Nothing here is measured — no
+ * ResizeObserver, no getBoundingClientRect — so zoom, late font loads and 125/150 % Windows
+ * scaling cannot detach a kick-off from the bore or a lateral from its row.
+ * Motion: interaction durations and easings are the KOC scale (var(--duration-*), var(--ease-*)).
+ * The only literals are draw-on stagger offsets and the footer bit's cycle, both AMBIENT.
+ */
+
+/* The lateral's stroke width, registered so the 1 → 1.5px hover change can transition. */
+@property --ms2-lw {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 1px;
+}
+
+/* ── Geometry and colour mapping ─────────────────────────────────────────────────────── */
+.ms2 {
+  /* Phone first: the bore is a line in the page gutter, stations hang below each header. */
+  --ms2-pad: 16px;
+  --ms2-ruler: 16px; /* gutter left of the bore: the bore at x 32 on a phone */
+  --ms2-bore: 1px; /* the mother bore: a 1px gutter line on a phone, 2px on the drawing */
+  --ms2-kick: 20px; /* horizontal run of the kick-off: bore → lateral start */
+  --ms2-st-h: 34px; /* station height; the lateral sits on its bottom pixel row */
+  --ms2-st-gap: 12px; /* gap between a lateral and its continuation hairline */
+  --ms2-indent: 28px; /* continuation hairlines start indented by this much */
+  --ms2-lat-o: 0.7; /* lateral strength at rest — decorative linework */
+  --ms2-lw: 1px;
+  --ms2-td-h: 48px; /* the band below the last row: TD, the ruler's caption, the key */
+
+  /* Light: the subsurface IS KOC blue; linework and text are primary-foreground on it. */
+  --ms2-ground: var(--primary);
+  --ms2-ink: var(--primary-foreground);
+  --ms2-text: var(--primary-foreground);
+  /* /90 for anything under 12px; /85 (5.14:1) is the floor for 12px and up. */
+  --ms2-text-90: color-mix(in oklch, var(--primary-foreground) 90%, transparent);
+  --ms2-text-85: color-mix(in oklch, var(--primary-foreground) 85%, transparent);
+  --ms2-rule: color-mix(in oklch, var(--primary-foreground) 45%, transparent);
+  --ms2-faint: color-mix(in oklch, var(--primary-foreground) 22%, transparent);
+  --ms2-tint: color-mix(in oklch, var(--primary-foreground) 10%, transparent);
+  --ms2-pin: color-mix(in oklch, var(--primary-foreground) 70%, transparent);
+}
+/* Dark: bg-primary re-maps to a pale slab that glares, so the ground is a navy mix instead.
+   Measured on it: foreground 13.05:1, muted 7.99:1, primary 5.54:1. */
+.dark .ms2 {
+  --ms2-ground: color-mix(in oklch, var(--primary) 16%, var(--background));
+  --ms2-ink: var(--primary);
+  --ms2-text: var(--foreground);
+  --ms2-text-90: var(--foreground);
+  --ms2-text-85: var(--muted-foreground);
+  --ms2-rule: color-mix(in oklch, var(--primary) 45%, transparent);
+  --ms2-faint: color-mix(in oklch, var(--primary) 30%, transparent);
+  --ms2-tint: color-mix(in oklch, var(--primary) 12%, transparent);
+  --ms2-pin: var(--muted-foreground);
+}
+@media (min-width: 768px) {
+  .ms2 {
+    --ms2-pad: 24px;
+    --ms2-ruler: 72px;
+    --ms2-kick: 48px;
+    --ms2-bore: 2px;
+    --ms2-td-h: 56px;
+  }
+}
+@media (min-width: 1280px) {
+  .ms2 {
+    --ms2-pad: 32px;
+  }
+}
+@media (min-width: 1440px) {
+  .ms2 {
+    --ms2-pad: 40px;
+  }
+}
+
+.ms2-wrap {
+  padding-inline: var(--ms2-pad);
+}
+
+/* Text colours on the ground. */
+.ms2-t {
+  color: var(--ms2-text);
+}
+.ms2-t90 {
+  color: var(--ms2-text-90);
+}
+.ms2-t85 {
+  color: var(--ms2-text-85);
+}
+
+/* The logo tile: KOC blue in light; in dark the navy ground with a primary hairline, because
+   dark `bg-primary` is pale and the white mark would vanish on it. */
+.ms2-logo-tile {
+  background: var(--primary);
+}
+.dark .ms2-logo-tile {
+  background: color-mix(in oklch, var(--primary) 16%, var(--background));
+  box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--primary) 55%, transparent);
+}
+
+/* The find field: Chromium's native clear control is the pointer's way to clear. */
+.ms2-find::-webkit-search-cancel-button {
+  cursor: pointer;
+}
+
+/* ── Surface readings: each stands on the ground line on a short leader tick ───────── */
+/* Each reading is four rows of its parent's grid (label, value, change, leader) via subgrid,
+   so when a label wraps to two lines at a narrower width, every value on that row still sits
+   on one line — a drawing's callouts share a baseline. */
+.ms2-reading {
+  display: grid;
+  grid-row: span 4;
+  grid-template-rows: subgrid;
+}
+.ms2-leader {
+  position: relative;
+  display: block;
+  min-height: 12px;
+  margin-top: 6px;
+  width: 1px;
+  background: color-mix(in oklch, var(--foreground) 55%, transparent);
+}
+/* Only a reading on the bottom row stands on the ground; the rows above are plain callouts.
+   Deterministic per breakpoint — the grid has a fixed column count. */
+.ms2-readings > li:nth-child(-n + 6) .ms2-leader {
+  visibility: hidden;
+  min-height: 10px;
+}
+@media (min-width: 768px) {
+  .ms2-readings > li:nth-child(-n + 6) .ms2-leader {
+    visibility: visible;
+    min-height: 12px;
+  }
+  .ms2-readings > li:nth-child(-n + 4) .ms2-leader {
+    visibility: hidden;
+    min-height: 10px;
+  }
+}
+@media (min-width: 1280px) {
+  .ms2-readings > li:nth-child(-n + 4) .ms2-leader {
+    visibility: visible;
+    min-height: 12px;
+  }
+}
+
+/* ── The subsurface: ground, ground line, bore ───────────────────────────────────────── */
+.ms2-sub {
+  position: relative;
+  background: var(--ms2-ground);
+  color: var(--ms2-text);
+  /* The toe eraser and the footer's drawing run off to the sides; clip them here. */
+  overflow-x: clip;
+}
+/* Dark: the surface/subsurface step is too soft without a drawn ground line. */
+.dark .ms2-sub {
+  box-shadow: inset 0 1px 0 var(--primary);
+}
+/* The default ring is --primary: invisible on a primary ground. */
+.ms2-sub :focus-visible {
+  outline-color: var(--ms2-ink);
+}
+
+.ms2-sheet {
+  position: relative;
+  padding-top: 12px;
+}
+/* The mother bore: one continuous line from the ground line to TD, down the whole sheet —
+   past your shelves and every lateral. When a search drops laterals out, it shortens with them. */
+.ms2-sheet::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--ms2-pad) + var(--ms2-ruler) - 1px);
+  width: var(--ms2-bore);
+  top: 0;
+  bottom: calc(var(--ms2-td-h) - 14px);
+  background: var(--ms2-ink);
+  pointer-events: none;
+}
+
+/* Surface casing under the wellhead: two walls and their shoes. */
+.ms2-casing {
+  position: absolute;
+  top: 0;
+  left: calc(var(--ms2-pad) + var(--ms2-ruler) - 6px);
+  width: 12px;
+  height: 20px;
+  border-inline: 1px solid var(--ms2-ink);
+  pointer-events: none;
+}
+.ms2-shoe {
+  position: absolute;
+  display: block;
+  fill: var(--ms2-ink);
+  pointer-events: none;
+}
+.ms2-shoe--surface {
+  top: 15px;
+  left: calc(var(--ms2-pad) + var(--ms2-ruler) - 11px);
+}
+/* The liner shoe sits in the gap above one row's kick-off (rendered by that row). */
+.ms2-liner {
+  position: absolute;
+  top: -22px;
+  left: calc(var(--ms2-ruler) - 4px);
+  width: 8px;
+  height: 24px;
+  border-inline: 1px solid var(--ms2-ink);
+  pointer-events: none;
+}
+.ms2-shoe--liner {
+  top: -3px;
+  left: calc(var(--ms2-ruler) - 9px);
+}
+
+.ms2-td {
+  position: relative;
+  height: var(--ms2-td-h);
+  pointer-events: none;
+}
+.ms2-td::before {
+  content: "";
+  position: absolute;
+  top: 13px; /* the bore ends 14px below this band's top: the mark is centred on its foot */
+  left: calc(var(--ms2-ruler) - 7px);
+  width: 14px;
+  height: 2px;
+  background: var(--ms2-ink);
+}
+.ms2-td ul {
+  pointer-events: auto;
+}
+/* The ruler's caption, at its foot. Phone: hidden (no ruler column to hang it on). */
+.ms2-caption {
+  display: none;
+}
+
+/* ── Your stations: the head of the sheet ────────────────────────────────────────────── */
+.ms2-mine {
+  display: grid;
+  gap: 4px;
+  padding-bottom: 18px;
+}
+.ms2-shelf {
+  position: relative;
+  padding-left: calc(var(--ms2-ruler) + var(--ms2-kick));
+}
+.ms2-shelf-h {
+  position: relative;
+  line-height: 20px;
+}
+/* Phone: the shelf's name takes a short tick from the bore, like a team header. */
+.ms2-shelf-h::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: calc(-1 * var(--ms2-kick));
+  width: calc(var(--ms2-kick) - 6px);
+  height: 1px;
+  background: var(--ms2-ink);
+  opacity: var(--ms2-lat-o);
+}
+.ms2-shelf-empty {
+  line-height: 20px;
+}
+.ms2-shelf-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+/* The search status: in the content column, only while a query is in the field. */
+.ms2-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 16px;
+  padding-left: calc(var(--ms2-ruler) + var(--ms2-kick));
+}
+.ms2-status[data-ms2-on] {
+  padding-bottom: 12px;
+}
+.ms2-textbtn {
+  min-height: 24px;
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  text-decoration: underline;
+  text-decoration-color: var(--ms2-rule);
+  text-underline-offset: 3px;
+}
+
+/* ── A row: code on the ruler, kick-off off the bore, the lateral with its stations ───── */
+.ms2-row {
+  position: relative;
+  padding-left: calc(var(--ms2-ruler) + var(--ms2-kick));
+  padding-bottom: 22px;
+}
+.ms2-head {
+  position: relative;
+}
+/* Phone: the kick-off is a short tick from the bore to each team header. */
+.ms2-head::before {
+  content: "";
+  position: absolute;
+  top: 11px;
+  left: calc(-1 * var(--ms2-kick));
+  width: calc(var(--ms2-kick) - 6px);
+  height: 1px;
+  background: var(--ms2-ink);
+}
+
+.ms2-lat {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 6px;
+}
+/* Phone: the lateral hangs from the header as a short vertical line. */
+.ms2-lat::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 0;
+  bottom: 5px;
+  width: 1px;
+  background: var(--ms2-ink);
+  opacity: var(--ms2-lat-o);
+  pointer-events: none;
+}
+.ms2-lat--ref {
+  margin-top: 0;
+}
+
+.ms2-stations {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0 10px 0;
+}
+.ms2-station {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding-left: 20px;
+}
+/* The station tick: phone, a short horizontal tick from the lateral. */
+.ms2-station::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 50%;
+  width: 9px;
+  height: 1px;
+  background: var(--ms2-ink);
+  opacity: var(--ms2-lat-o);
+  pointer-events: none;
+}
+.ms2-station-a {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  color: var(--ms2-text);
+}
+.ms2-glyph {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  color: var(--ms2-text-90);
+}
+.ms2-st-code {
+  color: var(--ms2-text-90);
+  letter-spacing: 0.02em;
+}
+.ms2-arrow {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  color: var(--ms2-text-85);
+}
+/* The underline grows by background-size, never by text-decoration (Hanwha). */
+.ms2-label {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+}
+
+/* The pin, beside the station. At rest a step quieter than the ↗ — /70 ink, 4.0:1 on the blue,
+   so the control's only visual cue still clears 1.4.11's 3:1 — because 28 of them repeat down the
+   sheet. Pinned: the shared toggle fills the pin, and it comes up to full ink. */
+.ms2-pin {
+  color: var(--ms2-pin);
+}
+.ms2-pin svg {
+  width: 13px;
+  height: 13px;
+}
+.ms2-pin[aria-pressed="true"] {
+  color: var(--ms2-text);
+}
+@media (max-width: 767px) {
+  .ms2-pin {
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* The toe: a perpendicular tick just past the last station. */
+.ms2-toe {
+  position: absolute;
+  pointer-events: none;
+  left: 2px;
+  bottom: -11px;
+  width: 11px;
+  height: 1px;
+}
+.ms2-toe::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ms2-ink);
+  opacity: var(--ms2-lat-o);
+}
+
+.ms2-kick {
+  display: none;
+}
+
+/* ── Desktop drawing (≥768): the code ruler, the curved kick-offs, horizontal laterals ─ */
+@media (min-width: 768px) {
+  .ms2-row {
+    padding-bottom: 2px; /* pitch: 22 header + 2 + 34 station + 2 = 60 */
+  }
+  /* One line, always: the header's fixed 22px is what keeps the code on its ruler tick. Where
+     the blurb cannot fit it truncates rather than wrapping onto the stations. */
+  .ms2-head {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: baseline;
+    gap: 0 12px;
+    height: 22px;
+    line-height: 22px;
+    white-space: nowrap;
+  }
+  .ms2-head::before,
+  .ms2-shelf-h::before {
+    content: none;
+  }
+  /* The code span of the h3 sits on the ruler, at the kick-off depth. */
+  .ms2-code {
+    position: absolute;
+    left: calc(-1 * (var(--ms2-ruler) + var(--ms2-kick)));
+    width: calc(var(--ms2-ruler) - 16px);
+    top: 0;
+    text-align: right;
+  }
+  /* A shelf's name sits on the ruler too, level with its stations' labels. */
+  .ms2-shelf-h {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(var(--ms2-ruler) - 16px);
+    text-align: right;
+  }
+  .ms2-shelf:not([data-ms2-empty]) .ms2-shelf-h {
+    top: 8px;
+  }
+  .ms2-shelf-line {
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .ms2-shelf-line .ms2-textbtn {
+    margin-bottom: 5px;
+  }
+  .ms2-caption {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 22px;
+    width: calc(var(--ms2-ruler) - 16px);
+    text-align: right;
+  }
+  .ms2-lat {
+    margin-top: 2px;
+  }
+  .ms2-lat--ref {
+    margin-top: 0;
+  }
+  /* The lateral: one hairline under the first line of stations, and — only if a row wraps —
+     parallel continuation hairlines beneath it, indented. Pure background geometry on the
+     fixed station pitch, so it cannot detach. */
+  .ms2-lat::before {
+    inset: 0;
+    left: 0;
+    width: auto;
+    background:
+      linear-gradient(var(--ms2-ink), var(--ms2-ink)) 0 calc(var(--ms2-st-h) - 1px) / 100% var(--ms2-lw) no-repeat,
+      repeating-linear-gradient(
+          to bottom,
+          transparent 0 calc(var(--ms2-st-h) + var(--ms2-st-gap) - var(--ms2-lw)),
+          var(--ms2-ink) 0 calc(var(--ms2-st-h) + var(--ms2-st-gap))
+        )
+        var(--ms2-indent) var(--ms2-st-h) / calc(100% - var(--ms2-indent)) calc(100% - var(--ms2-st-h)) no-repeat;
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      --ms2-lw var(--duration-fast) var(--ease-out);
+  }
+  /* A reference line (Pinned, Recent) has no kick-off: it starts on a short end tick. */
+  .ms2-lat--ref::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: calc(var(--ms2-st-h) - 6px);
+    width: 1px;
+    height: 11px;
+    background: var(--ms2-ink);
+    opacity: var(--ms2-lat-o);
+  }
+  .ms2-stations {
+    flex-direction: row;
+    flex-wrap: wrap;
+    row-gap: var(--ms2-st-gap);
+    padding: 0 0 0 var(--ms2-indent);
+  }
+  .ms2-station {
+    --ms2-p: 4px;
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    height: var(--ms2-st-h);
+    min-height: 0;
+    padding: 0 4px 0 var(--ms2-p);
+  }
+  .ms2-station:first-child {
+    --ms2-p: 14px;
+    margin-left: calc(-1 * var(--ms2-indent));
+  }
+  .ms2-station:last-child {
+    padding-right: 10px;
+  }
+  /* The station tick rises from the lateral to the platform glyph sitting on it. */
+  .ms2-station::before {
+    left: calc(var(--ms2-p) + 7px);
+    top: 16px;
+    bottom: 0;
+    width: 1px;
+    height: auto;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+  .ms2-station-a {
+    display: flex;
+    align-items: flex-end;
+    gap: 0;
+    height: calc(var(--ms2-st-h) - 3px);
+    min-height: 0;
+    padding: 0 2px 5px 20px;
+    line-height: 18px;
+  }
+  .ms2-glyph {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    width: 13px;
+    height: 13px;
+  }
+  .ms2-st-code {
+    margin-right: 5px;
+  }
+  .ms2-arrow {
+    margin-left: 2px;
+    margin-bottom: 3px;
+  }
+  /* The pin sits on the label's line, just clear of the ↗: 24px square, centred on the text. */
+  .ms2-pin {
+    margin-bottom: 5px;
+  }
+  .ms2-toe {
+    left: auto;
+    right: 0;
+    bottom: -5px;
+    width: 1px;
+    height: 11px;
+  }
+  /* On a wrapped lateral the continuation hairline is drawn to the edge; this erases it past
+     the toe, in the ground colour. Clipped by .ms2-sub. */
+  .ms2-toe::after {
+    content: "";
+    position: absolute;
+    left: 1px;
+    bottom: 3px;
+    width: 100vw;
+    height: 4px;
+    background: var(--ms2-ground);
+  }
+
+  /* The kick-off: a fixed 58×50 box whose right edge is the lateral's start. Its path leaves
+     the bore (x 10) vertically and lands horizontal on the lateral's pixel row (y 48.5). */
+  .ms2-kick {
+    display: block;
+    position: absolute;
+    right: 100%;
+    top: calc(var(--ms2-st-h) - 49px);
+    width: 58px;
+    height: 50px;
+    pointer-events: none;
+  }
+  .ms2-kick svg {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+  .ms2-kick-path,
+  .ms2-kick-tick {
+    fill: none;
+    stroke: var(--ms2-ink);
+  }
+  .ms2-kick-path {
+    stroke-width: var(--ms2-lw);
+    stroke-opacity: var(--ms2-lat-o);
+    transition:
+      stroke-opacity var(--duration-fast) var(--ease-out),
+      stroke-width var(--duration-fast) var(--ease-out);
+  }
+  .ms2-kick-tick {
+    stroke-width: 1px;
+  }
+  .ms2-kop {
+    position: absolute;
+    left: 17px;
+    top: 5px;
+    font-size: var(--text-2xs);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    color: var(--ms2-text-90);
+  }
+}
+
+/* Short desktop viewports. KOC is Windows + Edge at 125–150 %: 1920×1080 at 150 % is 1280×720,
+   and the commonest laptop panel is 1366×768. At ≤800px tall, take the slack out of the
+   surface — the title's spacing, the readings' leaders — and the row pitch to 56, so the whole
+   drawing clears the fold there too. The kick-off keeps its fixed build radius; the code rides
+   up 2px to stay on its ruler tick. */
+@media (min-width: 768px) and (max-height: 800px) {
+  .ms2-title {
+    padding-top: 8px;
+  }
+  .ms2-title h1 {
+    margin-top: 0;
+  }
+  .ms2-surface {
+    padding-top: 10px;
+  }
+  .ms2-leader,
+  .ms2-readings > li .ms2-leader {
+    min-height: 8px;
+    margin-top: 4px;
+  }
+  .ms2-row {
+    padding-bottom: 0;
+  }
+  .ms2-lat {
+    margin-top: 0;
+  }
+  .ms2-code {
+    top: -2px;
+  }
+  .ms2-sheet {
+    padding-top: 8px;
+  }
+  .ms2-mine {
+    padding-bottom: 10px;
+  }
+}
+
+/* Row hover / focus-within: the row's lateral comes up to full strength and 1.5px. Hover only
+   where hover is real; mirrored on focus. */
+@media (hover: hover) and (pointer: fine) {
+  .ms2-row:hover,
+  .ms2-shelf:hover {
+    --ms2-lat-o: 1;
+    --ms2-lw: 1.5px;
+  }
+  .ms2-station-a:hover {
+    background: var(--ms2-tint);
+  }
+  .ms2-station-a:hover .ms2-label {
+    background-size: 100% 1px;
+  }
+  .ms2-station-a:hover .ms2-arrow {
+    transform: translate(2px, -2px);
+  }
+  .ms2-pin:hover,
+  .ms2-textbtn:hover {
+    color: var(--ms2-text);
+    background: var(--ms2-tint);
+  }
+}
+.ms2-row:focus-within,
+.ms2-shelf:focus-within {
+  --ms2-lat-o: 1;
+  --ms2-lw: 1.5px;
+}
+.ms2-station-a:focus-visible {
+  background: var(--ms2-tint);
+}
+.ms2-station-a:focus-visible .ms2-label {
+  background-size: 100% 1px;
+}
+.ms2-station-a:focus-visible .ms2-arrow {
+  transform: translate(2px, -2px);
+}
+.ms2-pin:focus-visible {
+  color: var(--ms2-text);
+}
+
+/* ── Jump strip (phone): a mini scale with a tick per team, never boxes ─────────────── */
+.ms2-strip > li {
+  position: relative;
+  border-top: 1px solid color-mix(in oklch, var(--foreground) 35%, transparent);
+}
+.ms2-strip > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: 1px;
+  height: 7px;
+  background: color-mix(in oklch, var(--foreground) 60%, transparent);
+}
+
+/* ── Footer: Section A–A and the title block ───────────────────────────────────────────── */
+.ms2-footrule {
+  position: relative;
+  border-top: 1px solid var(--ms2-rule);
+}
+.ms2-titleblock > div {
+  border-top: 1px solid var(--ms2-rule);
+  border-left: 1px solid var(--ms2-rule);
+}
+/* On the drawing (≥768) the caption sits in the section's sky, top-left, clear of the
+   wellhead; on a phone it stands above the drawing. */
+@media (min-width: 768px) {
+  .ms2-sec-caption {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+}
+
+/* The drawing: one fixed 1360 × 420 box, centred, never scaled; the sheet clips its sides. */
+.ms2-sec {
+  position: relative;
+  left: 50%;
+  width: 1360px;
+  height: 420px;
+  margin-left: -680px;
+  margin-top: 8px;
+}
+@media (min-width: 768px) {
+  .ms2-sec {
+    margin-top: 0;
+  }
+}
+.ms2-sec-svg {
+  display: block;
+  overflow: visible;
+}
+.ms2-sec path {
+  fill: none;
+  stroke: var(--ms2-ink);
+  stroke-width: 1px;
+}
+.ms2-sec .ms2-sec-strata path {
+  stroke: var(--ms2-faint);
+}
+.ms2-sec .ms2-sec-gl {
+  stroke: var(--ms2-rule);
+}
+.ms2-sec .ms2-sec-bore,
+.ms2-sec .ms2-sec-td {
+  stroke-width: 2px;
+}
+/* pathLength = 1: one solid dash — only the draw-on moves it. */
+.ms2-sec .ms2-sec-bore,
+.ms2-sec .ms2-sec-lat {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.ms2-sec .ms2-sec-lat,
+.ms2-sec .ms2-sec-tick,
+.ms2-sec .ms2-sec-toe {
+  stroke-opacity: 0.7;
+}
+.ms2-sec .ms2-sec-dim path {
+  stroke-opacity: 0.55;
+}
+.ms2-sec .ms2-sec-shoe,
+.ms2-sec .ms2-sec-shoe path {
+  fill: var(--ms2-ink);
+  stroke: none;
+}
+.ms2-sec text {
+  fill: var(--ms2-text-85);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+}
+.ms2-sec .ms2-sec-code {
+  fill: var(--ms2-text-90);
+  font-family: var(--font-mono);
+  letter-spacing: 0;
+}
+.ms2-sec-bit {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 10px;
+  height: 4px;
+  border-radius: 2px; /* glyph geometry, not a UI radius: a capsule is half its height round */
+  background: var(--ms2-ink);
+  offset-rotate: auto;
+  offset-anchor: center;
+  offset-distance: 0%;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── MOTION ─────────────────────────────────────────────────────────────────────────────
+ * The directory, readings and find field never move: the page is opened every morning, and
+ * motion belongs in empty space and the footer. Only interaction transitions (on the scale)
+ * touch them.
+ *
+ * AMBIENT: Section A–A's construction draw-on. The well is drawn once, when the footer first
+ * comes into view: the ground line rules out from the wellhead, the casing walls draw down, the
+ * bore draws to TD, each lateral draws out from its kick-off as the bore passes it, then its
+ * station ticks drop. LINES ONLY — every label is always visible. The base style is the drawn
+ * state and every keyframe animates only `from`; [data-ms2-draw] is removed once it has run.
+ * `armed` holds each line at its from-state (paused, backwards fill) until the footer is in
+ * view, so nothing flashes drawn and then undraws. The stagger offsets are literals: the scale
+ * has no step for them.
+ */
+@keyframes ms2-draw-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+@keyframes ms2-draw-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes ms2-draw-stroke {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+.ms2-sec .ms2-sec-gl,
+.ms2-sec .ms2-sec-casing path,
+.ms2-sec .ms2-sec-tick,
+.ms2-sec .ms2-sec-toe,
+.ms2-sec .ms2-sec-dim path {
+  transform-box: fill-box;
+}
+.ms2-sec .ms2-sec-gl,
+.ms2-sec .ms2-sec-toe {
+  transform-origin: center;
+}
+.ms2-sec .ms2-sec-casing path,
+.ms2-sec .ms2-sec-tick,
+.ms2-sec .ms2-sec-dim path {
+  transform-origin: top;
+}
+.ms2-sec[data-ms2-draw] .ms2-sec-gl {
+  animation: ms2-draw-x var(--duration-slower) var(--ease-out) backwards;
+}
+.ms2-sec[data-ms2-draw] .ms2-sec-casing path {
+  animation: ms2-draw-y var(--duration-slower) var(--ease-out) var(--duration-fast) backwards;
+}
+.ms2-sec[data-ms2-draw] .ms2-sec-bore {
+  animation: ms2-draw-stroke calc(var(--duration-slower) * 2) var(--ease-out) var(--duration-slower) backwards;
+}
+.ms2-sec[data-ms2-draw] .ms2-sec-lat {
+  animation: ms2-draw-stroke calc(var(--duration-slower) * 2) var(--ease-out)
+    calc(var(--duration-slower) + var(--ms2-at) * 600ms) backwards;
+}
+.ms2-sec[data-ms2-draw] .ms2-sec-tick {
+  animation: ms2-draw-y var(--duration-fast) var(--ease-out)
+    calc(var(--duration-slower) + var(--ms2-at) * 600ms + 150ms + var(--ms2-j) * 60ms) backwards;
+}
+.ms2-sec[data-ms2-draw] .ms2-sec-toe,
+.ms2-sec[data-ms2-draw] .ms2-sec-dim path {
+  animation: ms2-draw-y var(--duration-fast) var(--ease-out)
+    calc(var(--duration-slower) + var(--ms2-at) * 600ms + 540ms) backwards;
+}
+.ms2-sec[data-ms2-draw="armed"] .ms2-sec-gl,
+.ms2-sec[data-ms2-draw="armed"] .ms2-sec-casing path,
+.ms2-sec[data-ms2-draw="armed"] .ms2-sec-bore,
+.ms2-sec[data-ms2-draw="armed"] .ms2-sec-lat,
+.ms2-sec[data-ms2-draw="armed"] .ms2-sec-tick,
+.ms2-sec[data-ms2-draw="armed"] .ms2-sec-toe,
+.ms2-sec[data-ms2-draw="armed"] .ms2-sec-dim path {
+  animation-play-state: paused;
+}
+
+/*
+ * AMBIENT: the bit. After the draw-on, a capsule runs down the bore and out along one lateral to
+ * its toe (offset-path — the Animated Badge technique — so it rides the kick-off curve), fades,
+ * and two seconds after the last run the next lateral's begins: all eight in code order, a 16s
+ * cycle. It shows the one thing the drawing is about — every lateral is reached through the one
+ * bore — and it runs only in the footer, over no link, reading or field. It exists only while
+ * [data-ms2-play="on"]: the footer on screen and the tab visible. Otherwise the animation is
+ * removed outright, so nothing runs offscreen.
+ */
+@keyframes ms2-sec-bit {
+  0% {
+    offset-distance: 0%;
+    opacity: 0;
+  }
+  1% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  9% {
+    offset-distance: 100%;
+    opacity: 1;
+  }
+  11%,
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+.ms2-sec[data-ms2-play="on"] .ms2-sec-bit {
+  animation: ms2-sec-bit 16s var(--ease-in-out) calc(var(--ms2-k) * 2s) infinite both;
+}
+
+/* Interaction transitions, on the scale. */
+.ms2-station-a,
+.ms2-pin,
+.ms2-textbtn {
+  transition:
+    background-color var(--duration-fast) var(--ease-out),
+    color var(--duration-fast) var(--ease-out);
+}
+.ms2-label {
+  transition: background-size var(--duration-fast) var(--ease-out);
+}
+.ms2-arrow {
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+.ms2-toe::before,
+.ms2-lat--ref::after {
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+/* Reduced motion — the OS setting AND the viewer's flag. The base layer clamps durations but
+   not delays, so this is an explicit `animation: none`; the bit is removed outright, or the
+   clamp would park a stray capsule at 0 %. Hover and focus changes become instant. */
+@media (prefers-reduced-motion: reduce) {
+  .ms2 *,
+  .ms2 *::before,
+  .ms2 *::after {
+    animation: none !important;
+    transition-duration: 0s !important;
+  }
+  .ms2 .ms2-sec-bit {
+    display: none !important;
+  }
+}
+html[data-force-reduced-motion="true"] .ms2 *,
+html[data-force-reduced-motion="true"] .ms2 *::before,
+html[data-force-reduced-motion="true"] .ms2 *::after {
+  animation: none !important;
+  transition-duration: 0s !important;
+}
+html[data-force-reduced-motion="true"] .ms2 .ms2-sec-bit {
+  display: none !important;
+}

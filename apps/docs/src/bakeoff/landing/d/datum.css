@@ -1,0 +1,184 @@
+/*
+ * Direction D — "Datum". Styles that Tailwind utilities cannot express, and every piece of
+ * ambient motion (each one marked AMBIENT, each one stopped under reduced motion).
+ *
+ * Colour: tokens only. `transparent` is used as the empty stop of gradients and masks.
+ */
+
+/* ── Particle field: component-local knobs, never on :root ────────────────────────────── */
+.datum-field {
+  /* Overall ink of the terrain's specks and of the models' specks, and how much the field is
+     suppressed behind [data-terrain-quiet] copy. Read by field-renderer.ts at runtime (and
+     re-read on a theme change). Not design tokens. */
+  --terrain-ink: 1;
+  --model-ink: 1;
+  --terrain-quiet: 0.95;
+}
+.dark .datum-field {
+  --terrain-ink: 0.8;
+  --model-ink: 0.7;
+}
+
+/* Static fallback when WebGL2 is unavailable or the context is lost: a plain dotted plane. */
+.datum-field-fallback {
+  background-image: radial-gradient(circle, color-mix(in oklch, var(--muted-foreground) 45%, transparent) 1px, transparent 1.6px);
+  background-size: 14px 14px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 38%, var(--foreground) 92%);
+  mask-image: linear-gradient(to bottom, transparent 38%, var(--foreground) 92%);
+}
+
+/* ── Dotted type: the headline as a dot matrix ────────────────────────────────────────── */
+/* Real, selectable text in --foreground, masked by a square lattice of dots (the reference's
+   dotted headline) over a faint base tint of the same ink. The tint is what keeps the type's
+   EFFECTIVE contrast — the mean luminance the eye integrates a fine pattern to — above 3:1 for
+   large text on the pale theme, where dark dots alone would average out too light; on the dark
+   theme light dots carry far more contrast, so the tint nearly vanishes and the type reads as
+   specks on near-black, like the reference. Measured on screenshots at DPR 1 and 2 (the page
+   report has the figures). Sizes in em so the lattice scales with the type; whole-pixel pitch
+   where the browser can round. Knobs, not tokens; colour only from var(--foreground) and
+   `transparent` (a mask uses alpha alone). Static: no motion. */
+.datum-dotted {
+  /* Pitch follows the type up to 5px, then holds: bigger type gets more dots, not bigger ones
+     (stipple, not light bulbs). Radius and softness are fractions of the pitch. */
+  --dot-pitch: clamp(3px, 0.056em, 5px);
+  --dot-r: calc(var(--dot-pitch) * 0.36);
+  --dot-soft: calc(var(--dot-pitch) * 0.16);
+  --dot-tint: 18%;
+  --dot-ink: color-mix(in oklch, var(--foreground) var(--dot-tint), transparent);
+  -webkit-mask-image:
+    radial-gradient(circle, var(--foreground) var(--dot-r), transparent calc(var(--dot-r) + var(--dot-soft))),
+    linear-gradient(var(--dot-ink), var(--dot-ink));
+  mask-image:
+    radial-gradient(circle, var(--foreground) var(--dot-r), transparent calc(var(--dot-r) + var(--dot-soft))),
+    linear-gradient(var(--dot-ink), var(--dot-ink));
+  -webkit-mask-size: var(--dot-pitch) var(--dot-pitch), 100% 100%;
+  mask-size: var(--dot-pitch) var(--dot-pitch), 100% 100%;
+  -webkit-mask-repeat: repeat, no-repeat;
+  mask-repeat: repeat, no-repeat;
+}
+.dark .datum-dotted {
+  --dot-r: calc(var(--dot-pitch) * 0.3);
+  --dot-tint: 13%;
+}
+/* Whole-pixel pitch where the browser can round, so the lattice does not beat against the pixel
+   grid at DPR 1 (Windows at 100% — most of KOC). */
+@supports (width: round(nearest, 1.5px, 1px)) {
+  .datum-dotted {
+    --dot-pitch: clamp(3px, round(nearest, 0.056em, 1px), 5px);
+  }
+}
+/* Forced colours and print get plain solid type. */
+@media (forced-colors: active) {
+  .datum-dotted {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+@media print {
+  .datum-dotted {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* ── The datum: the ruled baseline the eight team stations stand on ───────────────────── */
+.datum-ruler {
+  position: relative;
+}
+/* Minor graduations along the datum, every 8px, like a survey chain. Decorative. */
+.datum-ruler::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -6px;
+  height: 6px;
+  background-image: repeating-linear-gradient(
+    to right,
+    color-mix(in oklch, var(--muted-foreground) 55%, transparent) 0 1px,
+    transparent 1px 8px
+  );
+  -webkit-mask-image: linear-gradient(to right, transparent, var(--foreground) 6%, var(--foreground) 94%, transparent);
+  mask-image: linear-gradient(to right, transparent, var(--foreground) 6%, var(--foreground) 94%, transparent);
+  pointer-events: none;
+}
+
+/* ── Readout grid: a "+" survey mark where the dotted rules cross ─────────────────────── */
+.datum-cell::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 9px;
+  height: 9px;
+  background:
+    linear-gradient(var(--muted-foreground), var(--muted-foreground)) center / 9px 1px no-repeat,
+    linear-gradient(var(--muted-foreground), var(--muted-foreground)) center / 1px 9px no-repeat;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ── AMBIENT motion ────────────────────────────────────────────────────────────────────── */
+
+/* AMBIENT: Blur Fade (ported from Magic UI) — content arrives as a one-time focus pull, blur
+   to sharp, the field's depth of field applied to type. 560ms, once per element, never loops. */
+@keyframes datum-blur-fade {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+.datum-blur-fade {
+  opacity: 0;
+}
+.datum-blur-fade[data-shown="true"] {
+  animation: datum-blur-fade 560ms var(--ease-out) var(--bf-delay, 0ms) both;
+}
+
+/* AMBIENT: the datum line is surveyed in from the left once on load (900ms), so the eight
+   stations read as standing on one line rather than as eight boxes. */
+@keyframes datum-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.datum-draw {
+  transform-origin: left center;
+  animation: datum-draw 900ms var(--ease-out) 240ms both;
+}
+
+/* Reduced motion — the OS setting AND the viewer's forced flag: everything above stops and
+   renders in its final state. */
+@media (prefers-reduced-motion: reduce) {
+  .datum-blur-fade,
+  .datum-blur-fade[data-shown="true"] {
+    opacity: 1;
+    animation: none;
+  }
+  .datum-draw {
+    animation: none;
+  }
+}
+html[data-force-reduced-motion="true"] .datum-blur-fade,
+html[data-force-reduced-motion="true"] .datum-blur-fade[data-shown="true"] {
+  opacity: 1;
+  animation: none;
+}
+html[data-force-reduced-motion="true"] .datum-draw {
+  animation: none;
+}
+/* The base layer makes every transition instant under the OS setting; do the same for the
+   viewer's forced flag (the plate swap, the rail tick, hovers). */
+html[data-force-reduced-motion="true"] .datum-page *,
+html[data-force-reduced-motion="true"] .datum-page *::before,
+html[data-force-reduced-motion="true"] .datum-page *::after {
+  transition-duration: 0.01ms !important;
+}

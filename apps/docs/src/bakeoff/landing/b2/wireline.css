@@ -1,0 +1,298 @@
+/*
+ * Direction B v2 — "Wireline", the daily-use round. What Tailwind utilities cannot say, plus
+ * the page's one piece of ambient motion (marked AMBIENT, stopped under both reduced-motion
+ * switches).
+ *
+ * Every global name here is `wl2-`: v1 (`b/wireline.css`, `wl-`) is loaded in the same
+ * session whenever both rounds are viewed, and a shared name would restyle it.
+ *
+ * Colour: tokens only. `transparent` is the empty end of colour-mixes. Unlayered on purpose:
+ * the compact-height overrides below must beat the Tailwind utilities they adjust.
+ */
+
+/* ── Ground ─────────────────────────────────────────────────────────────────────────── */
+
+/* Paper: card-white in light, the page background in dark (the same pair as the root's
+   `bg-card dark:bg-background`). Scrims read it, so they always match the sheet. */
+.wl2-root {
+  --wl2-ground: var(--card);
+}
+.dark .wl2-root {
+  --wl2-ground: var(--background);
+}
+
+/* The KOC glyph is white-only. Dark mode lightens --primary so it reads as TEXT on a dark
+   ground, which leaves the white glyph at 2.57:1 on a bg-primary tile. The tile takes a deeper
+   mix of the same two tokens instead: white on it is 6.41:1, and it still reads as the brand
+   tile (ΔE 26 from the ground). Measured with culori. A shared tile token is requested. */
+.dark .wl2-logo {
+  background-color: color-mix(in oklch, var(--primary) 55%, var(--background));
+}
+
+/* ── The finding line ───────────────────────────────────────────────────────────────── */
+
+/* The browser's own ✕ in a search input duplicates our labelled Clear button. */
+.wl2-find::-webkit-search-cancel-button,
+.wl2-find::-webkit-search-decoration {
+  appearance: none;
+}
+/* Weight 300 is only ever set in --foreground on this page. The placeholder has to be muted
+   (it must not read as a typed value), so it takes 350 instead — a touch more stroke to make
+   up for the lighter ink, and the same display voice. It is a variable because the page
+   measures the placeholder to pick the longest form that fits (useFittingPlaceholder), and
+   the measurement must use the weight the text is drawn in. */
+.wl2-find {
+  --wl2-ph-weight: 350;
+}
+.wl2-find::placeholder {
+  color: var(--muted-foreground);
+  font-weight: var(--wl2-ph-weight);
+  opacity: 1;
+}
+
+/* ── The figures: the ledger laid on its side ────────────────────────────────────────── */
+
+/* One row of eight at 1280 and up, four by two from 640, two by four on a phone. Rules run
+   between cells only: each cell carries a left and a top rule, pulled 1px outside itself,
+   and the strip clips them at its own edges, so no rule doubles the strip's border and the
+   first column's text sits on the page's left edge like every other band's. */
+.wl2-kpi {
+  margin: -1px 0 0 -1px;
+  padding: 0.625rem 1rem;
+}
+.wl2-kpi:nth-child(2n + 1) {
+  padding-left: 0;
+}
+@media (min-width: 640px) {
+  .wl2-kpi:nth-child(2n + 1) {
+    padding-left: 1rem;
+  }
+  .wl2-kpi:nth-child(4n + 1) {
+    padding-left: 0;
+  }
+}
+@media (min-width: 1280px) {
+  .wl2-kpi:nth-child(4n + 1) {
+    padding-left: 1rem;
+  }
+  .wl2-kpi:first-child {
+    padding-left: 0;
+  }
+}
+
+/* ── The index ─────────────────────────────────────────────────────────────────────── */
+
+/* At 390 the eight codes do not fit: the bar scrolls sideways inside itself (the page never
+   does). Its buttons are focusable, so axe's scrollable-region-focusable holds. */
+.wl2-jumpbar {
+  scrollbar-width: none;
+  scroll-snap-type: x proximity;
+}
+.wl2-jumpbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* <mark>: the highlight fades in when a match appears. Duration comes from the `duration-fast`
+   utility on the element (it sets animation-duration); only the name and easing live here. */
+@keyframes wl2-mark-in {
+  from {
+    background-color: transparent;
+  }
+}
+.wl2-mark {
+  animation-name: wl2-mark-in;
+  animation-timing-function: var(--ease-out);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* ── The well log: the footer's showpiece ────────────────────────────────────────────── */
+
+.wl2-lane {
+  height: 2.5rem;
+}
+@media (min-width: 1024px) {
+  .wl2-lane {
+    height: 3.25rem;
+  }
+}
+@media (min-width: 1280px) {
+  .wl2-lane {
+    height: 3.5rem;
+  }
+}
+/* On paper the log is simply there: a print never scrolls the footer into view. */
+@media print {
+  [data-wl2-rec] .wl2-trace {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.wl2-gr-fill {
+  fill: color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+.wl2-gr-line {
+  stroke: color-mix(in oklch, var(--foreground) 60%, transparent);
+}
+.wl2-gr-base,
+.wl2-bit {
+  stroke: color-mix(in oklch, var(--foreground) 24%, transparent);
+}
+.wl2-res-deep {
+  stroke: color-mix(in oklch, var(--foreground) 64%, transparent);
+}
+.wl2-res-shallow {
+  stroke: color-mix(in oklch, var(--foreground) 32%, transparent);
+}
+.wl2-rop {
+  stroke: color-mix(in oklch, var(--foreground) 54%, transparent);
+}
+.wl2-cal {
+  stroke: color-mix(in oklch, var(--foreground) 50%, transparent);
+}
+.wl2-cal-fill {
+  fill: color-mix(in oklch, var(--foreground) 6%, transparent);
+}
+.wl2-rhob {
+  stroke: color-mix(in oklch, var(--foreground) 64%, transparent);
+}
+.wl2-nphi {
+  stroke: color-mix(in oklch, var(--foreground) 36%, transparent);
+}
+.wl2-xover {
+  fill: color-mix(in oklch, var(--foreground) 14%, transparent);
+}
+
+/* The track header (set at the deep end, like a log's repeat header): solid paper, and a
+   paper run-on to the page edge, so the traces stop at the header instead of leaking past
+   its labels as clipped stubs. It covers only the lane interiors (the column has 1px gaps),
+   so the lane rules still run full-bleed. The log's overflow clips the run-on. */
+.wl2-track-head {
+  background: var(--wl2-ground);
+}
+.wl2-track-head::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  left: 100%;
+  width: 100vw;
+  background: var(--wl2-ground);
+}
+
+/* Marker tops sit on whole pixels, so a 1px line stays one crisp blue pixel, not two grey ones. */
+.wl2-top {
+  left: var(--wl2-at);
+}
+@supports (left: round(1%, 1px)) {
+  .wl2-top {
+    left: round(var(--wl2-at), 1px);
+  }
+}
+
+/* AMBIENT: the recorder wipe — the log is "recorded" once, left to right, the first time the
+   footer comes into view (not on load: v2's first screen is for work, and the log lives at the
+   foot of the page). It is Wireline's single flourish on a page opened daily, so it is
+   one-shot, under a second (780ms after a 120ms beat), and never loops.
+   States, set by the page on the log's root:
+     (none)                 the fully drawn log — no JS, reduced motion, or already recorded;
+     data-wl2-rec="armed"   waiting below the fold: the tracks are held blank;
+     data-wl2-rec="on"      in view: the wipe runs once, from blank to the base style.
+   The keyframes animate only `from`, so the end state is always the drawn log. */
+@keyframes wl2-record {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes wl2-head {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(100%);
+  }
+}
+.wl2-trace {
+  clip-path: inset(0 0 0 0);
+}
+.wl2-head {
+  opacity: 0;
+}
+[data-wl2-rec="armed"] .wl2-trace {
+  clip-path: inset(0 100% 0 0);
+}
+[data-wl2-rec="on"] .wl2-trace {
+  animation: wl2-record 780ms var(--ease-out) 120ms backwards;
+}
+/* The recording head: a 1px --primary line riding the wipe's leading edge. Its base style is
+   hidden, so it vanishes the moment the wipe ends (fill-mode `backwards`, never `forwards`). */
+[data-wl2-rec="on"] .wl2-head {
+  animation: wl2-head 780ms var(--ease-out) 120ms backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-wl2-rec] .wl2-trace {
+    clip-path: inset(0 0 0 0);
+  }
+  [data-wl2-rec] .wl2-trace,
+  [data-wl2-rec] .wl2-head,
+  .wl2-mark {
+    animation: none;
+  }
+  .wl2-head {
+    display: none;
+  }
+  .wl2-indicator {
+    transition: none;
+  }
+}
+html[data-force-reduced-motion="true"] [data-wl2-rec] .wl2-trace {
+  clip-path: inset(0 0 0 0);
+}
+html[data-force-reduced-motion="true"] [data-wl2-rec] .wl2-trace,
+html[data-force-reduced-motion="true"] [data-wl2-rec] .wl2-head,
+html[data-force-reduced-motion="true"] .wl2-mark {
+  animation: none;
+}
+html[data-force-reduced-motion="true"] .wl2-head {
+  display: none;
+}
+/* The jump-bar indicator jumps instead of gliding. */
+html[data-force-reduced-motion="true"] .wl2-indicator {
+  transition: none;
+}
+/* The OS switch zeroes every interaction transition through the base layer's
+   prefers-reduced-motion rule. The viewer's switch never reaches that rule, so the page
+   mirrors it for its own transitions (row hovers, the field's rule, facets, codes, pins):
+   under either switch, a colour change is simply there. */
+html[data-force-reduced-motion="true"] .wl2-root *,
+html[data-force-reduced-motion="true"] .wl2-root *::before,
+html[data-force-reduced-motion="true"] .wl2-root *::after {
+  transition-duration: 0s;
+  scroll-behavior: auto;
+}
+
+/* ── Short laptop screens (1280×630 is a 1080p laptop at 150%, after Edge's chrome) ────── */
+/* The field drops to its clamp floor and the bands close up, so the figures and your
+   dashboards stay in the first screen with room to spare. */
+@media (min-width: 1024px) and (max-height: 800px) {
+  .wl2-find {
+    font-size: 2.25rem;
+  }
+  .wl2-field-block {
+    padding-top: 0.75rem;
+  }
+  .wl2-figures {
+    margin-top: 1rem;
+  }
+  .wl2-kpi {
+    padding-block: 0.375rem;
+  }
+  .wl2-kpi-value {
+    font-size: var(--text-2xl, 1.5rem);
+  }
+  .wl2-band {
+    margin-top: 1rem;
+  }
+}

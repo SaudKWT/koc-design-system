@@ -1,0 +1,229 @@
+/*
+ * Direction C — "Drill Floor". What Tailwind utilities cannot express: the page grid that lets
+ * one faceplate span the <header> and the first section of <main>, the graticule's colour and
+ * mask, the needle's one settle, and the viewfinder's corners.
+ *
+ * Colour: tokens only. `transparent` is used as the empty stop of masks, and a mask's colour
+ * is irrelevant — only its alpha is read.
+ *
+ * Motion: every duration and curve is a scale step. There is NO ambient motion in this
+ * direction — no loop, no reveal, no count-up. The needle settles once (300ms); the viewfinder
+ * moves only when you point or tab. Both stop under reduced motion, from the OS or the viewer.
+ */
+
+/* ── Page grid ──────────────────────────────────────────────────────────────────────────────
+ * The faceplate is one dark band, but it holds two landmarks: the <header> (identity) and the
+ * readings, which belong in <main>. So the band's surface, graticule and corners are one
+ * decorative layer spanning rows 1–2, <main> joins the page grid as a subgrid, and the panels
+ * sit in row 3 on the light page. No measuring, no JS. */
+.c-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr auto;
+  min-height: 100dvh;
+  isolation: isolate;
+}
+.c-plate {
+  grid-row: 1 / 3;
+  grid-column: 1;
+  z-index: -1;
+}
+.c-page > header {
+  grid-row: 1;
+  grid-column: 1;
+}
+.c-page > main {
+  grid-row: 2 / 4;
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.c-page > footer {
+  grid-row: 4;
+  grid-column: 1;
+}
+
+/* ── Graticule (static) ─────────────────────────────────────────────────────────────────────
+ * Solid lines only. Minor every 16px at 6 %, major every 5th at 12 %. Fades toward the edges
+ * so the band reads as a lit plate rather than graph paper. */
+.c-graticule-minor {
+  stroke: color-mix(in oklch, var(--foreground) 6%, transparent);
+  stroke-width: 1;
+}
+.c-graticule-major {
+  stroke: color-mix(in oklch, var(--foreground) 12%, transparent);
+  stroke-width: 1;
+}
+.c-graticule {
+  -webkit-mask-image: radial-gradient(ellipse 75% 110% at 28% 55%, var(--foreground) 35%, transparent 100%);
+  mask-image: radial-gradient(ellipse 75% 110% at 28% 55%, var(--foreground) 35%, transparent 100%);
+}
+
+/* ── L-bracket corners (static frame + the moving viewfinder share the shape) ─────────────── */
+.c-corner {
+  position: absolute;
+  width: var(--c-arm, 10px);
+  height: var(--c-arm, 10px);
+  border-color: currentColor;
+  border-style: solid;
+  border-width: 0;
+}
+.c-corner[data-at="tl"] { top: 0; left: 0; border-top-width: var(--c-stroke, 1.5px); border-left-width: var(--c-stroke, 1.5px); }
+.c-corner[data-at="tr"] { top: 0; right: 0; border-top-width: var(--c-stroke, 1.5px); border-right-width: var(--c-stroke, 1.5px); }
+.c-corner[data-at="bl"] { bottom: 0; left: 0; border-bottom-width: var(--c-stroke, 1.5px); border-left-width: var(--c-stroke, 1.5px); }
+.c-corner[data-at="br"] { bottom: 0; right: 0; border-bottom-width: var(--c-stroke, 1.5px); border-right-width: var(--c-stroke, 1.5px); }
+
+/* ── Needle settle — once, on the scale ─────────────────────────────────────────────────────
+ * The base style is the final angle; the keyframe supplies only the start. Duration comes from
+ * the `duration-slower` utility on the element (300ms), the curve from --ease-spring: quick, one
+ * small overshoot, like a needle picking up load. A short hold lets the page paint first. */
+.c-needle {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  rotate: var(--c-needle-angle);
+  animation-name: c-needle-settle;
+  animation-timing-function: var(--ease-spring);
+  animation-delay: var(--duration-slow);
+  animation-fill-mode: both;
+  animation-iteration-count: 1;
+}
+@keyframes c-needle-settle {
+  from {
+    rotate: 0deg;
+  }
+}
+
+/* ── Viewfinder ─────────────────────────────────────────────────────────────────────────────
+ * One frame for the whole grid, moved by transform and sized by width/height at duration-base
+ * with ease-spring. Travel is armed (`data-armed`) only while the frame is showing: every
+ * appearance lands on its panel and fades in at duration-fast, so it never flies in from the
+ * grid's corner or from the last panel it left. */
+.c-viewfinder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition-property: opacity;
+  transition-duration: var(--duration-fast);
+  transition-timing-function: var(--ease-out);
+}
+.c-viewfinder[data-visible="true"] {
+  opacity: 1;
+}
+.c-viewfinder[data-armed="true"] {
+  transition-property: opacity, transform, width, height;
+  transition-duration: var(--duration-fast), var(--duration), var(--duration), var(--duration);
+  transition-timing-function: var(--ease-out), var(--ease-spring), var(--ease-spring), var(--ease-spring);
+}
+
+/* ── Reduced motion: the needle is drawn where it belongs; the viewfinder jumps ────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .c-needle {
+    animation: none;
+  }
+  .c-viewfinder,
+  .c-viewfinder[data-armed="true"] {
+    transition: none;
+  }
+}
+html[data-force-reduced-motion="true"] .c-needle {
+  animation: none;
+}
+html[data-force-reduced-motion="true"] .c-viewfinder,
+html[data-force-reduced-motion="true"] .c-viewfinder[data-armed="true"] {
+  transition: none;
+}
+/* The token base layer makes every transition instant under the OS setting only. Mirror it for
+ * the viewer's toggle, so the row fills and the ↗ nudge are instant under either. */
+html[data-force-reduced-motion="true"] .c-page *,
+html[data-force-reduced-motion="true"] .c-page *::before,
+html[data-force-reduced-motion="true"] .c-page *::after {
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* ── Panel foot and nameplate (static) ──────────────────────────────────────────────────────
+ * The last link closes with a full-width rule, like every row above it, and the rest of a short
+ * panel is plain card: the subgrid already aligns every panel's foot, so no ruled "spare rows"
+ * are needed (they read as empty table rows, or a loading skeleton). Painted, not bordered: a
+ * panel with no spare room gets a zero-height slot, which must paint nothing — a border would
+ * double the panel's own bottom edge.
+ *
+ * Where the slot has room, the channel's nameplate closes it: the team's full MyPortal name,
+ * bottom-aligned, like the engraved label under an instrument channel. The slot is a size
+ * container — its height is whatever the row leaves it, and size containment means the
+ * nameplate can never add height to a panel, a row, or the one-screen page. Where there is no
+ * room (EN11 and EN71 at 1440, whose links fill their rows) the plate is simply not drawn; the
+ * name stays the panel region's description for assistive tech either way. */
+.c-slots {
+  container: c-slot / size;
+  display: flex;
+  align-items: flex-end;
+  background-image: linear-gradient(var(--border), var(--border));
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+}
+.c-nameplate {
+  display: none;
+}
+@container c-slot (min-height: 3.5rem) {
+  .c-nameplate {
+    display: block;
+  }
+}
+
+/* ── Page theme: dark ────────────────────────────────────────────────────────────────────────
+ * On a light page the two-tone idea is free: the band is dark card, the panels light card. On a
+ * dark page both would be the same dark card, and the band would read as one more panel. So the
+ * plate drops to a surface of its own, between the page and the card — a recessed console the
+ * lifted panels sit below — and its lower edge gets a firmer rule. Tokens only: a mix of two. */
+:root.dark .c-plate {
+  background-color: color-mix(in oklch, var(--card) 45%, var(--background));
+  border-bottom-color: color-mix(in oklch, var(--foreground) 16%, transparent);
+}
+
+/* ── Narrow panels (static) ─────────────────────────────────────────────────────────────────
+ * Where the auto-fill grid's panels drop under 20rem — four columns at 1280, three at 1024 —
+ * the rows tighten their padding, gap and chip so the longest labels stay on one line.
+ * Queried on the GRID, never on a panel: in Chromium `container-type` also applies layout
+ * containment, which would stop a panel being a subgrid and un-align every link table.
+ * Grid widths 55.5rem–82.2rem are exactly the 3- and 4-column spans with panels < 20rem
+ * (plus the roomy 3-column span, where the tighter spacing is harmless). */
+.c-teams {
+  container: c-teams / inline-size;
+}
+@container c-teams (min-width: 55.5rem) and (max-width: 82.2rem) {
+  .c-panel-head,
+  .c-row,
+  .c-nameplate {
+    padding-inline: 0.625rem;
+  }
+  .c-row {
+    column-gap: 0.5rem;
+  }
+  .c-chip {
+    width: 2rem;
+  }
+}
+
+/* An abbreviation that only echoes the short name ("HSE & DE" beside "HSE & Drilling
+ * Excellence") drops to a header line of its own wherever a panel is under ~336px — measured:
+ * three columns below 64.5rem, four below 86.5rem, i.e. 1024 and every 1280–1430 laptop width —
+ * and through the subgrid that line lengthens all four panels of its row. There it leaves the
+ * eye, not the accessibility tree: the same span, visually hidden. Names that are not echoes
+ * ("DWOS" beside "Operational Support") always stay. */
+@container c-teams ((min-width: 55.5rem) and (max-width: 64.5rem)) or ((min-width: 74.25rem) and (max-width: 86.5rem)) {
+  .c-abbr[data-echo] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}

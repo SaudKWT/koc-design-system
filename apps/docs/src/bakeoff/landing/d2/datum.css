@@ -1,0 +1,211 @@
+/*
+ * Direction D v2 — "Datum", the daily-use round. Styles that Tailwind utilities cannot express,
+ * and every piece of ambient motion (each one marked AMBIENT, each one stopped under reduced
+ * motion).
+ *
+ * EVERY global name here carries the `datum2-` prefix (classes, keyframes, custom properties and
+ * data-attribute hooks). CSS is global: v1 (`d/datum.css`, prefix `datum-`) is loaded in the same
+ * session whenever both rounds are viewed, and a shared name would let one restyle the other.
+ *
+ * Colour: tokens only. `transparent` is used as the empty stop of gradients and masks.
+ */
+
+/* ── Particle field: component-local knobs, never on :root ────────────────────────────── */
+.datum2-field {
+  /* Overall ink of the terrain's specks and of the models' specks, and how much the field is
+     suppressed behind [data-datum2-quiet] copy. Read by field-renderer.ts at runtime (and
+     re-read on a theme change). Not design tokens. */
+  --datum2-terrain-ink: 1;
+  --datum2-model-ink: 1;
+  --datum2-terrain-quiet: 0.95;
+}
+.dark .datum2-field {
+  --datum2-terrain-ink: 0.8;
+  --datum2-model-ink: 0.7;
+}
+/* The field is lazy-mounted as the footer approaches; it fades in on its first drawn frame
+   (field-renderer.ts sets data-datum2-ready) instead of popping in. Reduced motion: instant. */
+.datum2-field > canvas {
+  opacity: 0;
+  transition: opacity var(--duration-slower) var(--ease-out);
+}
+.datum2-field[data-datum2-ready="true"] > canvas {
+  opacity: 1;
+}
+
+/* Static fallback when WebGL2 is unavailable or the context is lost: a plain dotted plane. */
+.datum2-field-fallback {
+  background-image: radial-gradient(circle, color-mix(in oklch, var(--muted-foreground) 45%, transparent) 1px, transparent 1.6px);
+  background-size: 14px 14px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 38%, var(--foreground) 92%);
+  mask-image: linear-gradient(to bottom, transparent 38%, var(--foreground) 92%);
+}
+
+/* ── Dotted type: the headline as a dot matrix ────────────────────────────────────────── */
+/* Real, selectable text in --foreground, masked by a square lattice of dots over a faint base
+   tint of the same ink. The tint is what keeps the type's EFFECTIVE contrast — the mean
+   luminance the eye integrates a fine pattern to — above 3:1 for large text on the pale theme;
+   on the dark theme light dots carry far more contrast, so the tint nearly vanishes. Sizes in em
+   so the lattice scales with the type; whole-pixel pitch where the browser can round.
+   v2: the headline is smaller (a one-line title, not an 84px hero), so the pitch holds a 3px
+   floor and the dot fills more of its cell than v1's — at ~56px a stem is three dots wide, and a
+   sparser lattice started to break letters apart. Knobs, not tokens. Static: no motion. */
+.datum2-dotted {
+  --datum2-dot-pitch: clamp(3px, 0.056em, 5px);
+  --datum2-dot-r: calc(var(--datum2-dot-pitch) * 0.4);
+  --datum2-dot-soft: calc(var(--datum2-dot-pitch) * 0.16);
+  --datum2-dot-tint: 22%;
+  --datum2-dot-ink: color-mix(in oklch, var(--foreground) var(--datum2-dot-tint), transparent);
+  -webkit-mask-image:
+    radial-gradient(circle, var(--foreground) var(--datum2-dot-r), transparent calc(var(--datum2-dot-r) + var(--datum2-dot-soft))),
+    linear-gradient(var(--datum2-dot-ink), var(--datum2-dot-ink));
+  mask-image:
+    radial-gradient(circle, var(--foreground) var(--datum2-dot-r), transparent calc(var(--datum2-dot-r) + var(--datum2-dot-soft))),
+    linear-gradient(var(--datum2-dot-ink), var(--datum2-dot-ink));
+  -webkit-mask-size: var(--datum2-dot-pitch) var(--datum2-dot-pitch), 100% 100%;
+  mask-size: var(--datum2-dot-pitch) var(--datum2-dot-pitch), 100% 100%;
+  -webkit-mask-repeat: repeat, no-repeat;
+  mask-repeat: repeat, no-repeat;
+}
+.dark .datum2-dotted {
+  --datum2-dot-r: calc(var(--datum2-dot-pitch) * 0.34);
+  --datum2-dot-tint: 14%;
+}
+@supports (width: round(nearest, 1.5px, 1px)) {
+  .datum2-dotted {
+    --datum2-dot-pitch: clamp(3px, round(nearest, 0.056em, 1px), 5px);
+  }
+}
+/* Forced colours and print get plain solid type. */
+@media (forced-colors: active) {
+  .datum2-dotted {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+@media print {
+  .datum2-dotted {
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/* ── The datum: a ruled baseline with minor graduations every 8px, like a survey chain ─── */
+/* On the directory's stations (each station's top edge is its segment of the row's datum; the
+   segments meet, because the grid has no column gap) and on the footer's sign-off line. */
+.datum2-ruler {
+  position: relative;
+}
+.datum2-ruler::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: -6px;
+  height: 5px;
+  background-image: repeating-linear-gradient(
+    to right,
+    color-mix(in oklch, var(--muted-foreground) 50%, transparent) 0 1px,
+    transparent 1px 8px
+  );
+  pointer-events: none;
+}
+
+/* ── A "+" survey mark where two rules cross: readout cells and station stakes ────────── */
+.datum2-cell::after,
+.datum2-station::after {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: -5px;
+  width: 9px;
+  height: 9px;
+  background:
+    linear-gradient(var(--muted-foreground), var(--muted-foreground)) center / 9px 1px no-repeat,
+    linear-gradient(var(--muted-foreground), var(--muted-foreground)) center / 1px 9px no-repeat;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.datum2-station[data-datum2-selected="true"]::after {
+  background:
+    linear-gradient(var(--primary), var(--primary)) center / 9px 1px no-repeat,
+    linear-gradient(var(--primary), var(--primary)) center / 1px 9px no-repeat;
+  opacity: 1;
+}
+
+/* ── AMBIENT motion ────────────────────────────────────────────────────────────────────── */
+
+/* AMBIENT: Blur Fade (ported from Magic UI) — a one-time focus pull, blur to sharp, the field's
+   depth of field applied to type. 560ms, once per element, never loops. v2 uses it only on the
+   title (once per load) and on the footer's captions as they arrive — never on a KPI, the search
+   or a dashboard link, which are there the instant the page is. */
+@keyframes datum2-blur-fade {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+.datum2-blur-fade {
+  opacity: 0;
+}
+.datum2-blur-fade[data-datum2-shown="true"] {
+  animation: datum2-blur-fade 560ms var(--ease-out) var(--datum2-bf-delay, 0ms) both;
+}
+
+/* AMBIENT: the sign-off's datum line is surveyed in from the left once, when the footer first
+   arrives (900ms). */
+@keyframes datum2-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.datum2-draw {
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+.datum2-draw[data-datum2-shown="true"] {
+  animation: datum2-draw 900ms var(--ease-out) 120ms both;
+}
+
+/* Reduced motion — the OS setting AND the viewer's forced flag: everything above stops and
+   renders in its final state. */
+@media (prefers-reduced-motion: reduce) {
+  .datum2-blur-fade,
+  .datum2-blur-fade[data-datum2-shown="true"] {
+    opacity: 1;
+    animation: none;
+  }
+  .datum2-draw,
+  .datum2-draw[data-datum2-shown="true"] {
+    transform: none;
+    animation: none;
+  }
+  .datum2-field > canvas {
+    transition: none;
+  }
+}
+html[data-force-reduced-motion="true"] .datum2-blur-fade,
+html[data-force-reduced-motion="true"] .datum2-blur-fade[data-datum2-shown="true"] {
+  opacity: 1;
+  animation: none;
+}
+html[data-force-reduced-motion="true"] .datum2-draw,
+html[data-force-reduced-motion="true"] .datum2-draw[data-datum2-shown="true"] {
+  transform: none;
+  animation: none;
+}
+/* The base layer makes every transition instant under the OS setting; do the same for the
+   viewer's forced flag (the canvas fade, the plate swap, the rail tick, hovers). */
+html[data-force-reduced-motion="true"] .datum2-page *,
+html[data-force-reduced-motion="true"] .datum2-page *::before,
+html[data-force-reduced-motion="true"] .datum2-page *::after {
+  transition-duration: 0.01ms !important;
+}
