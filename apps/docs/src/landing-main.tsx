@@ -2,18 +2,19 @@
  * Standalone entry for the DWEG landing comparison, built on its own by
  * `npm run build:landing` for hosting outside the repo.
  *
- * It deliberately ships ONLY the comparison: the index of directions and the
- * full-screen viewer. The design-system docs and the `@koc` registry files in
+ * It deliberately ships ONLY the comparison: the full-screen viewer, opening on
+ * A v2 when the address names no direction (Saud: skip the index, land on a page). The design-system docs and the `@koc` registry files in
  * public/r are private and must not ride along on a public deployment.
  */
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 
-import { Toaster } from "@koc/ui";
-import { LandingDirections } from "./bakeoff/landing/LandingDirections";
 import { LandingViewer } from "./bakeoff/landing/LandingViewer";
-import { directionFromHash } from "./bakeoff/landing/directions";
+import { LANDING_HASH, directionFromHash } from "./bakeoff/landing/directions";
 import "./styles.css";
+
+/** Where the hosted comparison opens when the address names no direction. */
+const HOME = "a2";
 
 function Root() {
   const [hash, setHash] = useState(() => window.location.hash);
@@ -22,16 +23,14 @@ function Root() {
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
-  const id = directionFromHash(hash);
-  if (id) return <LandingViewer id={id} />;
-  return (
-    <>
-      <main className="mx-auto min-h-screen max-w-5xl bg-background px-4 py-10 sm:px-8">
-        <LandingDirections />
-      </main>
-      <Toaster position="bottom-right" />
-    </>
-  );
+  const id = directionFromHash(hash) ?? HOME;
+  // Put the direction in the address so the link is shareable and back/forward work.
+  useEffect(() => {
+    if (!directionFromHash(window.location.hash)) {
+      history.replaceState(null, "", `${LANDING_HASH}${HOME}`);
+    }
+  }, [hash]);
+  return <LandingViewer id={id} standalone />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

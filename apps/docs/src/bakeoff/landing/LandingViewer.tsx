@@ -14,7 +14,14 @@ import { Toaster, cn } from "@koc/ui";
 
 import { DIRECTIONS, LANDING_HASH, letterOf, versionOf, type Direction } from "./directions";
 
-export function LandingViewer({ id }: { id: Direction["id"] }) {
+export function LandingViewer({
+  id,
+  standalone = false,
+}: {
+  id: Direction["id"];
+  /** Hosted on its own (build:landing): there is no docs site to go back to. */
+  standalone?: boolean;
+}) {
   const direction = DIRECTIONS.find((d) => d.id === id)!;
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
   const [reduce, setReduce] = useState(
@@ -53,13 +60,15 @@ export function LandingViewer({ id }: { id: Direction["id"] }) {
         aria-label="Direction viewer"
         className="fixed bottom-3 left-3 z-[100] flex items-center gap-1 rounded-full border bg-popover/95 p-1 text-popover-foreground shadow-lg backdrop-blur"
       >
-        <a
-          href="#"
-          className="inline-flex size-8 items-center justify-center rounded-full hover:bg-accent"
-          aria-label="Back to the design system docs"
-        >
-          <ArrowLeft className="size-4" aria-hidden="true" />
-        </a>
+        {!standalone && (
+          <a
+            href="#"
+            className="inline-flex size-8 items-center justify-center rounded-full hover:bg-accent"
+            aria-label="Back to the design system docs"
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" />
+          </a>
+        )}
         {/* Round switch: jumps to the same letter in the other round when it
             exists, so comparing a direction's v1 and v2 is one click. */}
         {([1, 2] as const).map((v) => {
