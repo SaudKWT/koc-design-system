@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animation check</title>
+    <style>
+      /* Standalone diagnostic page, outside the design system on purpose: it must
+         render even when the app bundle does not, so it carries its own minimal styles. */
+      :root { color-scheme: light dark; font-family: "Segoe UI", system-ui, sans-serif; }
+      body { margin: 0; padding: 32px 16px; background: Canvas; color: CanvasText; }
+      main { max-width: 640px; margin: 0 auto; }
+      h1 { font-size: 22px; margin: 0 0 4px; }
+      p.lead { margin: 0 0 24px; opacity: 0.75; }
+      .row { display: grid; grid-template-columns: 28px 1fr; gap: 4px 12px; padding: 14px 0; border-top: 1px solid color-mix(in srgb, CanvasText 18%, transparent); }
+      .mark { font-size: 20px; line-height: 1.2; }
+      .label { font-weight: 600; }
+      .detail { grid-column: 2; font-size: 14px; opacity: 0.8; }
+      code { font-family: Consolas, monospace; font-size: 13px; overflow-wrap: anywhere; }
+      .verdict { margin-top: 24px; padding: 16px; border: 1px solid color-mix(in srgb, CanvasText 25%, transparent); border-radius: 8px; }
+      a { color: LinkText; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Animation check</h1>
+      <p class="lead">What this browser tells the DWEG landing pages. Screenshot this page and send it back.</p>
+      <div id="out"></div>
+      <div id="verdict" class="verdict"></div>
+      <p><a href="/">Back to the landing pages</a></p>
+    </main>
+    <script>
+      const out = document.getElementById("out");
+      const row = (ok, label, detail) => {
+        const d = document.createElement("div");
+        d.className = "row";
+        d.innerHTML = `<span class="mark" aria-hidden="true">${ok === null ? "•" : ok ? "✅" : "⚠️"}</span>
+          <span class="label">${label}</span><span class="detail">${detail}</span>`;
+        out.appendChild(d);
+      };
+
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      row(!reduced, reduced ? "Reduce motion is ON" : "Reduce motion is off",
+        reduced
+          ? "Windows is asking pages not to animate (Settings → Accessibility → Visual effects → Animation effects is off, or IT set it). Every direction stands still by design."
+          : "Windows allows animation.");
+
+      let renderer = "none", software = true, gl2 = false;
+      try {
+        const c = document.createElement("canvas");
+        const gl = c.getContext("webgl2");
+        gl2 = !!gl;
+        if (gl) {
+          const ext = gl.getExtension("WEBGL_debug_renderer_info");
+          renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+          software = /swiftshader|llvmpipe|basic render|software|microsoft basic/i.test(renderer);
+        }
+      } catch (e) { renderer = "error: " + e.message; }
+      row(gl2 && !software,
+        !gl2 ? "WebGL2 is not available" : software ? "WebGL2 runs in software" : "WebGL2 has a hardware GPU",
+        `Renderer: <code>${renderer}</code>` +
+          (!gl2 || software
+            ? "<br>Without a hardware GPU the 3D directions show their still drawings by design. Usual causes: remote desktop / VDI, or Edge → Settings → System → “Use graphics acceleration when available” is off."
+            : ""));
+
+      const hidden = document.hidden;
+      row(null, "Other details",
+        `Screen ${screen.width}×${screen.height} · window ${innerWidth}×${innerHeight} · pixel ratio ${devicePixelRatio} · ${navigator.hardwareConcurrency || "?"} cores<br><code>${navigator.userAgent}</code>`);
+
+      const v = document.getElementById("verdict");
+      v.innerHTML = reduced
+        ? "<strong>Verdict:</strong> animations are off because this PC has <em>reduce motion</em> on. That is the setting to change, or we add an in-page “Motion on” switch."
+        : !gl2 || software
+          ? "<strong>Verdict:</strong> CSS animations will run, but the 3D scenes fall back to still drawings because this browser has no hardware GPU."
+          : "<strong>Verdict:</strong> this browser should show every animation. If it still doesn’t, tell me which direction and where on the page.";
+    </script>
+  </body>
+</html>

@@ -30,6 +30,9 @@ export default mergeConfig(
         closeBundle() {
           renameSync(here("./dist-landing/landing.html"), here("./dist-landing/index.html"));
           copyFileSync(here("./public/koc-logo.svg"), here("./dist-landing/koc-logo.svg"));
+          // A dependency-free page that reports reduced-motion and GPU state, for
+          // diagnosing "animations don't play" on locked-down work PCs.
+          copyFileSync(here("./landing-diag.html"), here("./dist-landing/diag.html"));
         },
       },
     ],
