@@ -6,6 +6,8 @@
  * A v2 when the address names no direction (Saud: skip the index, land on a page). The design-system docs and the `@koc` registry files in
  * public/r are private and must not ride along on a public deployment.
  */
+// First: every later module must see the patched matchMedia.
+import "./landing-motion";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 

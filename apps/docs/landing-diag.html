@@ -42,7 +42,7 @@
       const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
       row(!reduced, reduced ? "Reduce motion is ON" : "Reduce motion is off",
         reduced
-          ? "Windows is asking pages not to animate (Settings → Accessibility → Visual effects → Animation effects is off, or IT set it). Every direction stands still by design."
+          ? "Windows is asking pages not to animate (Animation effects is off, or IT set it). The hosted landing pages ignore this on purpose and animate anyway; use the turtle button in the bottom bar to stop motion."
           : "Windows allows animation.");
 
       let renderer = "none", software = true, gl2 = false;
@@ -69,7 +69,9 @@
 
       const v = document.getElementById("verdict");
       v.innerHTML = reduced
-        ? "<strong>Verdict:</strong> animations are off because this PC has <em>reduce motion</em> on. That is the setting to change, or we add an in-page “Motion on” switch."
+        ? (!gl2 || software
+            ? "<strong>Verdict:</strong> this PC has <em>reduce motion</em> on, which the landing pages ignore, so CSS animation plays; but with no hardware GPU the 3D scenes show still drawings."
+            : "<strong>Verdict:</strong> this PC has <em>reduce motion</em> on, which the landing pages now ignore, and a hardware GPU, so every animation should play. If one doesn’t, tell me which direction and where on the page.")
         : !gl2 || software
           ? "<strong>Verdict:</strong> CSS animations will run, but the 3D scenes fall back to still drawings because this browser has no hardware GPU."
           : "<strong>Verdict:</strong> this browser should show every animation. If it still doesn’t, tell me which direction and where on the page.";
