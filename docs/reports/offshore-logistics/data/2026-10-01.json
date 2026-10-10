@@ -1,0 +1,283 @@
+{
+  "reportDate": "2026-10-01",
+  "reportLabel": "01 Oct 2026",
+  "tabLabel": "24 to 30 Sep",
+  "periodStart": "2026-09-24",
+  "periodEnd": "2026-09-30",
+  "periodLabel": "24 to 30 Sep 2026",
+  "periodDays": 7,
+  "marsec": "Level 2",
+  "provenance": "Email of 01.10.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_01.10.2026.xlsx (report 27, sheets Port and Vessel).",
+  "showArrows": true,
+  "vesselTrips": {
+    "CA1": 1,
+    "CA3": 4,
+    "CA5": 2,
+    "Charlie-3": 4
+  },
+  "tripRule": "Trips are as reported in the covering email, which supersedes the workbook derivation.",
+  "vesselMovements": {
+    "CA1": 1,
+    "CA3": 3,
+    "CA5": 2,
+    "Charlie-3": 9
+  },
+  "movementRule": "One movement is one transfer between locations: port to rig, rig to port, or rig to rig. Repositioning at the rig already occupied does not count, nor does a shift between two port-side locations.",
+  "movementsAudit": {
+    "CA1": "1. JL-0003 to SH-0001 (30.09, Vessel E28), escorting OD1 during its rig move; arrival recorded 01.10 in report 28. Counted as rig position to rig position, and queried. Excludes the alongside and anchorage manoeuvres at OD1 on 25.09, 28.09 and 29.09.",
+    "CA3": "3. OPH to Shuaiba (24.09, E5); MT Sedra II to OPH (28.09, E21); OPH to Shuaiba (29.09, E25). Excludes Shuaiba to MT Sedra II on 28.09, port to anchorage.",
+    "CA5": "2. Shuaiba to OPH (24.09, E6); OPH to the OD1 new location (28.09, E22), before OD1 itself arrived there. Queried.",
+    "Charlie-3": "9. Two on 26.09 (OPH round, E15); three on 27.09 (Khiran to OPH, OPH to OD1, OD1 to Khiran, E19); two on 29.09 (OD1 round, E27); two on 30.09 (OD1 round, E31). Excludes Shuaiba to Khiran and back on 27.09, port to port."
+  },
+  "movementsByDay": [
+    {
+      "label": "Thu 24",
+      "n": 2
+    },
+    {
+      "label": "Fri 25",
+      "n": 0
+    },
+    {
+      "label": "Sat 26",
+      "n": 2
+    },
+    {
+      "label": "Sun 27",
+      "n": 3
+    },
+    {
+      "label": "Mon 28",
+      "n": 2
+    },
+    {
+      "label": "Tue 29",
+      "n": 3
+    },
+    {
+      "label": "Wed 30",
+      "n": 3
+    }
+  ],
+  "trucks": {
+    "rule": "Count truck and pickup units per movement. A dispatch counts as out, an arrival counts as in. An offload of a unit already counted on arrival is not a second movement, and a duplicated row sharing a delivery ticket is counted once.",
+    "byDay": [
+      {
+        "label": "Thu 24",
+        "date": "24.09.2026",
+        "out": 1,
+        "in": 5,
+        "audit": [
+          "E4 fluid",
+          "E5 out 1 pickup",
+          "E6 in 1 boom truck",
+          "E7 in 1",
+          "E8 in 1",
+          "E9 in 2 (two trucks stated)",
+          "E10 no night shift"
+        ]
+      },
+      {
+        "label": "Fri 25",
+        "date": "25.09.2026",
+        "out": 0,
+        "in": 1,
+        "audit": [
+          "E11 fluid",
+          "E12 fluid",
+          "E13 offload of the E14 truck",
+          "E14+E15 in 1 (one line split over two rows)",
+          "E16 no night shift"
+        ]
+      },
+      {
+        "label": "Sat 26",
+        "date": "26.09.2026",
+        "out": 1,
+        "in": 0,
+        "audit": [
+          "E17 fluid",
+          "E18 fluid",
+          "E19 the E21 truck being loaded (two bits to Ajal)",
+          "E20 vessel op",
+          "E21 out 1 boom truck",
+          "E22 no night shift"
+        ]
+      },
+      {
+        "label": "Sun 27",
+        "date": "27.09.2026",
+        "out": 5,
+        "in": 1,
+        "audit": [
+          "E23 vessel op",
+          "E24 out 1",
+          "E25 out 1",
+          "E26 out 1 pickup",
+          "E27 out 2 (two trucks stated; their return with the emptied skips has no arrival line and is not counted)",
+          "E28 in 1",
+          "E29 summary of E24",
+          "E30 summary of E25",
+          "E31 summary of E27",
+          "E32 offload of E28",
+          "E33 no night shift"
+        ]
+      },
+      {
+        "label": "Mon 28",
+        "date": "28.09.2026",
+        "out": 4,
+        "in": 2,
+        "audit": [
+          "E34 out 1",
+          "E35 out 1",
+          "E36 out 1 pickup",
+          "E37 out 1",
+          "E38 in 1 pickup",
+          "E39 in 1",
+          "E40 summary of E35",
+          "E41 summary of E34",
+          "E42 offload of E38",
+          "E43 offload of E39",
+          "E44 fluid",
+          "E45 no night shift"
+        ]
+      },
+      {
+        "label": "Tue 29",
+        "date": "29.09.2026",
+        "out": 4,
+        "in": 2,
+        "audit": [
+          "E46 out 1",
+          "E47 out 1",
+          "E48 out 1 pickup (no delivery ticket)",
+          "E49 out 1",
+          "E50 in 1",
+          "E51 in 1",
+          "E52 summary of E46",
+          "E53 summary of E47",
+          "E54 identical to E53",
+          "E55 summary of E49",
+          "E56 offload of E50",
+          "E57 offload of E51",
+          "E58 no night shift"
+        ]
+      },
+      {
+        "label": "Wed 30",
+        "date": "30.09.2026",
+        "out": 4,
+        "in": 8,
+        "audit": [
+          "E59 casing shifted berth 20 to pipe yard, yard work",
+          "E60 fluid",
+          "E61 fluid",
+          "E62 summary of E65 to E67",
+          "E63 summary of arrivals",
+          "E64 summary of E68",
+          "E65 out 1",
+          "E66 out 1",
+          "E67 out 1",
+          "E68 out 1",
+          "E69 in 1",
+          "E70 in 1",
+          "E71 in 1",
+          "E72 in 1",
+          "E73 in 1",
+          "E74 in 1 boom truck",
+          "E75 in 1",
+          "E76 in 1"
+        ]
+      }
+    ]
+  },
+  "fluids": {
+    "bunkered": {
+      "Fresh water": 576,
+      "Fuel": 943,
+      "Drill water": 0
+    },
+    "delivered": {
+      "Fresh water": 550,
+      "Fuel": 305,
+      "Drill water": 0
+    },
+    "audit": {
+      "Fresh water bunkered": "Port E12 252 CA3 (25.09, Vessel E9); Port E18 108 CA3 (26.09, Vessel E13); Port E61 216 CA3 (30.09, Vessel E29)",
+      "Fuel bunkered": "Port E4 141.016 CA5 (24.09); Port E11 144 CA3 (25.09, Vessel E9); Port E17 144 CA3 (26.09, Vessel E13); Port E44 36.003 Charlie-3 (28.09); Vessel E21 297.796 CA3 from MT Sedra II (28.09); Vessel E25 72 CA3 (29.09); Port E60 108.003 CA3 (30.09, Vessel E29). Total 942.818, shown as 943.",
+      "Fresh water delivered": "Vessel E8 150 CA1 to OD1 (25.09); Vessel E21 300 CA3 to OPH (28.09); Vessel E24 100 CA1 to OD1 (29.09)",
+      "Fuel delivered": "Vessel E25 304.992 CA3 to OPH (29.09)",
+      "Bentonite": "44.59 MT received by CA3 at berth 20 on 30.09 (Vessel E29). Dry bulk in tonnes, so not in the cubic-metre totals."
+    }
+  },
+  "slops": {
+    "receivedBbl": 0,
+    "dischargedBbl": 0,
+    "note": "No slops in barrels recorded. Four full mud skips from the CA3 tank cleaning went to NCC SEK on 27.09."
+  },
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "Rig under tow to SH-0001",
+      "lastWeek": "Nil",
+      "personnelOnboard": 80,
+      "visaHolders": 56,
+      "overstay": {
+        "KOC": 1,
+        "HLB": 2,
+        "COSL": 2
+      },
+      "nextSteps": "Position rig at location; adjust air gap and perform preloading; dump preload; jack to drilling air gap; install fixation; cantilever skid out (including CTU); spot the 21-1/4\" and 26-3/4\" BOP in the moon pool area; break out MLS running tools"
+    },
+    "OPH": {
+      "currentOperation": "Rig off-hired",
+      "lastWeek": "Nil",
+      "personnelOnboard": 0,
+      "visaHolders": 0,
+      "overstay": {
+        "KOC": 0,
+        "HLB": 0,
+        "COSL": 0
+      },
+      "nextSteps": "Nil"
+    }
+  },
+  "highlights": [],
+  "dataNotes": [
+    "<b>Vessel trips: email 11, not re-derivable from the Vessel sheet.</b> The email reports CA1 1, CA3 4, CA5 2, Charlie-3 4. The Vessel sheet shows Charlie-3 making four round trips from berth 4 and CA3 one; CA1 does not call at Shuaiba during the week. The email's figures are used, per the standing rule.",
+    "<b>CA5 fuel on 24.09: 141.016 or 288.016 m³.</b> Port E4 records 141.016. Vessel E6 records 288.016 received. The difference is 147, the 23.09 bunkering already counted in report 26, so the Vessel figure reads as cumulative. 141.016 is used.",
+    "<b>Two movements counted on a judgement.</b> CA1 escorting OD1 from JL-0003 to SH-0001 on 30.09, and CA5 moving from OPH to the SH-0001 location on 28.09 before OD1 arrived there. Both are counted as rig position to rig position. Without them, movements are 13, not 15.",
+    "<b>Port E68 delivery ticket RM-SP-9207 is out of sequence.</b> The tickets before it run RM-SP-9024, 9025, 9026.",
+    "<b>Port E53 and E54 are identical</b> (one truck, two empty units to Gyro and OWS) and match one dispatch, E47. Counted once.",
+    "<b>Two H-Carry pickups under manifest RCM-OD-940.</b> Port E36 on 28.09 to the HPM hall, ticket RM-SP-9019; Port E48 on 29.09 to a KOC facility, no ticket. Counted as two."
+  ],
+  "headline": "OD1 under tow to SH-0001. OPH remains off hired.",
+  "dailyOperations": {
+    "label": "Wed 30 Sep 2026",
+    "source": "Daily Ground Operations, as circulated in the 01.10.2026 email",
+    "lines": [
+      "24\" casings (R1, R2 and R3) of well BM-0001 shifted from berth 20 to the pipe yard, offloaded, and their pre-slings removed.",
+      "<b>108.003 m³ of fuel</b> bunkered to CA3.",
+      "<b>216 m³ of fresh water</b> bunkered to CA3.",
+      "Three trucks loaded with MLS and wellhead equipment and sent to the Hetco yard for Baker inspection.",
+      "One truck offloaded with shock subs and Gyro tools, and three trucks offloaded with BOPs for Rig OD1 from NOV, Gyro and COSL.",
+      "Backload from OD1 sent to COSL.",
+      "One truck dispatched to HETCO Ahmadi with seven lifts of KOC wellhead A–F sections used on well JL003, per delivery ticket RM-SP-9024.",
+      "One truck dispatched to HETCO Ahmadi with six lifts of KOC wellhead A–F sections used on well RI003, per delivery ticket RM-SP-9025.",
+      "One truck dispatched to HETCO Ahmadi with eight lifts of KOC wellhead A–F sections used on wells JL003 and RI003, per delivery ticket RM-SP-9026.",
+      "One call-off truck dispatched to COSL Mina Abdallah with a 7.5 m empty basket and a wooden box received from OD1 via CA3, per delivery ticket RM-SP-9207.",
+      "One call-off truck arrived from COSL Mina Abdallah with a <b>21-1/4\" 10M double ram BOP</b> for OD1 (call-off OD-BM1-E-7-3), per delivery ticket COSL-DT-OD-BM1-E-7-3A.",
+      "One call-off truck arrived from COSL Mina Abdallah with a <b>21-1/4\" 10K single ram BOP</b> for OD1 (call-off OD-BM1-E-7-3), per delivery ticket COSL-DT-OD-BM1-E-7-3B.",
+      "One call-off truck arrived from COSL Mina Abdallah with a <b>21-1/4\" annular ram BOP</b> for OD1 (call-off OD-BM1-E-7-3), per delivery ticket COSL-DT-OD-BM1-E-7-3C.",
+      "One truck arrived from NOV Ahmadi with two stabilizers for OD1 (call-off OD-SH1-B-1-17), per delivery ticket 7277.",
+      "One truck arrived from Gyrodata Ahmadi with a 6 ft mini container of Gyro tools for OD1 (call-offs OD-SH1-B-1-16 / 2-16).",
+      "One boom truck arrived from Al-Mansoori with bit breakers after inspection.",
+      "One truck arrived from Odfjell Mina Abdallah with a 6 m basket of DRT tools for OD1 (call-off OD-SH1-B-1-15), per delivery ticket OWS-DT-DRT-084.",
+      "One truck arrived from Odfjell Mina Abdallah with a 2 × 3 m basket of DRT tools for OD1 (call-off OD-SH1-B-1-15), per delivery ticket OWS-DT-DRT-085."
+    ],
+    "extraNotes": [
+      "Vessel movements remain under <b>MARSEC Level 2</b>."
+    ]
+  }
+}

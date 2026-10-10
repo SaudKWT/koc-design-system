@@ -136,6 +136,39 @@ Three things the PDF path has to get right, each of which was wrong first:
 `to_pdf.py` asserts that every panel it kept is visible under print media, so a
 broken print rule fails loudly instead of shipping a truncated PDF.
 
+## Checking a build
+
+```bash
+python3 build.py
+python3 check_contrast.py
+python3 gates.py dashboard/Offshore_Logistics_Weekly_Dashboard.html <path to axe.min.js>
+```
+
+`gates.py` runs five groups of checks in Chromium. It needs the `playwright`
+package and an `axe-core` copy, from `npm install axe-core`.
+
+1. axe (WCAG 2.1 A/AA plus best-practice) on every tab, with every fold open.
+2. The tab strip: keyboard, `aria-controls` targets, deep links.
+3. The page in a sandboxed `srcdoc` frame with a `null` origin, as SharePoint
+   previews it. The four APIs that throw there must still throw. The page
+   code must never call them. The one `replaceState` call must sit inside a
+   `try`. The frame must show no console errors.
+4. Taps in a 360px frame: a sparkline tap and a chart tap must hold.
+5. The phone layout at 390px and 360px.
+
+Before this script, the checks lived in a scratch directory. A container reset
+deleted them. They are in the repo now so that the next reset cannot.
+
+Two test faults were found while the script was rebuilt. Both were faults in
+the test page, not in the dashboard:
+
+- **The test host page had no viewport meta.** Without one, mobile emulation
+  lays the host out at 980px and scales it to 0.37. Every coordinate tap then
+  missed its target, and the touch checks failed on a page that worked.
+- **The API check matched comments.** The page script names `localStorage`
+  and the others in a comment, to explain why the code does not call them.
+  The check now removes comments before it searches.
+
 ## On a phone
 
 Below 760px the layout changes in five ways. Each change fixes something that
@@ -146,6 +179,9 @@ was measured, not guessed.
   of the shorter SharePoint preview frame. It now scrolls away with the page,
   and it is 96px tall. Desktop keeps the pinned header: there it is one row,
   102px.
+- **The tab row is one row at every width.** At seven tabs, the old wrapping row
+  became two rows at 800px and made the pinned header 156px tall. On desktop the
+  row now scrolls sideways when it overflows, with a thin visible scrollbar.
 - **The tabs are one row that scrolls sideways**, and each tab shows only its
   week label. The report date under each label made every tab twice as tall.
   The newest week opens at the far end of the row. The script scrolls the row

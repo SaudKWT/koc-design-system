@@ -1385,7 +1385,14 @@ CSS = f""":root{{color-scheme:light}}
 .top-in{{max-width:1000px;margin:0 auto;padding:16px 16px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}}
 .top h1{{margin:0;color:{ON_PRIMARY};font-size:{FS['xl']};font-weight:{FW['bold']};letter-spacing:-.015em}}
 .top .sub{{color:{tok('color.primary.100')};font-size:{FS['xs']};margin:0}}
-[role=tablist]{{max-width:1000px;margin:0 auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;gap:4px;position:relative}}
+/* One row at every width, scrolling sideways when it overflows. It used to
+   wrap, which was fine at five tabs; at seven it wrapped to two rows at 800px
+   and doubled the pinned header to 156px. The row grows by one tab a week, so
+   wrapping would only get worse. A thin scrollbar stays visible on desktop,
+   where a mouse has no swipe to discover it with. */
+[role=tablist]{{max-width:1000px;margin:0 auto;padding:12px 16px 0;display:flex;
+  flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;gap:4px;position:relative}}
+[role=tab]{{flex:0 0 auto;white-space:nowrap}}
 [role=tab]{{appearance:none;background:transparent;border:0;border-bottom:3px solid transparent;
   color:{tok('color.primary.100')};font:inherit;font-size:{FS['sm']};font-weight:{FW['semibold']};text-align:left;
   padding:8px 14px 9px;cursor:pointer;border-radius:{RADIUS} {RADIUS} 0 0;
@@ -1910,8 +1917,8 @@ def main():
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
-    dates = args or ["2026-09-24", "2026-09-17", "2026-09-10",
-                     "2026-09-03", "2026-08-26"]
+    dates = args or ["2026-10-08", "2026-10-01", "2026-09-24", "2026-09-17",
+                     "2026-09-10", "2026-09-03", "2026-08-26"]
 
     picked = flags & {"--dashboard", "--email", "--notes", "--artifact"}
     want = {name: (f"--{name}" in flags or not picked)

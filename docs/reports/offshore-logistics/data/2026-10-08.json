@@ -1,0 +1,302 @@
+{
+  "reportDate": "2026-10-08",
+  "reportLabel": "08 Oct 2026",
+  "tabLabel": "01 to 07 Oct",
+  "periodStart": "2026-10-01",
+  "periodEnd": "2026-10-07",
+  "periodLabel": "01 to 07 Oct 2026",
+  "periodDays": 7,
+  "marsec": "Level 2",
+  "provenance": "Email of 08.10.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_08.10.2026.xlsx (report 28, sheets Port and Vessel).",
+  "showArrows": true,
+  "vesselTrips": {
+    "CA1": 3,
+    "CA3": 1,
+    "CA5": 2,
+    "Charlie-3": 9
+  },
+  "tripRule": "Trips are as reported in the covering email, which supersedes the workbook derivation.",
+  "vesselMovements": {
+    "CA1": 2,
+    "CA3": 1,
+    "CA5": 2,
+    "Charlie-3": 17
+  },
+  "movementRule": "One movement is one transfer between locations: port to rig, rig to port, or rig to rig. Repositioning at the rig already occupied does not count, nor does a shift between two port-side locations.",
+  "movementsAudit": {
+    "CA1": "2. OD1 new location to Shuaiba (01.10, Vessel E4); Shuaiba to OD1 (06.10, E24). The 01.10 arrival at the new location completes the escort counted on 30.09 in report 27. Excludes the 06.10 cast off and return within berth 20.",
+    "CA3": "1. Shuaiba to OD1 (04.10, E17). Excludes the 06.10 run to the anchorage for sea chest cleaning and back, and the 07.10 standoff, both at OD1.",
+    "CA5": "2. OD1 to OPH and OPH to Shuaiba (05.10, E22). Excludes the safety-watch standoffs at OD1 on 01.10 to 03.10.",
+    "Charlie-3": "17. Four on 01.10 (berth 4 to OPH, OPH to North Pier, North Pier to OPH, OPH to berth 4, E7); four on 04.10 (two OPH rounds, E19); three on 05.10 (Khiran to OPH, OPH to OD1, OD1 to Khiran, E23); four on 06.10 (berth 4 to OD1, OD1 to OPH, OPH to OD1, OD1 to Shuaiba, E27); two on 07.10 (OD1 round, E31). Excludes Shuaiba to Khiran and back on 05.10, port to port."
+  },
+  "movementsByDay": [
+    {
+      "label": "Thu 01",
+      "n": 5
+    },
+    {
+      "label": "Fri 02",
+      "n": 0
+    },
+    {
+      "label": "Sat 03",
+      "n": 0
+    },
+    {
+      "label": "Sun 04",
+      "n": 5
+    },
+    {
+      "label": "Mon 05",
+      "n": 5
+    },
+    {
+      "label": "Tue 06",
+      "n": 5
+    },
+    {
+      "label": "Wed 07",
+      "n": 2
+    }
+  ],
+  "trucks": {
+    "rule": "Count truck and pickup units per movement. A dispatch counts as out, an arrival counts as in. An offload of a unit already counted on arrival is not a second movement, and a duplicated row sharing a delivery ticket is counted once.",
+    "byDay": [
+      {
+        "label": "Thu 01",
+        "date": "01.10.2026",
+        "out": 3,
+        "in": 8,
+        "audit": [
+          "E4 out 1",
+          "E5 out 1",
+          "E6 out 1",
+          "E7 in 1",
+          "E8 in 1",
+          "E9 in 1",
+          "E10 in 1 (shares COSL-DT-OD-SH1-B-1-3C with E12, different cargo)",
+          "E11 in 1",
+          "E12 in 1",
+          "E13 in 1",
+          "E14 in 1",
+          "E15 summary of E4",
+          "E16 summary of arrivals",
+          "E17 summary of arrivals"
+        ]
+      },
+      {
+        "label": "Fri 02",
+        "date": "02.10.2026",
+        "out": 0,
+        "in": 3,
+        "audit": [
+          "E18 fluid",
+          "E19 fluid",
+          "E20 in 1",
+          "E21 in 1",
+          "E22 in 1"
+        ]
+      },
+      {
+        "label": "Sat 03",
+        "date": "03.10.2026",
+        "out": 6,
+        "in": 3,
+        "audit": [
+          "E23 out 1",
+          "E24 out 1",
+          "E25 out 1",
+          "E26 out 1",
+          "E27 in 1 boom truck",
+          "E28 in 1",
+          "E29 identical to E28, same ticket BAR-DT-06, counted once",
+          "E30 in 1",
+          "E31 out 1",
+          "E32 out 1",
+          "E33 offload of arrivals",
+          "E34 vessel op",
+          "E35 fluid",
+          "E36 fluid"
+        ]
+      },
+      {
+        "label": "Sun 04",
+        "date": "04.10.2026",
+        "out": 0,
+        "in": 3,
+        "audit": [
+          "E37 vessel op",
+          "E38 vessel op",
+          "E39 vessel op",
+          "E40 fluid",
+          "E41 dry bulk",
+          "E42 drums to CA1, no truck stated",
+          "E43 in 1",
+          "E44 in 1",
+          "E45 in 1",
+          "E46 ten trucks loaded; dispatched 05.10 and counted there"
+        ]
+      },
+      {
+        "label": "Mon 05",
+        "date": "05.10.2026",
+        "out": 13,
+        "in": 11,
+        "audit": [
+          "E47 out 10 (the ten E46 trucks, loaded 04.10)",
+          "E48 out 1 boom truck",
+          "E49 out 1 boom truck (to the Shuaiba Port pipe yard)",
+          "E50 repeats E43 of 04.10, same ticket CMT-OD-SH1-B-1-8, not counted",
+          "E51 out 1",
+          "E52 in 1",
+          "E53 in 1 pickup",
+          "E54 in 1",
+          "E55 in 1",
+          "E56 in 1",
+          "E57 in 1",
+          "E58 in 4 (four trucks stated)",
+          "E59 in 1",
+          "E60 vessel op",
+          "E61 offload of E54 to E57",
+          "E62 food containers loaded, no matching dispatch line",
+          "E63 inspection"
+        ]
+      },
+      {
+        "label": "Tue 06",
+        "date": "06.10.2026",
+        "out": 3,
+        "in": 8,
+        "audit": [
+          "E64 out 1",
+          "E65 out 1",
+          "E66 in 1",
+          "E67 out 1 pickup",
+          "E68 in 1",
+          "E69 in 6 (six trucks stated)",
+          "E70 vessel op",
+          "E71 vessel op",
+          "E72 offload of E66 and E68",
+          "E73 inspection",
+          "E74 inspection",
+          "E75 four trucks loaded and offloaded at berth 20, pipe yard to berth, yard work",
+          "E76 vessel op",
+          "E77 vessel op"
+        ]
+      },
+      {
+        "label": "Wed 07",
+        "date": "07.10.2026",
+        "out": 1,
+        "in": 17,
+        "audit": [
+          "E78 out 1 pickup",
+          "E79 in 3 (three trucks stated, from the Shuaiba Port pipe yard)",
+          "E80 in 1 (from the Shuaiba Port pipe yard)",
+          "E81 in 1",
+          "E82 in 2 (two trucks stated)",
+          "E83 in 1",
+          "E84 in 1",
+          "E85 in 7 (seven trucks stated)",
+          "E86 in 1",
+          "E87 four trucks loaded at the pipe yard for berth 20, yard work",
+          "E88 dry bulk",
+          "E89 fuel to shore base equipment, no quantity",
+          "E90 inspection",
+          "E91 pipe yard to berth 20 transfer, yard work",
+          "E92 vessel op",
+          "E93 vessel op"
+        ]
+      }
+    ]
+  },
+  "fluids": {
+    "bunkered": {
+      "Fresh water": 360,
+      "Fuel": 200,
+      "Drill water": 0
+    },
+    "delivered": {
+      "Fresh water": 0,
+      "Fuel": 200,
+      "Drill water": 750
+    },
+    "audit": {
+      "Fresh water bunkered": "Vessel E5 36 CA3 (01.10); Port E19 216 CA1 (02.10, Vessel E8); Port E36 108 CA1 (03.10, Vessel E12)",
+      "Fuel bunkered": "Port E18 72 CA1 (02.10, Vessel E8); Port E35 71.998 CA1 (03.10, Vessel E12); Port E40 20 Charlie-3 (04.10; Vessel E19 records it as fresh water); Vessel E26 36.001 CA5 (06.10). Total 199.999, shown as 200. Port E89 fuel to shore base equipment has no quantity and is not a vessel.",
+      "Fuel delivered": "Vessel E28 200 CA1 to OD1 (07.10)",
+      "Drill water delivered": "Vessel E25 350 CA3 to OD1 (05.10 to 06.10); Vessel E28 400 CA1 to OD1 (06.10 to 07.10)",
+      "Dry bulk": "Bentonite: 17.11 MT to CA1 from a truck (04.10, Vessel E16); 44.59 MT CA3 to OD1 (06.10, E25). Barite CA3 to OD1 on 07.10, no quantity. Cement: 47 MT to the port silos on 07.10. Tonnes, so not in the cubic-metre totals."
+    }
+  },
+  "slops": {
+    "receivedBbl": 0,
+    "dischargedBbl": 0,
+    "note": "No slops in barrels recorded."
+  },
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "Spot and build up 21-1/4\" BOP",
+      "lastWeek": "Arrived at new well location SHU-0001; preloading operation; prepare to skid; lay down CTU running tool",
+      "personnelOnboard": 86,
+      "visaHolders": 57,
+      "overstay": {
+        "KOC": 1,
+        "HLB": 0,
+        "COSL": 4
+      },
+      "nextSteps": "Pre-spud meeting; safety drills; drill 42\" hole to 100 ft BML; conduct drop gyro; drill 42\" hole to 548 ft (in Kuwait Series formation)"
+    },
+    "OPH": {
+      "currentOperation": "Rig off-hired",
+      "lastWeek": "Nil",
+      "personnelOnboard": 0,
+      "visaHolders": 0,
+      "overstay": {
+        "KOC": 0,
+        "HLB": 0,
+        "COSL": 0
+      },
+      "nextSteps": "Nil"
+    }
+  },
+  "highlights": [],
+  "dataNotes": [
+    "<b>Vessel trips: email 15, not re-derivable from the Vessel sheet.</b> The email reports CA1 3, CA3 1, CA5 2, Charlie-3 9. The Vessel sheet shows Charlie-3 casting off from berth 4 six times. The email's figures are used, per the standing rule.",
+    "<b>Well name: SH-0001 or SHU-0001.</b> The 08.10 email and Vessel E4 say SHU-0001. The 01.10 email, Port E61 (\"Well# SH-0001\") and every call-off (OD-SH1-...) say SH-0001.",
+    "<b>Pipe yard to berth 20 truck moves are counted unevenly.</b> The rule counts a line phrased as a dispatch or an arrival, so E79 and E80 (four trucks from the Shuaiba Port pipe yard) and E49 (a truck dispatched to the pipe yard) are counted, while E75 and E87 (four trucks each, phrased as loading at the pipe yard) are not. Excluding every move inside the port gives 74 truck moves; this report shows 79. Confirm whether internal pipe yard moves should count.",
+    "<b>Charlie-3 on 04.10: fuel or fresh water.</b> Port E40 records 20 m³ of fuel; Vessel E19 records 20 m³ of fresh water. Read as fuel. The total is unchanged either way.",
+    "<b>Port E88 names two vessels for the same cement.</b> \"From Vessel Crest Argus-5\" and \"47MT ... from Vessel CA-1\". Vessel E30 records CA5 discharging cement. Not in the cubic-metre totals.",
+    "<b>Port E29 repeats E28</b> word for word, including ticket BAR-DT-06. Counted once. If they were two trucks, inbound moves are 54, not 53.",
+    "<b>Port E50 (05.10) repeats E43 (04.10)</b> word for word, including ticket CMT-OD-SH1-B-1-8. Counted once, on 04.10.",
+    "<b>COSL-DT-OD-SH1-B-1-3C is used twice on 01.10.</b> Port E10 (60 drill pipes) and E12 (2 lifts) carry the same ticket with different cargo. Counted as two trucks.",
+    "<b>The 01.10 summary lines disagree with the detail.</b> E16 and E17 say 2 trucks of lifts and 6 of drill pipe; the detail lines E7 to E14 show 4 and 4. The total, 8, agrees."
+  ],
+  "headline": "OD1 arrived at the new well location SHU-0001 and is spotting and building up the 21-1/4\" BOP. OPH remains off hired.",
+  "dailyOperations": {
+    "label": "Wed 07 Oct 2026",
+    "source": "Daily Ground Operations, as circulated in the 08.10.2026 email",
+    "lines": [
+      "One pickup dispatched to Bureau Veritas, Shuwaikh, with six lifts of water samples received from the OD1 and OPH locations, per delivery ticket RM-SP-9048.",
+      "Three trucks arrived from the Shuaiba Port pipe yard with three joints each of 36\" R3 casing for OD1 (call-off OD-SH1-B-3-1), per delivery ticket HPM-DT-1599.",
+      "One truck arrived from the Shuaiba Port pipe yard with three joints of 36\" R3 casing for OD1 (call-off OD-SH1-B-3-1), per delivery ticket HPM-DT-1598.",
+      "One truck arrived from NOV Ahmadi with two 6-1/2\" drilling jars for OD1 (call-off OD-SH1-A-1-17), per delivery ticket HPM-DT-1600.",
+      "Two call-off trucks arrived from a KOC facility with a KOC centralizer, redress kit, swell packer and compound for OD1 (call-off OD-SH1-B-3-1), per delivery ticket HPM-DT-1601.",
+      "One truck arrived from COSL Mina Abdallah with two lifts for OD1 (call-off OD-SH1-B-6-3), per delivery ticket COSL-DT-OD-SH1-B-6-3.",
+      "One truck arrived at the Shuaiba Port pipe yard from the CAT Jahra yard with a CAT power generator.",
+      "<b>Seven trucks</b> arrived and were offloaded with 35 joints of 30\" R3 casing, 234.51 ppf (CAT ID 70126882).",
+      "One truck arrived and was offloaded with 5 joints of 30\" R3 casing, 196.26 ppf (CAT ID 701268875).",
+      "Slinging of 36\" and 38\" R-2 and R-3 casing joints started at the pipe yard; 11 joints loaded on four regular trucks to move them to Shuaiba berth 20.",
+      "The cementing team arrived at Shuaiba Port to transfer bulk cement from vessel Crest Argus-5 to the port silos; <b>47 MT of cement</b> transferred to the port silos from vessel CA-1.",
+      "Fuel transferred to shore base equipment.",
+      "Al Mansoori completed inspection of 20 joints of 30\" R3 casing, 234.51 ppf (CAT ID 70126882).",
+      "The rest of the 36\" R3 casing, with a 36\" float shoe, a 36\" float collar, a 38\" × 36\" landing joint and two 36\" × 36\" crossovers, transferred from the pipe yard to berth 20, per DT-HPM-1601.",
+      "<b>Charlie-3</b> sailed to OD1 with the COSL BOP frame, per manifest CM-OD-1014.",
+      "Loading of 36\" and 38\" casing on <b>CA5</b> continuing."
+    ],
+    "extraNotes": [
+      "Vessel movements remain under <b>MARSEC Level 2</b>."
+    ]
+  }
+}
