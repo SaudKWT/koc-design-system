@@ -357,12 +357,15 @@ and reports a 7-day week for an 8-day period.
 ## Signatures
 
 **Whoever circulates the report signs it.** That is `DEFAULT_SIGNATURE` in
-`build.py`: Saud Abdulaziz AlKharji, Engineer Drilling & Workover, Drilling &
-Workover Operational Support Team, skharji@kockw.com.
+`build.py`. From report 29 it is Naser M Gh Hassan, Snr Drilling & Workover
+Engineer, Drilling & Workover Engineering Group, NHassan@kockw.com, taken from
+his own email signature. The signature belongs to the build, not to a week, so
+changing it re-signs every tab and every PDF. A week that must keep an earlier
+signer can set its own `signature` key.
 
 The sender of the source email is a different thing and belongs in
-`provenance`, which the dashboard prints under each week's heading. Report 24
-came from Rejeesh Kumar Kunjupillai, so his name appears there and nowhere else.
+`provenance`, which is kept in each week's data file. The reports come from
+Rejeesh Kumar Kunjupillai, so his name is recorded there and nowhere else.
 
 A week can override the block with a `signature` key (`name`, `lines`,
 `muted`). Nothing goes in that the person's own profile or email does not state,

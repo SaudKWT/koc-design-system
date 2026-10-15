@@ -1144,11 +1144,12 @@ def daily_log(log, key, title):
 
 
 DEFAULT_SIGNATURE = {
-    "name": "Saud Abdulaziz AlKharji",
+    "name": "Naser M Gh Hassan",
     "lines": ["Kuwait Oil Company (KOC)",
-              "Engineer Drilling &amp; Workover | "
-              "Drilling &amp; Workover Operational Support Team"],
-    "muted": ["skharji@kockw.com | www.kockw.com"],
+              "Snr Drilling &amp; Workover Engineer | "
+              "Drilling &amp; Workover Engineering Group"],
+    "muted": ["NHassan@kockw.com | www.kockw.com",
+              "Tel: +965 238 72718"],
 }
 
 
@@ -1156,8 +1157,9 @@ def signature(w):
     """Whoever is circulating the report signs it, which is the default below.
 
     A week may override it with a `signature` key. Nothing is invented: only
-    what the person's own profile or email states goes in, which is why there is
-    no phone or postal line here."""
+    what the person's own email signature states goes in. That signature has a
+    phone number, so it is here. Its fax field is blank, so it is not. Its
+    postal box is left off: nobody posts a reply to a dashboard."""
     sig = w.get("signature") or DEFAULT_SIGNATURE
     body = "<br>\n      ".join(sig.get("lines", []))
     muted = "<br>\n      ".join(sig.get("muted", []))
@@ -1917,8 +1919,8 @@ def main():
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
-    dates = args or ["2026-10-08", "2026-10-01", "2026-09-24", "2026-09-17",
-                     "2026-09-10", "2026-09-03", "2026-08-26"]
+    dates = args or ["2026-10-15", "2026-10-08", "2026-10-01", "2026-09-24",
+                     "2026-09-17", "2026-09-10", "2026-09-03", "2026-08-26"]
 
     picked = flags & {"--dashboard", "--email", "--notes", "--artifact"}
     want = {name: (f"--{name}" in flags or not picked)
