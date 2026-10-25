@@ -18,7 +18,11 @@
  */
 
 import {
+  ArrowDownToLine,
   Boxes,
+  Droplets,
+  Fuel,
+  LifeBuoy,
   LayoutDashboard,
   ClipboardList,
   Drill,
@@ -152,30 +156,35 @@ export const DWOS: TeamConfig = {
       id: "unit-1",
       label: "Unit 1",
       name: "North & West + Heavy Oil",
+      icon: Fuel,
       groups: drillingUnitGroups("unit-1"),
     },
     {
       id: "unit-2",
       label: "Unit 2",
       name: "South & East",
+      icon: Drill,
       groups: drillingUnitGroups("unit-2"),
     },
     {
       id: "unit-3",
       label: "Unit 3",
       name: "Deep",
+      icon: ArrowDownToLine,
       groups: drillingUnitGroups("unit-3"),
     },
     {
       id: "unit-4",
       label: "Unit 4",
       name: "Offshore",
+      icon: Ship,
       groups: drillingUnitGroups("unit-4"),
     },
     {
       id: "unit-5",
       label: "Unit 5",
       name: "Water Well",
+      icon: Droplets,
       groups: [
         {
           id: "overview",
@@ -199,6 +208,7 @@ export const DWOS: TeamConfig = {
       id: "unit-6",
       label: "Unit 6",
       name: "Well Intervention",
+      icon: Wrench,
       groups: [
         {
           id: "overview",
@@ -222,6 +232,7 @@ export const DWOS: TeamConfig = {
       id: "unit-7",
       label: "Unit 7",
       name: "Support",
+      icon: LifeBuoy,
       groups: [
         {
           id: "overview",

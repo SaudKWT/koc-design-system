@@ -85,6 +85,12 @@ export interface Unit {
   label: string;
   /** What the unit covers, e.g. "Deep". Shown in the header. Falls back to `label`. */
   name?: string;
+  /**
+   * The unit's mark in the switcher tile — a Ship for Offshore Logistics, a
+   * drop for Water Well. The number already sits beside it as the eyebrow
+   * ("UNIT 4"), so the tile can say what the unit IS. Falls back to the number.
+   */
+  icon?: LucideIcon;
   groups: NavGroup[];
 }
 

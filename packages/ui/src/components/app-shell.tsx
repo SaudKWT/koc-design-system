@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, ChevronRight, ChevronsUpDown, Pin, Search, X } from "lucide-react";
+import { Check, ChevronRight, ChevronsUpDown, LayoutGrid, Pin, Search, X } from "lucide-react";
 
 import { cn } from "../lib/utils";
 import {
@@ -72,8 +72,11 @@ import {
  *     re-confirmed it for the rework), just not dressed as the brand.
  *   - Find (Ctrl K): filters every destination in the unit and the team-wide
  *     zone as you type; Enter goes to the first match, Esc clears.
- *   - Pinned and Recent, per browser, so the screen you open every morning is
- *     one click from anywhere. Shown only once they hold something.
+ *   - Pinned, per browser, so the screen you open every morning is one click
+ *     from anywhere. Shown only once something is pinned. rig3's Recent is
+ *     NOT here: Saud kept it for the landing page alone (2026-10-25) — an app
+ *     has a handful of screens and the folded groups already show where you
+ *     are, so a recent list only repeated them.
  *   - Each app (NavGroup) is a folded row with its code in mono; its screens
  *     nest under it. The group holding the current screen opens itself. Folded
  *     by default because seven units' worth of apps is the case to design for.
@@ -276,7 +279,7 @@ function ShellSidebar({
     [everyGroup],
   );
 
-  const memory = useShellMemory(team.id, destinations, activeItemId);
+  const memory = useShellMemory(team.id, destinations);
 
   const [query, setQuery] = React.useState("");
   const field = React.useRef<HTMLInputElement>(null);
@@ -430,27 +433,6 @@ function ShellSidebar({
             {memory.pinned.length > 0 && (
               <Remembered title="Pinned" items={memory.pinned} activeItemId={activeItemId} renderLink={renderLink} memory={memory} />
             )}
-            {memory.recent.length > 0 && (
-              <Remembered
-                title="Recent"
-                items={memory.recent}
-                activeItemId={activeItemId}
-                renderLink={renderLink}
-                memory={memory}
-                action={
-                  <button
-                    type="button"
-                    onClick={memory.clearRecent}
-                    className="ml-auto rounded-md px-1.5 text-2xs text-sidebar-foreground/70 outline-hidden hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-                  >
-                    Clear<span className="sr-only"> recent screens</span>
-                  </button>
-                }
-              />
-            )}
-
-            {/* "Applications", not the unit's name: the switcher directly above
-                already says which unit this is. */}
             <FoldedGroups
               label={currentUnit === ALL_UNITS ? "All units" : "Applications"}
               groups={unitGroups}
@@ -534,8 +516,15 @@ function UnitSwitcher({
               />
             }
           >
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent font-mono text-2xs font-medium">
-              {currentUnit === ALL_UNITS ? "ALL" : (unit?.label ?? "").replace(/\D+/g, "") || "—"}
+            {/* The unit's own icon when it has one; the number otherwise. */}
+            <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent font-mono text-2xs font-medium [&>svg]:size-4 [&>svg]:text-sidebar-foreground/80">
+              {currentUnit === ALL_UNITS ? (
+                <LayoutGrid />
+              ) : unit?.icon ? (
+                <unit.icon />
+              ) : (
+                (unit?.label ?? "").replace(/\D+/g, "") || "—"
+              )}
             </span>
             {/* `min-w-0` is what makes `truncate` work on the children: a grid
                 item's default `min-width: auto` refuses to shrink below its
@@ -557,6 +546,7 @@ function UnitSwitcher({
             <DropdownMenuSeparator />
             {team.units.map((u) => (
               <DropdownMenuItem key={u.id} onClick={() => selectUnit(u.id)} className="gap-2">
+                {u.icon && <u.icon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />}
                 <div className="grid min-w-0 flex-1">
                   <span>{u.label}</span>
                   {u.name && <span className="truncate text-xs text-muted-foreground">{u.name}</span>}
@@ -567,6 +557,7 @@ function UnitSwitcher({
             <DropdownMenuSeparator />
             {/* Team leads genuinely need to see across units. */}
             <DropdownMenuItem onClick={() => selectUnit(ALL_UNITS)} className="gap-2">
+              <LayoutGrid aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
               <span className="flex-1">All units</span>
               {currentUnit === ALL_UNITS && <Check className="size-4" />}
             </DropdownMenuItem>
@@ -844,17 +835,13 @@ function flatten(items: NavItem[]): NavItem[] {
   return items.flatMap((i) => [i, ...flatten(i.children ?? [])]);
 }
 
-// ── Pinned and recent ───────────────────────────────────────────────────────
+// ── Pinned ──────────────────────────────────────────────────────────────────
 
 interface ShellMemory {
   pinned: Destination[];
-  recent: Destination[];
   isPinned: (id: string) => boolean;
   togglePin: (id: string) => void;
-  clearRecent: () => void;
 }
-
-const RECENT_MAX = 5;
 
 /**
  * Per browser and per team (localStorage), which is the right scope for "my
@@ -862,65 +849,35 @@ const RECENT_MAX = 5;
  * windows, locked-down profiles), so every access is guarded and the shell
  * works without it. Ids that no longer exist in the config are dropped on read.
  *
- * Recent records the screen being LEFT, not the one just opened: the current
- * screen is already highlighted below, and listing it again at the top would
- * push the useful entry down.
+ * Pins only. rig3's Recent belongs to the landing page (Saud, 2026-10-25); in
+ * an app it repeated what the folded groups already show.
  */
-function useShellMemory(teamId: string, destinations: Destination[], activeItemId?: string): ShellMemory {
+function useShellMemory(teamId: string, destinations: Destination[]): ShellMemory {
   const key = `koc-shell:${teamId}`;
-  const read = React.useCallback((): { pinned: string[]; recent: string[] } => {
+  const [pinned, setPinned] = React.useState<string[]>(() => {
     try {
       const raw = window.localStorage.getItem(key);
-      const parsed = raw ? (JSON.parse(raw) as { pinned?: unknown; recent?: unknown }) : {};
-      const ids = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
-      return { pinned: ids(parsed.pinned), recent: ids(parsed.recent) };
+      const parsed = raw ? (JSON.parse(raw) as { pinned?: unknown }) : {};
+      return Array.isArray(parsed.pinned) ? parsed.pinned.filter((x): x is string => typeof x === "string") : [];
     } catch {
-      return { pinned: [], recent: [] };
+      return [];
     }
-  }, [key]);
+  });
 
-  const [state, setState] = React.useState(read);
-  const write = React.useCallback(
-    (next: { pinned: string[]; recent: string[] }) => {
-      setState(next);
+  const byId = React.useMemo(() => new Map(destinations.map((d) => [d.item.id, d])), [destinations]);
+
+  return {
+    pinned: pinned.map((id) => byId.get(id)).filter((d): d is Destination => Boolean(d)),
+    isPinned: (id) => pinned.includes(id),
+    togglePin: (id) => {
+      const next = pinned.includes(id) ? pinned.filter((p) => p !== id) : [...pinned, id];
+      setPinned(next);
       try {
-        window.localStorage.setItem(key, JSON.stringify(next));
+        window.localStorage.setItem(key, JSON.stringify({ pinned: next }));
       } catch {
         /* storage blocked: the session still works, it just forgets */
       }
     },
-    [key],
-  );
-
-  const previous = React.useRef(activeItemId);
-  React.useEffect(() => {
-    const left = previous.current;
-    previous.current = activeItemId;
-    if (!left || left === activeItemId) return;
-    setState((s) => {
-      const next = { ...s, recent: [left, ...s.recent.filter((id) => id !== left)].slice(0, RECENT_MAX) };
-      try {
-        window.localStorage.setItem(key, JSON.stringify(next));
-      } catch {
-        /* see above */
-      }
-      return next;
-    });
-  }, [activeItemId, key]);
-
-  const byId = React.useMemo(() => new Map(destinations.map((d) => [d.item.id, d])), [destinations]);
-  const resolve = (ids: string[]) => ids.map((id) => byId.get(id)).filter((d): d is Destination => Boolean(d));
-
-  return {
-    pinned: resolve(state.pinned),
-    recent: resolve(state.recent.filter((id) => id !== activeItemId && !state.pinned.includes(id))),
-    isPinned: (id) => state.pinned.includes(id),
-    togglePin: (id) =>
-      write({
-        ...state,
-        pinned: state.pinned.includes(id) ? state.pinned.filter((p) => p !== id) : [...state.pinned, id],
-      }),
-    clearRecent: () => write({ ...state, recent: [] }),
   };
 }
 
