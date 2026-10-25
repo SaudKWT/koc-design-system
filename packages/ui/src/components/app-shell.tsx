@@ -379,7 +379,7 @@ function ShellSidebar({
                 aria-describedby={`${navId}-find-hint`}
                 aria-controls={navId}
                 placeholder="Find a screen"
-                className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-8 text-sm outline-hidden placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring [&::-webkit-search-cancel-button]:hidden"
+                className="h-8 w-full rounded-lg border border-input bg-background pl-8 pr-8 text-sm outline-hidden placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring [&::-webkit-search-cancel-button]:hidden"
               />
               {query && (
                 <button
@@ -400,7 +400,11 @@ function ShellSidebar({
               type="button"
               onClick={() => setFinding(true)}
               aria-describedby={`${navId}-find-hint`}
-              className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-sm text-sidebar-foreground/60 outline-hidden transition-colors duration-fast ease-out hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              // A hairline like a card's edge (Saud, 2026-10-25): enough to read
+              // as a field, quiet enough not to compete with the nav. The token
+              // is the decorative `border`, not `input`, because at rest this
+              // is a button — the field it opens into keeps `border-input`.
+              className="flex h-8 w-full items-center gap-2 rounded-lg border border-sidebar-border bg-card/70 px-2 text-sm text-sidebar-foreground/60 outline-hidden transition-colors duration-fast ease-out hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             >
               <Search aria-hidden="true" className="size-4 shrink-0" />
               <span className="flex-1 text-left">Find a screen</span>
