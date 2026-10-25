@@ -217,7 +217,11 @@ export function AppShell({
         <SidebarRail />
       </Sidebar>
 
-      <SidebarInset>
+      {/* `min-w-0`: the inset is a flex child, and without it a wide table
+          anywhere in the page grows the whole main area past the viewport
+          instead of scrolling inside its own container — found in DWOS's
+          ten-column call-off register (2026-10-25). */}
+      <SidebarInset className="min-w-0">
         {/* Phones only: the sidebar is a sheet there and needs a way in. On a
             desktop rig3 has no top bar — the rail and Ctrl B collapse the
             sidebar, and the page's eyebrow says where you are. */}
