@@ -114,9 +114,9 @@ const META: Record<string, Meta> = {
   chart: {
     title: "Charts",
     description:
-      "TrendChart, ComparisonChart and VolumeChart. Series colour comes from the tested --chart-1..5 tokens in order, every chart carries a screen-reader text alternative, and the React 19 StrictMode fix is not a prop.",
+      "TrendChart, ComparisonChart, VolumeChart, StackedChart and BarList — plain SVG in the rig3 style, no chart library. Series colour comes from the tested --chart-1..5 tokens in order, every chart has hover values and a table, and with a `title` it draws its own frame with a Table toggle.",
     categories: ["data", "koc"],
-    docs: "isAnimationActive={false} is hardcoded: under StrictMode Recharts' mount tween never advances past frame zero and lines render with correct geometry, opacity 1 and zero pixels drawn — still true in recharts 3.8. Adjacent chart tokens are asserted at ΔE2000 >= 15 AND >= 1.2:1 in greyscale, so series survive a printout; choosing colours per chart throws that away.",
+    docs: "No dependencies: Recharts was removed on 2026-10-25 to keep its dependency tree out of the cybersecurity approval pack (and its React 19 StrictMode invisible-line bug went with it). Prefer three series or fewer — chart-4/chart-5 fail colour-blind separation under the dataviz validator. Pass `title` for a self-framed chart; omit it inside a Card that already has one, and the table stays available to screen readers (or visible with `showTable`).",
   },
   sonner: {
     title: "Toaster",

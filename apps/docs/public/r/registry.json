@@ -95,7 +95,7 @@
       "name": "chart",
       "type": "registry:ui",
       "title": "Charts",
-      "description": "TrendChart, ComparisonChart and VolumeChart. Series colour comes from the tested --chart-1..5 tokens in order, every chart carries a screen-reader text alternative, and the React 19 StrictMode fix is not a prop.",
+      "description": "TrendChart, ComparisonChart, VolumeChart, StackedChart and BarList — plain SVG in the rig3 style, no chart library. Series colour comes from the tested --chart-1..5 tokens in order, every chart has hover values and a table, and with a `title` it draws its own frame with a Table toggle.",
       "categories": [
         "data",
         "koc"

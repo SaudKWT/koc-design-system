@@ -185,14 +185,18 @@ export * from "./components/breadcrumb";
 export { Calendar } from "./components/calendar";
 
 // ── Charts ──────────────────────────────────────────────────────────────────
-// Series colour comes from the tested --chart-1..5 tokens, the React 19
-// StrictMode fix is not optional, and every chart carries a text alternative.
+// Plain SVG since 2026-10-25 (no chart library): series colour from the tested
+// --chart-1..5 tokens, hover values, and every chart carries a table.
 
 export {
   TrendChart,
   ComparisonChart,
   VolumeChart,
+  StackedChart,
+  BarList,
+  niceTicks,
   type ChartProps,
   type ChartSeries,
+  type StackedChartProps,
 } from "./components/chart";
 export { Toaster, toast } from "./components/sonner";
