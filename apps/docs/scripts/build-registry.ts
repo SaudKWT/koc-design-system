@@ -172,9 +172,9 @@ const META: Record<string, Meta> = {
   "page-header": {
     title: "Page Header",
     description:
-      "The top of every KOC application screen — title, optional breadcrumb, actions and meta. The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
+      "The top of every KOC application screen — an eyebrow (the in-app path), a light large h1, actions and meta — plus SectionHeading for a long page's numbered parts ('02 — Figures'). The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
     categories: ["layout", "koc"],
-    docs: "Keep breadcrumbs shallow. Directorate and Group are identity, not navigation, and the unit is already in the sidebar switcher — a breadcrumb here should carry only the path within the app.",
+    docs: "Keep breadcrumbs shallow: they render as the eyebrow, and Directorate and Group are identity, not navigation. The title is weight 300 by design (rig3, 2026-10-25) — hierarchy comes from size and air, so do not bold it back.",
   },
   "date-range-filter": {
     title: "Date Range Filter",
@@ -263,9 +263,16 @@ const META: Record<string, Meta> = {
   "stat-card": {
     title: "Stat Card",
     description:
-      "A KPI with a change indicator. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
+      "A KPI tile in the rig3 style — label, uppercase tag, a light figure with its unit, the change with a trend glyph, a sparkline and a one-line description; `density=\"compact\"` for a KPI strip. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
     categories: ["data", "koc"],
-    docs: "Set `intent` explicitly: 'higher-is-better' (production, uptime), 'lower-is-better' (flaring, emissions, downtime, water cut). Defaults to 'neutral' — an honest grey delta beats a confident wrong colour.",
+    docs: "Set `intent` explicitly: 'higher-is-better' (production, uptime), 'lower-is-better' (flaring, emissions, downtime, water cut). Defaults to 'neutral' — an honest grey delta beats a confident wrong colour. `trend` takes the recent series oldest-first.",
+  },
+  sparkline: {
+    title: "Sparkline",
+    description:
+      "A trend's shape in currentColor, no axes — the line under every KPI tile. Decorative to assistive technology on purpose: the figure and change line beside it already say what it shows.",
+    categories: ["data", "koc"],
+    docs: "Never the only place a trend appears; when the values matter, use @koc/chart, which has a table view. Give it a fixed height or let it fill a flex column (`flex-1`); the stroke stays 1.5px either way.",
   },
   "data-table": {
     title: "Data Table",
@@ -547,6 +554,16 @@ const themeScales: Record<string, string> = {
   ...Object.fromEntries(
     Object.entries(foundation.fontSize).map(([k, v]) => [`text-${k}`, v]),
   ),
+
+  /**
+   * The rig3 display weight and the eyebrow tracking (2026-10-25). `font-light`
+   * exists in stock Tailwind at the same 300, so this pins rather than adds;
+   * `tracking-caps` is a KOC step with no stock equivalent — the text-2xs
+   * lesson again: without this line it matches no rule in a consuming app and
+   * every eyebrow quietly loses its spacing.
+   */
+  "font-weight-light": foundation.fontWeight.light,
+  "tracking-caps": foundation.letterSpacing.caps,
 
   /**
    * Breakpoints, for `--breakpoint-3xl` specifically. It exists because control

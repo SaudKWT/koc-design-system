@@ -130,6 +130,9 @@ ${Object.entries(foundation.fontSize)
   .map(([k, v]) => `  --text-${k}: ${v};`)
   .join("\n")}
 
+  --font-weight-light: ${foundation.fontWeight.light};
+  --tracking-caps: ${foundation.letterSpacing.caps};
+
 ${Object.entries(foundation.radius)
   .map(([k, v]) => `  --radius${scaleKey(k)}: ${v};`)
   .join("\n")}

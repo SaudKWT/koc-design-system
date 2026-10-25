@@ -32,6 +32,7 @@ export {
   type StatusBadgeProps,
 } from "./components/status-badge";
 export { StatCard, type StatCardProps, type StatIntent } from "./components/stat-card";
+export { Sparkline, type SparklineProps } from "./components/sparkline";
 export { Alert, AlertTitle, AlertDescription, alertVariants, type AlertProps } from "./components/alert";
 export {
   Table,
@@ -141,7 +142,13 @@ export { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "./co
 
 // ── Page-level composition ──────────────────────────────────────────────────
 
-export { PageHeader, type PageHeaderProps, type PageHeaderCrumb } from "./components/page-header";
+export {
+  PageHeader,
+  SectionHeading,
+  type PageHeaderProps,
+  type PageHeaderCrumb,
+  type SectionHeadingProps,
+} from "./components/page-header";
 export { PageNav, type PageNavProps, type PageNavGroup, type PageNavItem } from "./components/page-nav";
 export { ConfirmDialog, type ConfirmDialogProps } from "./components/confirm-dialog";
 export {

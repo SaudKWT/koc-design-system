@@ -515,6 +515,10 @@
       }
     },
     "fontWeight": {
+      "light": {
+        "value": "300",
+        "type": "fontWeights"
+      },
       "normal": {
         "value": "400",
         "type": "fontWeights"

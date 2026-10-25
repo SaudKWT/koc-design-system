@@ -65,6 +65,15 @@ export const fontSize = {
 } as const;
 
 export const fontWeight = {
+  /**
+   * Display weight — figures and section titles at 24px and above, and only
+   * there. Added 2026-10-25 with the rig3 design language: a light numeral
+   * reads as the data and lets the label and the change line carry the
+   * chrome, where a semibold figure shouts over its own context. Below 24px
+   * Inter at 300 thins out to a hairline on a 96-dpi KOC monitor, so it is
+   * never used for text.
+   */
+  light: "300",
   normal: "400",
   medium: "500", // default for UI labels — 400 reads limp in dense chrome
   semibold: "600",
@@ -85,6 +94,19 @@ export const letterSpacing = {
   normal: "0",
   wide: "0.025em",
   wider: "0.06em", // ALL-CAPS labels, which need air to stay readable
+  /**
+   * The eyebrow — an 11px all-caps label set wide: "FIGURES", "02 — FIGURES",
+   * a KPI's "YTD" tag. Wider than `wider` because at 11px capitals need more
+   * air than at 13, and because the spacing is what makes it read as a label
+   * rather than as shouting. rig3 wrote it as tracking-[0.2em] and
+   * tracking-[0.18em]; one step serves both.
+   *
+   * The only step build.ts emits (as --tracking-caps → `tracking-caps`). The
+   * rest of this scale is documentation: emitting `tight` would silently move
+   * every `tracking-tight` in every consuming app from Tailwind's -0.025em to
+   * -0.015em, and the large figures were designed against the former.
+   */
+  caps: "0.18em",
 } as const;
 
 /**

@@ -36,13 +36,36 @@ import { cn } from "../lib/utils";
  *   stat-card.tsx exists to prevent, and its bg-teal-400/10 is a raw palette
  *   colour, which is invariant 1 outright.
  */
+/*
+ * RESTYLED AGAIN 2026-10-25 — the rig3 surface, which Saud chose as the base
+ * for the whole system:
+ *
+ *   rounded-xl, a hairline border, NO shadow, and the card token at 70% over
+ *   a backdrop blur. The page's fog shows faintly through, so a card reads as
+ *   a pane laid on the page rather than a box lifted off it — the hero's fade
+ *   continues under the content instead of stopping at a white edge.
+ *
+ *   Denser: 16px padding and a 12px gap, down from 24/24. rig3 runs eight tiles
+ *   across a 1440px screen under a hero; at 24px that does not fit, and the
+ *   whitespace that matters is BETWEEN sections, not inside every card.
+ *
+ *   Quiet titles: CardTitle is 14px medium, CardDescription 12px. The data is
+ *   what a card is for; section headings (PageHeader's SectionHeading) carry
+ *   the page's hierarchy in light large type, so card chrome need not shout.
+ *
+ * IT MAKES CARDS SMALLER — the reverse of the August change. Visible in any
+ * consuming app the moment @koc/card is re-added; nothing errors.
+ *
+ * Contrast is unaffected: 70% card over the background lands between two
+ * surfaces that test:tokens already clears every foreground against.
+ */
 const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
       data-slot="card"
       className={cn(
-        "flex flex-col gap-6 rounded-lg border bg-card py-6 text-card-foreground shadow-xs",
+        "flex flex-col gap-3 rounded-xl border bg-card/70 py-4 text-card-foreground backdrop-blur",
         className,
       )}
       {...props}
@@ -59,9 +82,9 @@ const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
       /* A grid, so CardAction can occupy a second column spanning both rows
          without the title and description having to know it is there. */
       className={cn(
-        "grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6",
+        "grid auto-rows-min grid-rows-[auto_auto] items-start gap-0.5 px-4",
         "has-data-[slot=card-action]:grid-cols-[1fr_auto]",
-        "[.border-b]:pb-6",
+        "[.border-b]:pb-4",
         className,
       )}
       {...props}
@@ -75,13 +98,12 @@ const CardTitle = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
     <div
       ref={ref}
       data-slot="card-title"
-      /* No `leading-tight`: KOC emits --text-lg with no paired line-height, so
-         Tailwind's default survives and text-lg lands on exactly 28px, which is
-         the reference's figure. And no `tracking-tight` — foundation.ts defines
-         a letterSpacing scale that build.ts never emits, so it silently applied
-         Tailwind's -0.025em rather than KOC's -0.015em. Removing it is honest
-         until that scale actually ships. */
-      className={cn("text-lg font-semibold", className)}
+      /* 14px medium since the rig3 restyle (it was 18px semibold): the card's
+         title labels its content, it does not head the page — SectionHeading
+         does that. No `tracking-tight`: foundation.ts's letterSpacing scale is
+         not emitted except for `caps`, so it would silently apply Tailwind's
+         -0.025em rather than KOC's -0.015em. */
+      className={cn("text-sm font-medium", className)}
       {...props}
     />
   ),
@@ -93,7 +115,7 @@ const CardDescription = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HT
     <div
       ref={ref}
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-xs text-muted-foreground", className)}
       {...props}
     />
   ),
@@ -102,7 +124,7 @@ CardDescription.displayName = "CardDescription";
 
 const CardContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} data-slot="card-content" className={cn("px-6", className)} {...props} />
+    <div ref={ref} data-slot="card-content" className={cn("px-4", className)} {...props} />
   ),
 );
 CardContent.displayName = "CardContent";
@@ -112,7 +134,7 @@ const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDiv
     <div
       ref={ref}
       data-slot="card-footer"
-      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      className={cn("flex items-center px-4 [.border-t]:pt-4", className)}
       {...props}
     />
   ),

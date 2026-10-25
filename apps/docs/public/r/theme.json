@@ -47,6 +47,8 @@
       "text-3xl": "1.875rem",
       "text-4xl": "2.25rem",
       "text-5xl": "3rem",
+      "font-weight-light": "300",
+      "tracking-caps": "0.18em",
       "breakpoint-sm": "640px",
       "breakpoint-md": "768px",
       "breakpoint-lg": "1024px",

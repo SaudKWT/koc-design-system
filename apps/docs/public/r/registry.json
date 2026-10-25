@@ -222,7 +222,7 @@
       "name": "page-header",
       "type": "registry:ui",
       "title": "Page Header",
-      "description": "The top of every KOC application screen — title, optional breadcrumb, actions and meta. The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
+      "description": "The top of every KOC application screen — an eyebrow (the in-app path), a light large h1, actions and meta — plus SectionHeading for a long page's numbered parts ('02 — Figures'). The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
       "categories": [
         "layout",
         "koc"
@@ -293,10 +293,20 @@
       ]
     },
     {
+      "name": "sparkline",
+      "type": "registry:ui",
+      "title": "Sparkline",
+      "description": "A trend's shape in currentColor, no axes — the line under every KPI tile. Decorative to assistive technology on purpose: the figure and change line beside it already say what it shows.",
+      "categories": [
+        "data",
+        "koc"
+      ]
+    },
+    {
       "name": "stat-card",
       "type": "registry:ui",
       "title": "Stat Card",
-      "description": "A KPI with a change indicator. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
+      "description": "A KPI tile in the rig3 style — label, uppercase tag, a light figure with its unit, the change with a trend glyph, a sparkline and a one-line description; `density=\"compact\"` for a KPI strip. Direction and sentiment are separate inputs, because at an oil company 'up' is not always good.",
       "categories": [
         "data",
         "koc"

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "sparkline",
+  "type": "registry:ui",
+  "title": "Sparkline",
+  "description": "A trend's shape in currentColor, no axes — the line under every KPI tile. Decorative to assistive technology on purpose: the figure and change line beside it already say what it shows.",
+  "categories": [
+    "data",
+    "koc"
+  ],
+  "docs": "Never the only place a trend appears; when the values matter, use @koc/chart, which has a table view. Give it a fixed height or let it fill a flex column (`flex-1`); the stroke stays 1.5px either way.",
+  "registryDependencies": [
+    "@koc/utils"
+  ],
+  "files": [
+    {
+      "path": "components/ui/sparkline.tsx",
+      "content": "import * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\n/**\n * Sparkline — a trend's shape, in `currentColor`, with no axes.\n *\n * Ported from the DWEG landing's rig3 page (2026-10-25), where every KPI tile\n * carries one under its figure. A sparkline answers one question — \"which way,\n * and is that new?\" — and nothing else, so it deliberately has no scale, no\n * tooltip and no values. When the numbers matter, use a chart from\n * `@koc/chart`, which has all three and a table view.\n *\n * DECORATIVE TO ASSISTIVE TECHNOLOGY, ON PURPOSE\n * ----------------------------------------------\n * `aria-hidden`: the figure and the change line beside it already say, in\n * words, what the line shows. A screen reader announcing \"image\" under every\n * tile adds noise and no information. If a sparkline is ever the ONLY place a\n * trend appears, it is the wrong component.\n *\n * SIZING\n * ------\n * The SVG stretches to its box (`preserveAspectRatio=\"none\"`) and the stroke\n * does not (`vector-effect: non-scaling-stroke`), so a tile can give it a\n * fixed height or let it fill the space left over (`flex-1`) and the line\n * stays 1.5px either way.\n */\nexport interface SparklineProps extends Omit<React.SVGProps<SVGSVGElement>, \"values\"> {\n  /** At least two points; fewer draws nothing. */\n  values: number[];\n  strokeWidth?: number;\n}\n\nconst W = 100;\nconst H = 28;\n\nexport function Sparkline({ values, strokeWidth = 1.5, className, ...props }: SparklineProps) {\n  if (values.length < 2) return null;\n  const min = Math.min(...values);\n  const max = Math.max(...values);\n  const span = max - min || 1;\n  const points = values\n    .map((v, i) => `${(i / (values.length - 1)) * W},${H - ((v - min) / span) * (H - 4) - 2}`)\n    .join(\" \");\n\n  return (\n    <svg\n      data-slot=\"sparkline\"\n      viewBox={`0 0 ${W} ${H}`}\n      preserveAspectRatio=\"none\"\n      aria-hidden=\"true\"\n      focusable=\"false\"\n      className={cn(\"h-7 w-full overflow-visible text-primary/70\", className)}\n      {...props}\n    >\n      <polyline\n        points={points}\n        fill=\"none\"\n        stroke=\"currentColor\"\n        strokeWidth={strokeWidth}\n        strokeLinecap=\"round\"\n        strokeLinejoin=\"round\"\n        vectorEffect=\"non-scaling-stroke\"\n      />\n    </svg>\n  );\n}\n",
+      "type": "registry:ui",
+      "target": "components/ui/sparkline.tsx"
+    }
+  ]
+}
