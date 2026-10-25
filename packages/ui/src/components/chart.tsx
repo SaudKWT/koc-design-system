@@ -317,12 +317,19 @@ function Grid({ ticks, y, x0, x1, fmt }: { ticks: number[]; y: (v: number) => nu
  * points sit on the plot's edges, where a centred label would be clipped.
  */
 function XLabels({ cats, x, y, room, edges }: { cats: string[]; x: (i: number) => number; y: number; room: number; edges?: boolean }) {
-  const every = Math.max(1, Math.ceil(cats.length / Math.max(2, Math.floor(room / 52))));
+  // Room per label from the longest label at the 10px axis size (~5.6px a
+  // character, plus a gap), so "9 Jul–15 Jul" thins sooner than "Jul".
+  const longest = cats.reduce((m, c) => Math.max(m, c.length), 0);
+  const per = Math.max(36, longest * 5.6 + 12);
+  const every = Math.max(1, Math.ceil(cats.length / Math.max(1, Math.floor(room / per))));
   const anchor = (i: number) => (!edges || cats.length < 2 ? "middle" : i === 0 ? "start" : i === cats.length - 1 ? "end" : "middle");
+  // Counted back from the LAST category, so the latest — the one people read —
+  // is always labelled and never crowds the label before it.
+  const shown = (i: number) => (cats.length - 1 - i) % every === 0;
   return (
     <g aria-hidden="true">
       {cats.map((c, i) =>
-        i % every === 0 || i === cats.length - 1 ? (
+        shown(i) ? (
           <text key={`${c}-${i}`} x={x(i)} y={y} textAnchor={anchor(i)} className={AXIS}>
             {c}
           </text>

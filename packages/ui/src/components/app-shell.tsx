@@ -445,8 +445,10 @@ function ShellSidebar({
               />
             )}
 
+            {/* "Applications", not the unit's name: the switcher directly above
+                already says which unit this is. */}
             <FoldedGroups
-              label={unitLabel}
+              label={currentUnit === ALL_UNITS ? "All units" : "Applications"}
               groups={unitGroups}
               activeItemId={activeItemId}
               renderLink={renderLink}
@@ -598,6 +600,24 @@ function FoldedGroups({
   }, [activeItemId]);
 
   const labelId = React.useId();
+
+  // A zone holding one group of the same name ("Team-wide" in "Team-wide")
+  // lists its screens directly: a folded row that only repeats the label
+  // above it is a click for nothing.
+  if (groups.length === 1 && groups[0].label === label) {
+    const only = groups[0];
+    return (
+      <SidebarGroup aria-labelledby={labelId}>
+        <SidebarGroupLabel id={labelId}>{label}</SidebarGroupLabel>
+        <SidebarMenu>
+          {flatten(only.items).map((item) => (
+            <DestinationRow key={item.id} d={{ item, group: only }} activeItemId={activeItemId} renderLink={renderLink} memory={memory} />
+          ))}
+        </SidebarMenu>
+      </SidebarGroup>
+    );
+  }
+
   return (
     <SidebarGroup aria-labelledby={labelId}>
       <SidebarGroupLabel id={labelId}>{label}</SidebarGroupLabel>
