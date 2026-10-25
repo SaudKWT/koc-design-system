@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { gotoSection } from "./helpers";
+import { gotoSection, openScreen } from "./helpers";
 
 /**
  * The full-application mockup.
@@ -32,17 +32,17 @@ test.describe("full application", () => {
     const heading = page.locator(`${FRAME} h1`).first();
     await expect(heading).toHaveText(/Unit 1/);
 
-    await page.locator(`${FRAME} a`, { hasText: "Daily drilling reports" }).click();
+    await openScreen(page.locator(FRAME), "Daily drilling reports");
     await expect(heading).toHaveText("Daily Drilling Reports");
 
-    await page.locator(`${FRAME} a`, { hasText: "Rig status" }).click();
+    await openScreen(page.locator(FRAME), "Rig status");
     await expect(heading).toHaveText("Rig status");
   });
 
   test("switching unit keeps you on the same screen", async ({ page }) => {
     await gotoSection(page, "Full application");
 
-    await page.locator(`${FRAME} a`, { hasText: "NPT tracking" }).click();
+    await openScreen(page.locator(FRAME), "NPT tracking");
     await expect(page.locator(`${FRAME} h1`).first()).toHaveText("NPT tracking");
 
     await switchUnit(page, "Unit 3");
@@ -62,7 +62,7 @@ test.describe("full application", () => {
   }) => {
     await gotoSection(page, "Full application");
 
-    await page.locator(`${FRAME} a`, { hasText: "NPT tracking" }).click();
+    await openScreen(page.locator(FRAME), "NPT tracking");
     await expect(page.locator(`${FRAME} h1`).first()).toHaveText("NPT tracking");
 
     // Unit 5 (Water Well) has no NPT screen. Leaving activeItemId pointing at
@@ -85,7 +85,7 @@ test.describe("full application", () => {
   test("unbuilt screens say so rather than faking it", async ({ page }) => {
     await gotoSection(page, "Full application");
 
-    await page.locator(`${FRAME} a`, { hasText: "Well programmes" }).click();
+    await openScreen(page.locator(FRAME), "Well programmes");
 
     await expect(page.locator(`${FRAME} h1`).first()).toHaveText("Well programmes");
     await expect(page.locator(FRAME)).toContainText("Not built");

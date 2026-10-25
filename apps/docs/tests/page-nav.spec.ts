@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { gotoSection } from "./helpers";
+import { gotoSection, openScreen } from "./helpers";
 
 /**
  * Navigation menu behaviour, written with the Base UI port. This primitive
@@ -17,9 +17,7 @@ test.describe("page nav", () => {
   }) => {
     await gotoSection(page, "Full application");
     // The PageNav lives on the DDR screen, not the landing dashboard.
-    await page
-      .locator('[data-shell-frame] a', { hasText: "Daily drilling reports" })
-      .click();
+    await openScreen(page.locator("[data-shell-frame]"), "Daily drilling reports");
 
     const trigger = page.locator('[data-slot="navigation-menu-trigger"]').first();
     await expect(trigger).toBeVisible();

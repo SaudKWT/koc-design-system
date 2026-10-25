@@ -316,7 +316,7 @@ function ShellSidebar({
     <>
       <SidebarHeader className="gap-1 pb-1">
         {/* The brand row — identity, not a control. */}
-        <div className="flex h-14 items-center gap-2.5 px-1 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:px-0">
+        <div className="flex h-14 items-center gap-2.5 px-1 group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-1 group-data-[collapsible=icon]:px-0">
           {brandMark ? (
             <span
               aria-hidden="true"
@@ -329,12 +329,17 @@ function ShellSidebar({
           ) : (
             <span aria-hidden="true" className="size-8 shrink-0 rounded-md bg-primary" />
           )}
-          <span className="min-w-0 leading-tight group-data-[collapsible=icon]:hidden">
+          <span className="min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
             <span className="block truncate text-sm font-semibold" title={team.name}>
               {team.shortName}
             </span>
             <span className="block truncate text-xs text-sidebar-foreground/70">Kuwait Oil Company</span>
           </span>
+          {/* The visible way to fold the sidebar to its rail, now that there is
+              no top bar to hold it. The rail edge and Ctrl B still work, but
+              neither is discoverable from a keyboard. Hidden on phones, where
+              the sidebar is a sheet with its own close. */}
+          <SidebarTrigger className="ml-auto shrink-0 text-sidebar-foreground/70 max-md:hidden" />
         </div>
 
         <UnitSwitcher team={team} currentUnit={currentUnit} unitLabel={unitLabel} selectUnit={selectUnit} />
@@ -406,7 +411,10 @@ function ShellSidebar({
                 </button>
               </p>
             ) : (
-              <SidebarMenu>
+              // Choosing a match ends the search: the query clears so the nav
+              // shows where you landed. (rig3 kept its query because its links
+              // open in a new tab; an app's links replace the page.)
+              <SidebarMenu onClick={(e) => (e.target as Element).closest("a[href]") && setQuery("")}>
                 {found.map((d) => (
                   <DestinationRow key={d.item.id} d={d} activeItemId={activeItemId} renderLink={renderLink} memory={memory} hint />
                 ))}

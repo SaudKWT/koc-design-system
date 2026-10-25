@@ -153,3 +153,20 @@ export async function focusableCount(page: Page): Promise<number> {
     }).length;
   }, [...DELEGATING_ROLES]);
 }
+
+/**
+ * Reach a screen through the shell's Find box (rig3, 2026-10-25): the app
+ * sidebar folds its groups, so a link in a folded group is not on screen until
+ * its group opens. Typing its name is how a person gets there in one step, and
+ * choosing the match clears the search again.
+ */
+export async function openScreen(scope: import("@playwright/test").Locator, name: string) {
+  await scope.getByRole("searchbox", { name: "Find a screen" }).fill(name);
+  await scope.getByRole("link", { name: new RegExp(name, "i") }).first().click();
+}
+
+/** Unfold every folded group in a shell, so all of its links are on screen. */
+export async function unfoldAll(scope: import("@playwright/test").Locator) {
+  const folded = scope.locator('[data-slot="sidebar-content"] [data-sidebar="menu-button"][aria-expanded="false"]');
+  while ((await folded.count()) > 0) await folded.first().click();
+}

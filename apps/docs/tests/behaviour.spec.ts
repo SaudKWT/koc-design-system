@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { focusableNames, gotoSection, tabThrough, focusIsVisible } from "./helpers";
+import { focusableNames, gotoSection, tabThrough, focusIsVisible, unfoldAll } from "./helpers";
 
 /**
  * The assertions axe cannot make.
@@ -79,7 +79,9 @@ test.describe("app shell", () => {
     await gotoSection(page, "Team dashboard shell");
 
     const frame = page.locator("[data-shell-frame]");
-    await frame.locator('[data-slot="sidebar-trigger"]').click();
+    // The sidebar's own fold control — there is no top bar since the rig3
+    // shell; the phone bar's trigger is in the DOM but hidden at this width.
+    await frame.locator('[data-slot="sidebar-trigger"]:visible').click();
     await expect(frame.locator('[data-slot="sidebar"]')).toHaveAttribute(
       "data-state",
       "collapsed",
@@ -110,7 +112,7 @@ test.describe("app shell", () => {
   test("the unit switcher opens and lists every unit", async ({ page }) => {
     await gotoSection(page, "Team dashboard shell");
     const frame = page.locator("[data-shell-frame]");
-    await frame.locator('[data-slot="sidebar-header"] button').click();
+    await frame.getByRole("button", { name: /switch unit/i }).click();
 
     const menu = page.getByRole("menu");
     await expect(menu).toBeVisible();
@@ -122,7 +124,7 @@ test.describe("app shell", () => {
     page,
   }) => {
     await gotoSection(page, "Team dashboard shell");
-    const trigger = page.locator('[data-shell-frame] [data-slot="sidebar-header"] button');
+    const trigger = page.locator("[data-shell-frame]").getByRole("button", { name: /switch unit/i });
     await trigger.click();
     await expect(page.getByRole("menu")).toBeVisible();
 
@@ -201,6 +203,8 @@ test.describe("app shell landmarks", () => {
     // The point of the fix: the sidebar's links must be reachable through the
     // nav landmark. Before it, getByRole('navigation') found the BREADCRUMB and
     // a consumer writing this exact query got three links and a wrong diagnosis.
+    // Groups fold by default since the rig3 shell; unfold them to count.
+    await unfoldAll(nav);
     const links = nav.getByRole("link");
     expect(await links.count()).toBeGreaterThan(5);
 
