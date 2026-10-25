@@ -1,4 +1,4 @@
-import { palette, chartSeries, STEPS, describe, light, dark } from "@koc/tokens";
+import { palette, chartSeries, chartSeriesDark, STEPS, describe, light, dark } from "@koc/tokens";
 import type { PaletteName } from "@koc/tokens";
 
 import { PageHead, Section, Note, Code } from "./parts";
@@ -162,33 +162,55 @@ export function Colour() {
 
       <Section
         title="Chart series"
-        description="Derived from the Okabe–Ito colour-universal palette, which stays distinguishable
-                     under deuteranopia, protanopia and tritanopia."
+        description="Five slots, each with a light and a dark value — the same hue, re-stepped for the
+                     surface. Every neighbour stays distinguishable in colour, in greyscale, and
+                     under protanopia, deuteranopia and tritanopia."
       >
-        <div className="flex overflow-hidden rounded-md border">
-          {chartSeries.map((c, i) => (
-            <div key={i} className="flex-1">
-              <div className="h-14" style={{ background: c }} />
-              <div className="bg-card p-1.5 text-center">
-                <div className="text-2xs font-medium">series {i + 1}</div>
-                <div className="font-mono text-[9px] text-muted-foreground">{c}</div>
-              </div>
+        <div className="space-y-3">
+          {(
+            [
+              ["light", chartSeries],
+              ["dark", chartSeriesDark],
+            ] as const
+          ).map(([mode, series]) => (
+            <div key={mode} className="flex overflow-hidden rounded-md border">
+              {series.map((c, i) => (
+                <div key={i} className="flex-1">
+                  <div className="h-14" style={{ background: c }} />
+                  <div className="bg-card p-1.5 text-center">
+                    <div className="text-2xs font-medium">
+                      {mode} · series {i + 1}
+                    </div>
+                    <div className="font-mono text-[9px] text-muted-foreground">{c}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
         </div>
         <div className="mt-4 space-y-3">
           <Note title="The happy accident">
             Okabe–Ito's blue is <Code>#0072B2</Code>. KOC's blue is <Code>#0060A9</Code>. The brand
-            colour is <em>already</em> a member of the colour-universal set — so deriving the chart
-            palette from Okabe–Ito is simultaneously the most accessible choice available and the
-            most on-brand one. That is why series 1 is always KOC blue.
+            colour is <em>already</em> a member of the colour-universal set, which is why series 1
+            is always KOC blue and series 2 its maximal-separation partner, orange.
           </Note>
-          <Note kind="warn" title="Why the steps alternate 600 / 500">
+          <Note title="Re-derived 2026-10-25 — five series, honestly">
+            The earlier set passed ΔE and greyscale and still failed colour blindness: series 4 and
+            5 (purple, teal) read as one blue under protanopia, teal sat below the chroma floor, and
+            every dark value was too light for a dark plot. So the charts asked for three series at
+            most. Slots 3–5 are now purple, teal and olive, chosen by search against the dataviz
+            validator in both themes at once, and the token tests fail the build if any neighbour
+            stops clearing it. Non-neighbours are not held to that floor — five hues cannot all be
+            pairwise colour-blind-safe — so a scatter chart, where any two marks can touch, should
+            still stop at three.
+          </Note>
+          <Note kind="warn" title="Why lightness alternates">
             Hue is not enough. A greyscale printout, a failing projector, and a reader with
             achromatopsia all see only <em>tone</em>. An earlier revision had series 4 and 5 both at
             step 500: ΔE 42 apart — vividly different in colour — yet 1.11:1 in luminance, meaning
-            they merged into one line in greyscale. The alternation prevents that, and a test
-            asserts it so nobody quietly undoes it.
+            they merged into one line in greyscale. So lightness alternates high / low (the 500 and
+            600 lightness in light; 0.665 and ~0.58 in dark), and a test asserts it in both themes so
+            nobody quietly undoes it.
           </Note>
         </div>
       </Section>

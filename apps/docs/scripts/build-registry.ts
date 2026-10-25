@@ -116,7 +116,7 @@ const META: Record<string, Meta> = {
     description:
       "TrendChart, ComparisonChart, VolumeChart, StackedChart and BarList — plain SVG in the rig3 style, no chart library. Series colour comes from the tested --chart-1..5 tokens in order, every chart has hover values and a table, and with a `title` it draws its own frame with a Table toggle.",
     categories: ["data", "koc"],
-    docs: "No dependencies: Recharts was removed on 2026-10-25 to keep its dependency tree out of the cybersecurity approval pack (and its React 19 StrictMode invisible-line bug went with it). Prefer three series or fewer — chart-4/chart-5 fail colour-blind separation under the dataviz validator. Pass `title` for a self-framed chart; omit it inside a Card that already has one, and the table stays available to screen readers (or visible with `showTable`).",
+    docs: "No dependencies: Recharts was removed on 2026-10-25 to keep its dependency tree out of the cybersecurity approval pack (and its React 19 StrictMode invisible-line bug went with it). Up to five series: --chart-1..5 pass colour-blind separation in light and dark, gated by the tokens' contrast test; past five, fold the tail into \"Other\" — a sixth repeats chart-1. Pass `title` for a self-framed chart; omit it inside a Card that already has one, and the table stays available to screen readers (or visible with `showTable`).",
   },
   sonner: {
     title: "Toaster",

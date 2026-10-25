@@ -9,7 +9,7 @@
  * with its reasoning below.
  */
 
-import { buildRamp, type Ramp } from "./color.js";
+import { buildRamp, fromOklch, type Ramp } from "./color.js";
 import { KOC_PRIMARY } from "./brand.js";
 
 /**
@@ -131,33 +131,89 @@ export const palette = {
 export type PaletteName = keyof typeof palette;
 
 /**
- * Categorical chart series.
+ * Categorical chart series — five slots, each defined for light AND dark.
  *
- * Ordered so that a 2-series chart gets the maximum separation available (blue
- * vs orange — the most CVD-safe pair there is), with separation degrading
- * gracefully as series are added rather than falling off a cliff at series 5.
+ * ── RE-DERIVED 2026-10-25: the old set failed colour-blind separation ───────
  *
- * Steps strictly alternate 600 → 500 → 600 → 500…, which is load-bearing rather
- * than tidy. Hue alone is not enough: a greyscale printout, a dying projector,
- * or a reader with achromatopsia sees only *tone*. Two series at the same step
- * share a lightness by construction and merge into one line for all of them.
+ * The previous series (blue, orange, bluish-green, reddish-purple, teal) passed
+ * every assertion this package made — ΔE2000 ≥ 15 and ≥ 1.2:1 greyscale between
+ * neighbours — and still failed the dataviz palette validator, because nothing
+ * here simulated colour-vision deficiency:
  *
- * This is not hypothetical — an earlier revision had series 4 and 5 both at 500.
- * They measured ΔE 42 apart (vividly different to a colour-sighted reader) yet
- * 1.11:1 in luminance: indistinguishable in greyscale. The alternation is what
- * prevents that, and the greyscale assertion in contrast.test.ts is what keeps
- * anyone from quietly undoing it.
+ *   light  chart-4↔5 (purple↔teal) ΔE 6.9 under protanopia — both read as blue
+ *          chart-5 (info[600]) chroma 0.083 — below the 0.10 floor, reads grey
+ *   dark   every slot sat at step 400 (L 0.71) or 300 (L 0.81), above the dark
+ *          band's 0.67 ceiling; chart-3↔4 ΔE 6.4 under deuteranopia; and
+ *          adjacent pairs measured 1.03–1.09:1 in greyscale, because only the
+ *          LIGHT series was ever audited for tone
  *
- * Even so: never rely on colour alone to identify a series. Direct-label the
- * lines or give them markers.
+ * So the rig3 charts told consumers to stop at three series. contrast.test.ts
+ * now runs the validator's checks — lightness band, chroma floor, CVD under
+ * protan/deutan/tritan simulation, the normal-vision floor — on both themes'
+ * shipped `--chart-*` tokens, and this set is what passes them.
+ *
+ * ── HOW THE SLOTS WERE CHOSEN ──────────────────────────────────────────────
+ *
+ * Not by eye. Slot 1 is fixed (the brand), slot 2 held at the warm pole, and
+ * hue × chroma × lightness for slots 3–5 was searched in both themes at once
+ * — same hue per slot in light and dark, so a series keeps its identity when
+ * the theme flips — maximising the worst adjacent CVD separation under every
+ * gate above, then the worst separation between NON-adjacent slots, which the
+ * validator does not gate but a legend lookup on crossing lines needs.
+ *
+ *   slot  hue        light                     dark
+ *   1     blue 251   primary[600] #0060A9      primary[500]
+ *   2     orange 70  warning[500]              L 0.665
+ *   3     purple 320 L 0.483                   L 0.585
+ *   4     teal 175   L 0.598                   L 0.665
+ *   5     olive 110  L 0.483                   L 0.575
+ *
+ * Lightness alternates high/low so neighbours stay apart in greyscale — a
+ * printout, a dying projector or achromatopsia sees only tone. (An earlier
+ * revision had series 4 and 5 both at 500: ΔE 42 apart in colour, 1.11:1 in
+ * luminance, one line in greyscale.) Light uses the ramp grid's own 600/500
+ * lightness; dark cannot, because the dark band holds one grid step (500), which
+ * is why dark slots 2–5 come from `fromOklch` rather than a ramp.
+ *
+ * Purple, teal and olive are coordinates, not ramps: a series needs one colour
+ * per theme, not eleven steps. Olive is in for the job the old teal-cyan
+ * (info[600]) could not do — at slot 5's low lightness, cyan cannot reach the
+ * 0.10 chroma floor inside sRGB at all; clamped, it stops at 0.083.
+ *
+ * ── WHAT IS STILL TRUE ──────────────────────────────────────────────────────
+ *
+ * Adjacent pairs are what the gate holds, because bars and stacks only touch
+ * their neighbours. Two non-adjacent pairs stay weak under CVD and no ordering
+ * of five hues fixes that (the dataviz method calls it the series cap):
+ * series 1↔3 (blue/purple, ΔE 5.0 deutan in dark) and 2↔5 (orange/olive,
+ * 5.2 protan in dark). So a scatter or bubble chart, where any two marks can
+ * sit side by side, should still use three series — and never rely on colour
+ * alone: label lines directly or give them markers.
  */
+const chartSlot = (hue: number, chroma: number, l: { light: number; dark: number }) => ({
+  light: fromOklch(l.light, chroma, hue),
+  dark: fromOklch(l.dark, chroma, hue),
+});
+
+const chartOrange = { light: warning[500], dark: fromOklch(0.665, 0.14, 70) };
+const chartPurple = chartSlot(320, 0.14, { light: 0.483, dark: 0.585 });
+const chartTeal = chartSlot(175, 0.14, { light: 0.598, dark: 0.665 });
+const chartOlive = chartSlot(110, 0.14, { light: 0.483, dark: 0.575 });
+
+/** Chart series, light theme. `--chart-1..5` in light resolve to these. */
 export const chartSeries = [
   primary[600], // KOC blue — series 1 is always the brand
-  warning[500], // orange — maximal separation from blue
-  success[600], // bluish-green
-  accent[500], // reddish-purple
-  info[600], // teal-cyan. 600 not 400: 400 measured 2.30:1 on the light page
-  //            background — a thin line in that series was effectively
-  //            invisible on a bright office screen.
-  danger[500], // vermillion — last, so it is never reached for decoratively
+  chartOrange.light, // the warm pole — maximal separation from blue
+  chartPurple.light,
+  chartTeal.light,
+  chartOlive.light,
+] as const;
+
+/** Chart series, dark theme. Same hues, re-stepped into the dark band. */
+export const chartSeriesDark = [
+  primary[500], // 400 is above the dark band; 500 is the brand ramp's step inside it
+  chartOrange.dark,
+  chartPurple.dark,
+  chartTeal.dark,
+  chartOlive.dark,
 ] as const;

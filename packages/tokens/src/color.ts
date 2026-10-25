@@ -11,7 +11,7 @@
  * byte-exact instead of being approximated.
  */
 
-import { oklch, formatHex, formatCss, wcagContrast, clampChroma } from "culori";
+import { oklch, oklab, formatHex, formatCss, wcagContrast, clampChroma, converter } from "culori";
 
 export type Step = 50 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 950;
 
@@ -108,21 +108,87 @@ export function buildRamp(opts: RampOptions): Ramp {
     const anchorIdx = STEPS.indexOf(anchorStep);
     const position = (idx - anchorIdx) / (STEPS.length - 1);
 
-    const color = clampChroma(
-      {
-        mode: "oklch" as const,
-        l: LIGHTNESS[step],
-        c: peakChroma * CHROMA_CURVE[step],
-        h: hue + hueDrift * position,
-      },
-      "oklch",
-      "rgb",
+    ramp[step] = fromOklch(
+      LIGHTNESS[step],
+      peakChroma * CHROMA_CURVE[step],
+      hue + hueDrift * position,
     );
-
-    ramp[step] = formatHex(color)!.toUpperCase();
   }
 
   return ramp;
+}
+
+/**
+ * One colour from OKLCH coordinates, gamut-clamped exactly as ramp steps are.
+ *
+ * For the few tokens that must sit *between* ramp steps — the chart series,
+ * whose dark-mode lightness band (0.48–0.67) contains only one step of the
+ * ramp grid. Going through this rather than writing a hex keeps invariant 1:
+ * the colour is still derived, and changing it means changing a coordinate.
+ */
+export function fromOklch(l: number, c: number, h: number): string {
+  const color = clampChroma({ mode: "oklch" as const, l, c, h }, "oklch", "rgb");
+  return formatHex(color)!.toUpperCase();
+}
+
+/** The three dichromacies the chart palette is held against. */
+export const DEFICIENCIES = ["protanopia", "deuteranopia", "tritanopia"] as const;
+export type Deficiency = (typeof DEFICIENCIES)[number];
+
+/**
+ * Machado, Oliveira & Fernandes (2009) dichromacy matrices, severity 1.0.
+ *
+ * Applied in LINEAR sRGB. culori ships the same matrices as
+ * `filterDeficiencyProt/Deuter/Trit`, but applies them to gamma-encoded sRGB,
+ * which moves borderline pairs a long way — the pre-2026-10-25 chart-4↔5
+ * measured ΔE 15.3 under deuteranopia there against 11.8 here. The dataviz
+ * palette validator, whose thresholds the chart gate uses, is calibrated to
+ * the linear-light model; a gate on the other model would pass palettes the
+ * validator fails.
+ */
+const MACHADO: Record<Deficiency, readonly (readonly number[])[]> = {
+  protanopia: [
+    [0.152286, 1.052583, -0.204868],
+    [0.114503, 0.786281, 0.099216],
+    [-0.003882, -0.048116, 1.051998],
+  ],
+  deuteranopia: [
+    [0.367322, 0.860646, -0.227968],
+    [0.280085, 0.672501, 0.047413],
+    [-0.01182, 0.04294, 0.968881],
+  ],
+  tritanopia: [
+    [1.255528, -0.076749, -0.178779],
+    [-0.078411, 0.930809, 0.147602],
+    [0.004733, 0.691367, 0.3039],
+  ],
+};
+
+const toLrgb = converter("lrgb");
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
+
+function asSeenWith(hex: string, kind: Deficiency) {
+  const { r, g, b } = toLrgb(hex)!;
+  const [x, y, z] = MACHADO[kind];
+  return {
+    mode: "lrgb" as const,
+    r: clamp01(x[0] * r + x[1] * g + x[2] * b),
+    g: clamp01(y[0] * r + y[1] * g + y[2] * b),
+    b: clamp01(z[0] * r + z[1] * g + z[2] * b),
+  };
+}
+
+/**
+ * Euclidean OKLab distance ×100 — the dataviz validator's ΔE — between two
+ * colours, as seen with normal vision or, given `kind`, with that dichromacy.
+ *
+ * Not ΔE2000: the validator's CVD thresholds (target 8, floor 6) and its
+ * normal-vision floor (15) are calibrated on this scale.
+ */
+export function oklabDistance(a: string, b: string, kind?: Deficiency): number {
+  const p = oklab(kind ? asSeenWith(a, kind) : a)!;
+  const q = oklab(kind ? asSeenWith(b, kind) : b)!;
+  return 100 * Math.hypot(p.l - q.l, p.a - q.a, p.b - q.b);
 }
 
 /** WCAG 2.1 contrast ratio between two colours. */
