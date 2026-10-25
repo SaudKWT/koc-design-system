@@ -541,7 +541,7 @@ function UnitSwitcher({
             render={
               <SidebarMenuButton
                 size="lg"
-                aria-label={`Unit: ${unitLabel}. Switch unit`}
+                aria-label={`${unit ? `${unit.label}, ` : ""}${unitLabel}. Switch unit`}
                 className="h-14 px-1 data-popup-open:bg-sidebar-accent"
               />
             }
@@ -565,13 +565,16 @@ function UnitSwitcher({
               <span className="truncate text-sm font-semibold" title={team.name}>
                 {team.shortName}
               </span>
-              {/* The unit, with its icon — what this sidebar is showing. The
-                  number stays in it ("Unit 4") so it matches forms and titles. */}
-              <span className="flex min-w-0 items-center gap-1 text-xs text-sidebar-foreground/70">
+              {/* The unit, with its icon — what this sidebar is showing. Its
+                  number ("Unit 4") is in the tooltip, the accessible name and
+                  the switcher list, where it is needed to match forms; on the
+                  line itself it only truncated "Offshore Logistics". */}
+              <span
+                className="flex min-w-0 items-center gap-1 text-xs text-sidebar-foreground/70"
+                title={unit ? `${unit.label} · ${unitLabel}` : unitLabel}
+              >
                 {UnitIcon && <UnitIcon aria-hidden="true" className="size-3.5 shrink-0" />}
-                <span className="truncate">
-                  {currentUnit === ALL_UNITS ? unitLabel : `${unit?.label ?? "Unit"} · ${unitLabel}`}
-                </span>
+                <span className="truncate">{unitLabel}</span>
               </span>
             </span>
             <ChevronsUpDown aria-hidden="true" className="ml-auto size-4 text-sidebar-foreground/60" />
