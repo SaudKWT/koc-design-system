@@ -282,6 +282,8 @@ function ShellSidebar({
   const memory = useShellMemory(team.id, destinations);
 
   const [query, setQuery] = React.useState("");
+  // Whether Find is open as an input; at rest it is a quiet row (see below).
+  const [finding, setFinding] = React.useState(false);
   const field = React.useRef<HTMLInputElement>(null);
   const navId = React.useId();
 
@@ -294,6 +296,7 @@ function ShellSidebar({
         e.preventDefault();
         if (isMobile) setOpenMobile(true);
         else setOpen(true);
+        setFinding(true);
         requestAnimationFrame(() => field.current?.focus());
       }
     };
@@ -307,9 +310,11 @@ function ShellSidebar({
   const found = words.length ? destinations.filter(matches) : [];
 
   const onFindKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Escape" && query) {
+    if (e.key === "Escape") {
       e.preventDefault();
-      setQuery("");
+      // First Esc clears; the second puts Find back to rest.
+      if (query) setQuery("");
+      else setFinding(false);
     } else if (e.key === "Enter" || e.key === "ArrowDown") {
       const first = document.querySelector<HTMLElement>(`[id="${navId}"] a[href]`);
       if (first) {
@@ -321,72 +326,88 @@ function ShellSidebar({
 
   return (
     <>
-      <SidebarHeader className="gap-1 pb-1">
-        {/* The brand row — identity, not a control. */}
-        <div className="flex h-14 items-center gap-2.5 px-1 group-data-[collapsible=icon]:h-auto group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-1 group-data-[collapsible=icon]:px-0">
-          {brandMark ? (
-            <span
-              aria-hidden="true"
-              className="h-11 w-9 shrink-0 bg-primary group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8"
-              style={{
-                mask: `url(${brandMark}) center / contain no-repeat`,
-                WebkitMask: `url(${brandMark}) center / contain no-repeat`,
-              }}
-            />
-          ) : (
-            <span aria-hidden="true" className="size-8 shrink-0 rounded-md bg-primary" />
-          )}
-          <span className="min-w-0 flex-1 leading-tight group-data-[collapsible=icon]:hidden">
-            <span className="block truncate text-sm font-semibold" title={team.name}>
-              {team.shortName}
-            </span>
-            <span className="block truncate text-xs text-sidebar-foreground/70">Kuwait Oil Company</span>
-          </span>
+      <SidebarHeader className="gap-1.5 pb-1">
+        {/* The brand row IS the unit switcher (Saud, 2026-10-25: a separate
+            switcher block took too much room): the emblem, the team, and the
+            unit you are in with its icon. Beside it, the fold control. */}
+        <div className="flex items-center gap-1 group-data-[collapsible=icon]:flex-col">
+          <UnitSwitcher
+            team={team}
+            currentUnit={currentUnit}
+            unitLabel={unitLabel}
+            selectUnit={selectUnit}
+            brandMark={brandMark}
+          />
           {/* The visible way to fold the sidebar to its rail, now that there is
               no top bar to hold it. The rail edge and Ctrl B still work, but
               neither is discoverable from a keyboard. Hidden on phones, where
               the sidebar is a sheet with its own close. */}
-          <SidebarTrigger className="ml-auto shrink-0 text-sidebar-foreground/70 max-md:hidden" />
+          <SidebarTrigger className="shrink-0 text-sidebar-foreground/70 max-md:hidden" />
         </div>
 
-        <UnitSwitcher team={team} currentUnit={currentUnit} unitLabel={unitLabel} selectUnit={selectUnit} />
-
-        {/* Find — SidebarInput's look, rig3's behaviour. */}
-        <div role="search" className="relative mt-1 group-data-[collapsible=icon]:hidden">
-          <label htmlFor={`${navId}-find`} className="sr-only">
-            Find a screen
-          </label>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            ref={field}
-            id={`${navId}-find`}
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={onFindKey}
-            autoComplete="off"
-            spellCheck={false}
-            aria-describedby={`${navId}-find-hint`}
-            aria-controls={navId}
-            placeholder="Find a screen"
-            className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-14 text-sm outline-hidden placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring [&::-webkit-search-cancel-button]:hidden"
-          />
-          {query ? (
+        {/*
+         * Find. At rest it is a quiet row — icon, words, the shortcut — not a
+         * bordered field (Saud, 2026-10-25: "mute it"). It becomes the input the
+         * moment it is clicked or Ctrl K is pressed, and goes back to a row when
+         * it loses focus empty.
+         *
+         * Why not just a lighter border: an INPUT's boundary must clear 3:1
+         * (WCAG 1.4.11, invariant 4 — `border-input`), and that is exactly what
+         * reads as "highlighted" in a quiet sidebar. A BUTTON that opens the
+         * input has no such boundary to keep, so the field keeps its tested
+         * border while it is being typed into, and the sidebar stays quiet the
+         * rest of the time.
+         */}
+        <div role="search" className="relative group-data-[collapsible=icon]:hidden">
+          {finding ? (
+            <>
+              <label htmlFor={`${navId}-find`} className="sr-only">
+                Find a screen
+              </label>
+              <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                ref={field}
+                id={`${navId}-find`}
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={onFindKey}
+                onBlur={() => !query && setFinding(false)}
+                autoFocus
+                autoComplete="off"
+                spellCheck={false}
+                aria-describedby={`${navId}-find-hint`}
+                aria-controls={navId}
+                placeholder="Find a screen"
+                className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-8 text-sm outline-hidden placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring [&::-webkit-search-cancel-button]:hidden"
+              />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery("");
+                    field.current?.focus();
+                  }}
+                  className="absolute right-1 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground outline-hidden hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                >
+                  <X className="size-3.5" aria-hidden="true" />
+                  <span className="sr-only">Clear the search</span>
+                </button>
+              )}
+            </>
+          ) : (
             <button
               type="button"
-              onClick={() => {
-                setQuery("");
-                field.current?.focus();
-              }}
-              className="absolute right-1 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground outline-hidden hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+              onClick={() => setFinding(true)}
+              aria-describedby={`${navId}-find-hint`}
+              className="flex h-8 w-full items-center gap-2 rounded-md px-2 text-sm text-sidebar-foreground/60 outline-hidden transition-colors duration-fast ease-out hover:bg-sidebar-accent/60 hover:text-sidebar-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             >
-              <X className="size-3.5" aria-hidden="true" />
-              <span className="sr-only">Clear the search</span>
+              <Search aria-hidden="true" className="size-4 shrink-0" />
+              <span className="flex-1 text-left">Find a screen</span>
+              <kbd aria-hidden="true" className="font-mono text-2xs text-sidebar-foreground/50">
+                Ctrl K
+              </kbd>
             </button>
-          ) : (
-            <kbd aria-hidden="true" className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border bg-sidebar px-1 font-mono text-2xs text-muted-foreground">
-              Ctrl K
-            </kbd>
           )}
           <p id={`${navId}-find-hint`} className="sr-only">
             Shortcut: Control K. Filters the screens below as you type; Enter moves to the first result.
@@ -421,7 +442,13 @@ function ShellSidebar({
               // Choosing a match ends the search: the query clears so the nav
               // shows where you landed. (rig3 kept its query because its links
               // open in a new tab; an app's links replace the page.)
-              <SidebarMenu onClick={(e) => (e.target as Element).closest("a[href]") && setQuery("")}>
+              <SidebarMenu
+                onClick={(e) => {
+                  if (!(e.target as Element).closest("a[href]")) return;
+                  setQuery("");
+                  setFinding(false);
+                }}
+              >
                 {found.map((d) => (
                   <DestinationRow key={d.item.id} d={d} activeItemId={activeItemId} renderLink={renderLink} memory={memory} hint />
                 ))}
@@ -496,15 +523,18 @@ function UnitSwitcher({
   currentUnit,
   unitLabel,
   selectUnit,
+  brandMark,
 }: {
   team: TeamConfig;
   currentUnit: string;
   unitLabel: string;
   selectUnit: (id: string) => void;
+  brandMark?: string;
 }) {
   const unit = team.units.find((u) => u.id === currentUnit);
+  const UnitIcon = currentUnit === ALL_UNITS ? LayoutGrid : unit?.icon;
   return (
-    <SidebarMenu>
+    <SidebarMenu className="min-w-0 flex-1">
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger
@@ -512,30 +542,39 @@ function UnitSwitcher({
               <SidebarMenuButton
                 size="lg"
                 aria-label={`Unit: ${unitLabel}. Switch unit`}
-                className="h-11 border border-sidebar-border data-popup-open:bg-sidebar-accent group-data-[collapsible=icon]:border-0"
+                className="h-14 px-1 data-popup-open:bg-sidebar-accent"
               />
             }
           >
-            {/* The unit's own icon when it has one; the number otherwise. */}
-            <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent font-mono text-2xs font-medium [&>svg]:size-4 [&>svg]:text-sidebar-foreground/80">
-              {currentUnit === ALL_UNITS ? (
-                <LayoutGrid />
-              ) : unit?.icon ? (
-                <unit.icon />
-              ) : (
-                (unit?.label ?? "").replace(/\D+/g, "") || "—"
-              )}
-            </span>
+            {brandMark ? (
+              <span
+                aria-hidden="true"
+                className="h-11 w-9 shrink-0 bg-primary group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8"
+                style={{
+                  mask: `url(${brandMark}) center / contain no-repeat`,
+                  WebkitMask: `url(${brandMark}) center / contain no-repeat`,
+                }}
+              />
+            ) : (
+              <span aria-hidden="true" className="size-8 shrink-0 rounded-md bg-primary" />
+            )}
             {/* `min-w-0` is what makes `truncate` work on the children: a grid
                 item's default `min-width: auto` refuses to shrink below its
                 content, and the chevron gets shoved out instead. */}
             <span className="grid min-w-0 flex-1 text-left leading-tight">
-              <span className="truncate text-2xs font-medium uppercase tracking-caps text-sidebar-foreground/70">
-                {currentUnit === ALL_UNITS ? team.shortName : (unit?.label ?? "Unit")}
+              <span className="truncate text-sm font-semibold" title={team.name}>
+                {team.shortName}
               </span>
-              <span className="truncate text-sm font-medium">{unitLabel}</span>
+              {/* The unit, with its icon — what this sidebar is showing. The
+                  number stays in it ("Unit 4") so it matches forms and titles. */}
+              <span className="flex min-w-0 items-center gap-1 text-xs text-sidebar-foreground/70">
+                {UnitIcon && <UnitIcon aria-hidden="true" className="size-3.5 shrink-0" />}
+                <span className="truncate">
+                  {currentUnit === ALL_UNITS ? unitLabel : `${unit?.label ?? "Unit"} · ${unitLabel}`}
+                </span>
+              </span>
             </span>
-            <ChevronsUpDown className="ml-auto size-4 text-sidebar-foreground/60" />
+            <ChevronsUpDown aria-hidden="true" className="ml-auto size-4 text-sidebar-foreground/60" />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent className="w-[var(--anchor-width)] min-w-64" align="start" side="bottom" sideOffset={4}>

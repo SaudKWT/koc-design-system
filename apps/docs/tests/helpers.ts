@@ -161,7 +161,10 @@ export async function focusableCount(page: Page): Promise<number> {
  * choosing the match clears the search again.
  */
 export async function openScreen(scope: import("@playwright/test").Locator, name: string) {
-  await scope.getByRole("searchbox", { name: "Find a screen" }).fill(name);
+  // At rest Find is a quiet button; it opens into the search field.
+  const box = scope.getByRole("searchbox", { name: "Find a screen" });
+  if ((await box.count()) === 0) await scope.getByRole("button", { name: "Find a screen" }).click();
+  await box.fill(name);
   await scope.getByRole("link", { name: new RegExp(name, "i") }).first().click();
 }
 
