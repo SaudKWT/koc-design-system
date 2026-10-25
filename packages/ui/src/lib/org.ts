@@ -54,6 +54,12 @@ export interface NavItem {
 export interface NavGroup {
   id: string;
   label: string;
+  /**
+   * A short identifier shown in mono before the label — a team or app code
+   * ("EN31"). Optional; the rig3 sidebar sets codes in a fixed 36px column so
+   * labels align whether or not a group has one.
+   */
+  code?: string;
   items: NavItem[];
 }
 

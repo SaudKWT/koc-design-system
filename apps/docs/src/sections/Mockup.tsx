@@ -289,6 +289,7 @@ function UnitApp() {
 
   return (
     <AppShell
+      brandMark="/koc-emblem.svg"
       team={DWOS}
       unitId={unitId}
       onUnitChange={changeUnit}

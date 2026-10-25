@@ -1,5 +1,5 @@
 import * as React from "react";
-import { ChevronRight, ChevronsUpDown, Check, PanelLeft } from "lucide-react";
+import { Check, ChevronRight, ChevronsUpDown, Pin, Search, X } from "lucide-react";
 
 import { cn } from "../lib/utils";
 import {
@@ -30,7 +30,6 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "./sidebar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";
 import { NotificationMenu, type NotificationItem } from "./notification-menu";
 import { initials, type UserMenuItem } from "./user-menu";
 import {
@@ -60,6 +59,32 @@ import {
  * Building a dashboard for another KOC team means writing a TeamConfig. No JSX,
  * no new component, no fork. That is the whole point — there are on the order of
  * a few hundred teams, and a hand-built sidebar each is how a standard dies.
+ *
+ * ── THE RIG3 SHELL (2026-10-25) ───────────────────────────────────────────────
+ *
+ * Restyled to the DWEG landing's rig3 sidebar, the base Saud chose for the whole
+ * system (that sidebar was itself ported from this one, so the parts are the
+ * same — what changed is the arrangement):
+ *
+ *   - The brand row: the KOC emblem in brand blue with no tile (`brandMark`),
+ *     the team, and "Kuwait Oil Company". The unit switcher sits under it as a
+ *     quiet row — still the switcher, still the 2026-08-09 decision (Saud
+ *     re-confirmed it for the rework), just not dressed as the brand.
+ *   - Find (Ctrl K): filters every destination in the unit and the team-wide
+ *     zone as you type; Enter goes to the first match, Esc clears.
+ *   - Pinned and Recent, per browser, so the screen you open every morning is
+ *     one click from anywhere. Shown only once they hold something.
+ *   - Each app (NavGroup) is a folded row with its code in mono; its screens
+ *     nest under it. The group holding the current screen opens itself. Folded
+ *     by default because seven units' worth of apps is the case to design for.
+ *   - NO TOP BAR on desktop. rig3 has none, and the strip's two jobs move to
+ *     where they belong: alerts and the as-of stamp to the sidebar foot beside
+ *     the account, the scope to the page's own eyebrow. A phone keeps a slim
+ *     bar, because it needs a way to open the sidebar.
+ *
+ * The icon rail is kept, and in it the folded groups would show nothing — so
+ * collapsed, the shell draws every destination as a flat icon button with a
+ * tooltip, exactly as before the rework. Open, it draws rig3's folded groups.
  */
 
 export interface AppShellUser {
@@ -88,6 +113,12 @@ export interface AppShellProps {
    *  the rendered control via Base UI's render prop. */
   renderLink?: (item: NavItem, children: React.ReactNode) => React.ReactElement;
   /**
+   * The brand mark — a URL to a single-colour SVG (the KOC emblem), drawn in
+   * brand blue through a CSS mask so the white artwork KOC ships works on a
+   * light surface without a tile. Omit for a plain brand-blue tile.
+   */
+  brandMark?: string;
+  /**
    * Operational alerts. Omit to hide the bell entirely — an empty notification
    * icon that never does anything is worse than no icon.
    */
@@ -100,7 +131,7 @@ export interface AppShellProps {
    */
   userMenu?: UserMenuItem[][];
   /**
-   * When the figures on screen were last refreshed, shown in the top bar.
+   * When the figures on screen were last refreshed, shown in the sidebar foot.
    *
    * Opt-in like `notifications`: omitted, nothing renders. A freshness stamp
    * nobody wired to a real refresh is worse than none, because it is believed.
@@ -114,6 +145,12 @@ const defaultRenderLink: NonNullable<AppShellProps["renderLink"]> = (item, child
   <a href={item.href}>{children}</a>
 );
 
+/** A destination with the group it belongs to — what search and memory hold. */
+interface Destination {
+  item: NavItem;
+  group: NavGroup;
+}
+
 export function AppShell({
   team,
   unitId,
@@ -122,6 +159,7 @@ export function AppShell({
   activeItemId,
   user,
   renderLink = defaultRenderLink,
+  brandMark,
   notifications,
   onNotificationSelect,
   onMarkAllRead,
@@ -139,20 +177,14 @@ export function AppShell({
     onUnitChange?.(id);
   };
 
-  const unitGroups = groupsForUnit(team, currentUnit);
   const activeUnit = team.units.find((u) => u.id === currentUnit);
-  // The header shows what the unit *covers*, not its number — "Deep" rather than
-  // "Unit 3". The number stays in the switcher list, where it is needed to match
-  // against forms and job titles.
+  // What the unit *covers*, not its number — "Deep" rather than "Unit 3". The
+  // number stays in the switcher, where it is needed to match forms and titles.
   const unitLabel =
-    currentUnit === ALL_UNITS
-      ? "All units"
-      : activeUnit
-        ? unitDisplayName(activeUnit)
-        : "—";
+    currentUnit === ALL_UNITS ? "All units" : activeUnit ? unitDisplayName(activeUnit) : "—";
 
   return (
-    <SidebarProvider>
+    <SidebarProvider style={{ "--sidebar-width": "18rem" } as React.CSSProperties}>
       {/*
        * `role="navigation"` with a label, on the sidebar itself.
        *
@@ -160,205 +192,704 @@ export function AppShell({
        * link, every group label, the unit switcher, the user menu — sat in none
        * of them. axe reported 19 `region` nodes on a typical DWOS screen.
        *
-       * Two consequences, and the second is the one that wastes an afternoon.
-       * Screen-reader users lose landmark navigation to the primary nav, which
-       * is how you reach it without tabbing the page. And
-       * `getByRole('navigation')` finds the BREADCRUMB, because that was the
-       * only nav on the page — a consumer writing the obvious test gets three
-       * links and concludes their sidebar is broken.
-       *
        * The label is not optional: PageHeader's breadcrumb is also a nav, and
        * two unlabelled navigation landmarks are worse than one.
        *
        * Reported from the DWOS app. It could not be found from the docs site,
        * where the shell is embedded inside a page that already has a `main`.
        */}
-      <Sidebar
-        collapsible="icon"
-        role="navigation"
-        aria-label={`${team.shortName} navigation`}
-      >
-        <SidebarHeader>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={
-                    <SidebarMenuButton
-                      size="lg"
-                      /* The switcher is the one place the brand appears at full
-                         strength in the chrome — it is also the control that
-                         tells you what you are looking at, so it earns the
-                         emphasis. */
-                      className="data-popup-open:bg-sidebar-accent"
-                    />
-                  }
-                >
-                    <div className="flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                      <PanelLeft className="size-4" />
-                    </div>
-                    {/* `min-w-0` is what makes `truncate` work on the children.
-                        A grid item's default `min-width: auto` refuses to shrink
-                        below its content, so without it the text pushes the row
-                        wider instead of ellipsing and the chevron gets shoved
-                        out. `title` keeps the full name reachable when it does
-                        truncate. */}
-                    <div className="grid min-w-0 flex-1 text-left leading-tight">
-                      <span className="truncate text-sm font-semibold" title={team.name}>
-                        {team.shortName}
-                      </span>
-                      <span className="truncate text-xs text-muted-foreground">
-                        {unitLabel}
-                      </span>
-                    </div>
-                    <ChevronsUpDown className="ml-auto size-4" />
-                </DropdownMenuTrigger>
-
-                <DropdownMenuContent
-                  className="w-[var(--anchor-width)] min-w-64"
-                  align="start"
-                  side="bottom"
-                  sideOffset={4}
-                >
-                  {/* Directorate and group are identity, not navigation — you do
-                      not travel up to them from a team dashboard, you just need
-                      to know which one you are in. */}
-                  <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                    {team.directorate} · {team.group}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  {team.units.map((unit) => (
-                    <DropdownMenuItem
-                      key={unit.id}
-                      onClick={() => selectUnit(unit.id)}
-                      className="gap-2"
-                    >
-                      {/* The list keeps KOC's numbering as the primary line —
-                          that is the designation people are given — with the
-                          coverage underneath so the number is decodable. */}
-                      <div className="grid min-w-0 flex-1">
-                        <span>{unit.label}</span>
-                        {unit.name && (
-                          <span className="truncate text-xs text-muted-foreground">
-                            {unit.name}
-                          </span>
-                        )}
-                      </div>
-                      {unit.id === currentUnit && <Check className="size-4" />}
-                    </DropdownMenuItem>
-                  ))}
-
-                  <DropdownMenuSeparator />
-                  {/* Team leads genuinely need to see across units. Without this
-                      they would be switching seven times to answer one question. */}
-                  <DropdownMenuItem onClick={() => selectUnit(ALL_UNITS)} className="gap-2">
-                    <span className="flex-1">All units</span>
-                    {currentUnit === ALL_UNITS && <Check className="size-4" />}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarHeader>
-
-        <SidebarContent>
-          {unitGroups.map((group) => (
-            <NavSection
-              key={group.id}
-              group={group}
-              activeItemId={activeItemId}
-              renderLink={renderLink}
-            />
-          ))}
-
-          {/* Team-wide sits below the unit nav and never changes with the
-              switcher, so "does this belong to my unit or the team?" is answered
-              by where it is rather than by asking someone. */}
-          {team.teamWide.map((group) => (
-            <NavSection
-              key={group.id}
-              group={group}
-              activeItemId={activeItemId}
-              renderLink={renderLink}
-            />
-          ))}
-        </SidebarContent>
-
-        {user && (
-          <SidebarFooter>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <AccountMenu user={user} groups={userMenu} />
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarFooter>
-        )}
-
+      <Sidebar collapsible="icon" role="navigation" aria-label={`${team.shortName} navigation`}>
+        <ShellSidebar
+          team={team}
+          currentUnit={currentUnit}
+          unitLabel={unitLabel}
+          selectUnit={selectUnit}
+          activeItemId={activeItemId}
+          renderLink={renderLink}
+          brandMark={brandMark}
+          user={user}
+          userMenu={userMenu}
+          notifications={notifications}
+          onNotificationSelect={onNotificationSelect}
+          onMarkAllRead={onMarkAllRead}
+          asOf={asOf}
+        />
         <SidebarRail />
       </Sidebar>
 
       <SidebarInset>
-        {/*
-         * WHAT THE TOP BAR IS FOR.
-         *
-         * It held the team's full name, which is the least volatile fact on the
-         * screen — it cannot change without the whole app changing. That strip
-         * is also the only chrome that survives the rail collapsing, so spending
-         * it on something constant wastes the one place that keeps working when
-         * the nav is gone.
-         *
-         * Breadcrumbs were the obvious candidate and are rejected. PageHeader
-         * already renders them per screen, so putting them here means either two
-         * `nav` landmarks 40px apart, or removing a documented prop from
-         * @koc/page-header — a published registry item whose consumers keep the
-         * source they pulled and would get a prop that silently does nothing.
-         *
-         * What earns the space is what CHANGES and is not visible elsewhere:
-         *
-         *   scope     which unit's numbers you are reading. Derived from the
-         *             same state the switcher sets, so it cannot disagree with
-         *             it. Text, never a button — a second control that sets the
-         *             unit erodes the switcher's authority.
-         *   asOf      when the figures were last refreshed. Opt-in, because a
-         *             stale-time nobody wired up is worse than none.
-         *
-         * The middle stays deliberately empty: it is where a command palette
-         * goes, and reserving it now avoids a second redesign. Not built —
-         * searching five screens is theatre; the useful version searches records
-         * and needs a data source only the consumer has.
-         */}
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
+        {/* Phones only: the sidebar is a sheet there and needs a way in. On a
+            desktop rig3 has no top bar — the rail and Ctrl B collapse the
+            sidebar, and the page's eyebrow says where you are. */}
+        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border px-3 md:hidden">
           <SidebarTrigger className="-ml-1" />
-
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="truncate text-sm font-medium">{unitLabel}</span>
-            {asOf && (
-              <span className="hidden shrink-0 text-xs text-muted-foreground sm:inline">
-                · {typeof asOf === "string" ? asOf : `as of ${asOf.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`}
-              </span>
-            )}
-          </div>
-
-          {/* Reserved: command palette. */}
-          <div className="flex-1" />
-
-          {/* Notifications stay here. They are about operational events rather
-              than about you, they must be reachable from any screen, and the
-              account menu that used to sit beside them now lives in the sidebar
-              footer where it is next to who you are. */}
-          {notifications && (
-            <NotificationMenu
-              items={notifications}
-              onSelect={onNotificationSelect}
-              onMarkAllRead={onMarkAllRead}
-            />
-          )}
+          <span className="truncate text-sm font-medium">{unitLabel}</span>
         </header>
         <div className="flex-1 overflow-auto">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
+}
+
+// ── The sidebar's contents ──────────────────────────────────────────────────
+
+function ShellSidebar({
+  team,
+  currentUnit,
+  unitLabel,
+  selectUnit,
+  activeItemId,
+  renderLink,
+  brandMark,
+  user,
+  userMenu,
+  notifications,
+  onNotificationSelect,
+  onMarkAllRead,
+  asOf,
+}: {
+  team: TeamConfig;
+  currentUnit: string;
+  unitLabel: string;
+  selectUnit: (id: string) => void;
+  activeItemId?: string;
+  renderLink: NonNullable<AppShellProps["renderLink"]>;
+  brandMark?: string;
+  user?: AppShellUser;
+  userMenu?: UserMenuItem[][];
+  notifications?: NotificationItem[];
+  onNotificationSelect?: (item: NotificationItem) => void;
+  onMarkAllRead?: () => void;
+  asOf?: Date | string;
+}) {
+  const { state, isMobile, setOpen, setOpenMobile } = useSidebar();
+  const collapsed = state === "collapsed" && !isMobile;
+
+  const unitGroups = groupsForUnit(team, currentUnit);
+  const everyGroup = React.useMemo(() => [...unitGroups, ...team.teamWide], [unitGroups, team.teamWide]);
+  const destinations = React.useMemo<Destination[]>(
+    () => everyGroup.flatMap((group) => flatten(group.items).map((item) => ({ item, group }))),
+    [everyGroup],
+  );
+
+  const memory = useShellMemory(team.id, destinations, activeItemId);
+
+  const [query, setQuery] = React.useState("");
+  const field = React.useRef<HTMLInputElement>(null);
+  const navId = React.useId();
+
+  // Ctrl K / Cmd K focuses Find from anywhere — opening the sidebar first if it
+  // is a rail or a closed sheet. `code`, not `key`, so it works on an Arabic
+  // keyboard layout, where the K key does not type "k".
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === "KeyK") {
+        e.preventDefault();
+        if (isMobile) setOpenMobile(true);
+        else setOpen(true);
+        requestAnimationFrame(() => field.current?.focus());
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isMobile, setOpen, setOpenMobile]);
+
+  const words = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const matches = (d: Destination) =>
+    words.every((w) => `${d.item.label} ${d.group.label} ${d.group.code ?? ""}`.toLowerCase().includes(w));
+  const found = words.length ? destinations.filter(matches) : [];
+
+  const onFindKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape" && query) {
+      e.preventDefault();
+      setQuery("");
+    } else if (e.key === "Enter" || e.key === "ArrowDown") {
+      const first = document.querySelector<HTMLElement>(`[id="${navId}"] a[href]`);
+      if (first) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  };
+
+  return (
+    <>
+      <SidebarHeader className="gap-1 pb-1">
+        {/* The brand row — identity, not a control. */}
+        <div className="flex h-14 items-center gap-2.5 px-1 group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:px-0">
+          {brandMark ? (
+            <span
+              aria-hidden="true"
+              className="h-11 w-9 shrink-0 bg-primary group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8"
+              style={{
+                mask: `url(${brandMark}) center / contain no-repeat`,
+                WebkitMask: `url(${brandMark}) center / contain no-repeat`,
+              }}
+            />
+          ) : (
+            <span aria-hidden="true" className="size-8 shrink-0 rounded-md bg-primary" />
+          )}
+          <span className="min-w-0 leading-tight group-data-[collapsible=icon]:hidden">
+            <span className="block truncate text-sm font-semibold" title={team.name}>
+              {team.shortName}
+            </span>
+            <span className="block truncate text-xs text-sidebar-foreground/70">Kuwait Oil Company</span>
+          </span>
+        </div>
+
+        <UnitSwitcher team={team} currentUnit={currentUnit} unitLabel={unitLabel} selectUnit={selectUnit} />
+
+        {/* Find — SidebarInput's look, rig3's behaviour. */}
+        <div role="search" className="relative mt-1 group-data-[collapsible=icon]:hidden">
+          <label htmlFor={`${navId}-find`} className="sr-only">
+            Find a screen
+          </label>
+          <Search aria-hidden="true" className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            ref={field}
+            id={`${navId}-find`}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={onFindKey}
+            autoComplete="off"
+            spellCheck={false}
+            aria-describedby={`${navId}-find-hint`}
+            aria-controls={navId}
+            placeholder="Find a screen"
+            className="h-8 w-full rounded-md border border-input bg-background pl-8 pr-14 text-sm outline-hidden placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring [&::-webkit-search-cancel-button]:hidden"
+          />
+          {query ? (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("");
+                field.current?.focus();
+              }}
+              className="absolute right-1 top-1/2 inline-flex size-6 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground outline-hidden hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            >
+              <X className="size-3.5" aria-hidden="true" />
+              <span className="sr-only">Clear the search</span>
+            </button>
+          ) : (
+            <kbd aria-hidden="true" className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 rounded border bg-sidebar px-1 font-mono text-2xs text-muted-foreground">
+              Ctrl K
+            </kbd>
+          )}
+          <p id={`${navId}-find-hint`} className="sr-only">
+            Shortcut: Control K. Filters the screens below as you type; Enter moves to the first result.
+          </p>
+          <p className="sr-only" aria-live="polite">
+            {words.length ? `${found.length} ${found.length === 1 ? "screen matches" : "screens match"}` : ""}
+          </p>
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent className="[scrollbar-color:var(--border)_transparent] [scrollbar-width:thin]">
+        {collapsed ? (
+          // The rail: every destination as an icon with a tooltip.
+          everyGroup.map((group) => (
+            <RailSection key={group.id} group={group} activeItemId={activeItemId} renderLink={renderLink} />
+          ))
+        ) : words.length ? (
+          <SidebarGroup id={navId} aria-label="Matching screens">
+            <SidebarGroupLabel>Matches</SidebarGroupLabel>
+            {found.length === 0 ? (
+              <p className="px-2 py-1 text-xs text-sidebar-foreground/70">
+                Nothing matches &ldquo;{query}&rdquo;.{" "}
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="font-medium text-sidebar-primary underline-offset-4 outline-hidden hover:underline focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                >
+                  Show all
+                </button>
+              </p>
+            ) : (
+              <SidebarMenu>
+                {found.map((d) => (
+                  <DestinationRow key={d.item.id} d={d} activeItemId={activeItemId} renderLink={renderLink} memory={memory} hint />
+                ))}
+              </SidebarMenu>
+            )}
+          </SidebarGroup>
+        ) : (
+          <div id={navId} className="contents">
+            {memory.pinned.length > 0 && (
+              <Remembered title="Pinned" items={memory.pinned} activeItemId={activeItemId} renderLink={renderLink} memory={memory} />
+            )}
+            {memory.recent.length > 0 && (
+              <Remembered
+                title="Recent"
+                items={memory.recent}
+                activeItemId={activeItemId}
+                renderLink={renderLink}
+                memory={memory}
+                action={
+                  <button
+                    type="button"
+                    onClick={memory.clearRecent}
+                    className="ml-auto rounded-md px-1.5 text-2xs text-sidebar-foreground/70 outline-hidden hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+                  >
+                    Clear<span className="sr-only"> recent screens</span>
+                  </button>
+                }
+              />
+            )}
+
+            <FoldedGroups
+              label={unitLabel}
+              groups={unitGroups}
+              activeItemId={activeItemId}
+              renderLink={renderLink}
+              memory={memory}
+            />
+            {/* Team-wide sits below the unit nav and never changes with the
+                switcher, so "does this belong to my unit or the team?" is
+                answered by where it is rather than by asking someone. */}
+            {team.teamWide.length > 0 && (
+              <FoldedGroups
+                label="Team-wide"
+                groups={team.teamWide}
+                activeItemId={activeItemId}
+                renderLink={renderLink}
+                memory={memory}
+              />
+            )}
+          </div>
+        )}
+      </SidebarContent>
+
+      <SidebarFooter className="gap-1">
+        {(notifications || asOf) && (
+          <div className="flex items-center gap-2 px-2 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:px-0">
+            {asOf && (
+              <span className="min-w-0 flex-1 truncate text-2xs text-sidebar-foreground/70 group-data-[collapsible=icon]:hidden">
+                {typeof asOf === "string"
+                  ? asOf
+                  : `Figures as of ${asOf.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`}
+              </span>
+            )}
+            {/* Alerts are about operational events, not about you, and must be
+                reachable from any screen — so they sit in the one place that is
+                on every screen, beside the account. */}
+            {notifications && (
+              <NotificationMenu items={notifications} onSelect={onNotificationSelect} onMarkAllRead={onMarkAllRead} />
+            )}
+          </div>
+        )}
+        {user && (
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <AccountMenu user={user} groups={userMenu} />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        )}
+      </SidebarFooter>
+    </>
+  );
+}
+
+/**
+ * The unit switcher, as a quiet row under the brand: the unit's number as an
+ * eyebrow, what it covers under it. Still the switcher (2026-08-09) — only the
+ * dress changed.
+ */
+function UnitSwitcher({
+  team,
+  currentUnit,
+  unitLabel,
+  selectUnit,
+}: {
+  team: TeamConfig;
+  currentUnit: string;
+  unitLabel: string;
+  selectUnit: (id: string) => void;
+}) {
+  const unit = team.units.find((u) => u.id === currentUnit);
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                aria-label={`Unit: ${unitLabel}. Switch unit`}
+                className="h-11 border border-sidebar-border data-popup-open:bg-sidebar-accent group-data-[collapsible=icon]:border-0"
+              />
+            }
+          >
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-accent font-mono text-2xs font-medium">
+              {currentUnit === ALL_UNITS ? "ALL" : (unit?.label ?? "").replace(/\D+/g, "") || "—"}
+            </span>
+            {/* `min-w-0` is what makes `truncate` work on the children: a grid
+                item's default `min-width: auto` refuses to shrink below its
+                content, and the chevron gets shoved out instead. */}
+            <span className="grid min-w-0 flex-1 text-left leading-tight">
+              <span className="truncate text-2xs font-medium uppercase tracking-caps text-sidebar-foreground/70">
+                {currentUnit === ALL_UNITS ? team.shortName : (unit?.label ?? "Unit")}
+              </span>
+              <span className="truncate text-sm font-medium">{unitLabel}</span>
+            </span>
+            <ChevronsUpDown className="ml-auto size-4 text-sidebar-foreground/60" />
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent className="w-[var(--anchor-width)] min-w-64" align="start" side="bottom" sideOffset={4}>
+            {/* Directorate and group are identity, not navigation. */}
+            <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+              {team.directorate} · {team.group}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {team.units.map((u) => (
+              <DropdownMenuItem key={u.id} onClick={() => selectUnit(u.id)} className="gap-2">
+                <div className="grid min-w-0 flex-1">
+                  <span>{u.label}</span>
+                  {u.name && <span className="truncate text-xs text-muted-foreground">{u.name}</span>}
+                </div>
+                {u.id === currentUnit && <Check className="size-4" />}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+            {/* Team leads genuinely need to see across units. */}
+            <DropdownMenuItem onClick={() => selectUnit(ALL_UNITS)} className="gap-2">
+              <span className="flex-1">All units</span>
+              {currentUnit === ALL_UNITS && <Check className="size-4" />}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+/** A labelled zone of folded app groups — rig3's "Teams" list. */
+function FoldedGroups({
+  label,
+  groups,
+  activeItemId,
+  renderLink,
+  memory,
+}: {
+  label: string;
+  groups: NavGroup[];
+  activeItemId?: string;
+  renderLink: NonNullable<AppShellProps["renderLink"]>;
+  memory: ShellMemory;
+}) {
+  const holding = (g: NavGroup) => flatten(g.items).some((i) => i.id === activeItemId);
+  const [open, setOpen] = React.useState<Set<string>>(
+    () => new Set(groups.filter(holding).map((g) => g.id)),
+  );
+  // Navigating into another group opens it too: a deep link must never land on
+  // a screen whose nav entry is folded away.
+  React.useEffect(() => {
+    const g = groups.find(holding);
+    if (g) setOpen((s) => (s.has(g.id) ? s : new Set(s).add(g.id)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeItemId]);
+
+  const labelId = React.useId();
+  return (
+    <SidebarGroup aria-labelledby={labelId}>
+      <SidebarGroupLabel id={labelId}>{label}</SidebarGroupLabel>
+      <SidebarMenu className="gap-0.5">
+        {groups.map((group) => {
+          const isOpen = open.has(group.id);
+          const subId = `${labelId}-${group.id}`;
+          return (
+            <SidebarMenuItem key={group.id}>
+              <SidebarMenuButton
+                aria-expanded={isOpen}
+                aria-controls={subId}
+                onClick={() =>
+                  setOpen((s) => {
+                    const n = new Set(s);
+                    if (n.has(group.id)) n.delete(group.id);
+                    else n.add(group.id);
+                    return n;
+                  })
+                }
+              >
+                {group.code && (
+                  <span className="w-9 shrink-0 font-mono text-2xs font-normal text-sidebar-foreground/60">{group.code}</span>
+                )}
+                <span className="min-w-0 flex-1 truncate">{group.label}</span>
+                <ChevronRight
+                  aria-hidden="true"
+                  className={cn("ml-auto text-sidebar-foreground/50 transition-transform duration-fast ease-out", isOpen && "rotate-90")}
+                />
+              </SidebarMenuButton>
+              <SidebarMenuSub id={subId} hidden={!isOpen} className="mr-0 pr-0">
+                {group.items.map((item) => (
+                  <SubDestination key={item.id} item={item} group={group} activeItemId={activeItemId} renderLink={renderLink} memory={memory} />
+                ))}
+              </SidebarMenuSub>
+            </SidebarMenuItem>
+          );
+        })}
+      </SidebarMenu>
+    </SidebarGroup>
+  );
+}
+
+/** One screen inside a folded group, with its pin. Children nest one step in. */
+function SubDestination({
+  item,
+  group,
+  activeItemId,
+  renderLink,
+  memory,
+  depth = 0,
+}: {
+  item: NavItem;
+  group: NavGroup;
+  activeItemId?: string;
+  renderLink: NonNullable<AppShellProps["renderLink"]>;
+  memory: ShellMemory;
+  depth?: number;
+}) {
+  return (
+    <>
+      <SidebarMenuSubItem className="group/menu-sub-item relative flex">
+        <SidebarMenuSubButton
+          isActive={item.id === activeItemId}
+          aria-current={item.id === activeItemId ? "page" : undefined}
+          className={cn("flex-1 pr-7 data-[active=true]:font-medium [&>svg]:text-sidebar-foreground/60", depth > 0 && "pl-6")}
+          render={renderLink(
+            item,
+            <>
+              {item.icon && <item.icon aria-hidden="true" />}
+              <span>{item.label}</span>
+            </>,
+          )}
+        />
+        {item.badge !== undefined && (
+          <span className="pointer-events-none absolute right-7 top-1 rounded-md px-1 text-xs font-medium tabular-nums text-sidebar-foreground">
+            {item.badge}
+          </span>
+        )}
+        <PinToggle item={item} memory={memory} />
+      </SidebarMenuSubItem>
+      {item.children?.map((child) => (
+        <SubDestination
+          key={child.id}
+          item={child}
+          group={group}
+          activeItemId={activeItemId}
+          renderLink={renderLink}
+          memory={memory}
+          depth={depth + 1}
+        />
+      ))}
+    </>
+  );
+}
+
+/** A search result or a remembered screen: the screen, with its app beside it. */
+function DestinationRow({
+  d,
+  activeItemId,
+  renderLink,
+  memory,
+  hint,
+}: {
+  d: Destination;
+  activeItemId?: string;
+  renderLink: NonNullable<AppShellProps["renderLink"]>;
+  memory: ShellMemory;
+  hint?: boolean;
+}) {
+  return (
+    <SidebarMenuItem className="group/menu-sub-item relative flex">
+      <SidebarMenuSubButton
+        isActive={d.item.id === activeItemId}
+        aria-current={d.item.id === activeItemId ? "page" : undefined}
+        className="w-full flex-1 translate-x-0 pr-7 data-[active=true]:font-medium [&>svg]:text-sidebar-foreground/60"
+        render={renderLink(
+          d.item,
+          <>
+            {d.item.icon && <d.item.icon aria-hidden="true" />}
+            <span className="min-w-0 flex-1 truncate">{d.item.label}</span>
+            {hint && (
+              <span className="max-w-24 shrink-0 truncate text-2xs text-sidebar-foreground/60">{d.group.code ?? d.group.label}</span>
+            )}
+          </>,
+        )}
+      />
+      <PinToggle item={d.item} memory={memory} />
+    </SidebarMenuItem>
+  );
+}
+
+function Remembered({
+  title,
+  items,
+  activeItemId,
+  renderLink,
+  memory,
+  action,
+}: {
+  title: string;
+  items: Destination[];
+  activeItemId?: string;
+  renderLink: NonNullable<AppShellProps["renderLink"]>;
+  memory: ShellMemory;
+  action?: React.ReactNode;
+}) {
+  const labelId = React.useId();
+  return (
+    <SidebarGroup aria-labelledby={labelId} className="pb-0">
+      <div className="flex items-center">
+        <SidebarGroupLabel id={labelId}>{title}</SidebarGroupLabel>
+        {action}
+      </div>
+      <SidebarMenu>
+        {items.map((d) => (
+          <DestinationRow key={d.item.id} d={d} activeItemId={activeItemId} renderLink={renderLink} memory={memory} hint />
+        ))}
+      </SidebarMenu>
+    </SidebarGroup>
+  );
+}
+
+/** Hidden until the row is hovered or focused; always shown once pinned. */
+function PinToggle({ item, memory }: { item: NavItem; memory: ShellMemory }) {
+  const pinned = memory.isPinned(item.id);
+  return (
+    <button
+      type="button"
+      aria-pressed={pinned}
+      onClick={() => memory.togglePin(item.id)}
+      className="absolute right-1 top-0.5 inline-flex size-6 items-center justify-center rounded-md text-sidebar-foreground/70 outline-hidden hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring group-focus-within/menu-sub-item:opacity-100 group-hover/menu-sub-item:opacity-100 aria-pressed:text-sidebar-primary aria-pressed:opacity-100 md:opacity-0"
+    >
+      <Pin className={cn("size-3.5", pinned && "fill-current")} aria-hidden="true" />
+      <span className="sr-only">
+        {pinned ? "Unpin" : "Pin"} {item.label}
+      </span>
+    </button>
+  );
+}
+
+/** The icon rail: what the shell drew before the rework, kept for collapse. */
+function RailSection({
+  group,
+  activeItemId,
+  renderLink,
+}: {
+  group: NavGroup;
+  activeItemId?: string;
+  renderLink: NonNullable<AppShellProps["renderLink"]>;
+}) {
+  return (
+    <SidebarGroup>
+      <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+      <SidebarMenu>
+        {flatten(group.items).map((item) => (
+          <SidebarMenuItem key={item.id}>
+            <SidebarMenuButton
+              isActive={item.id === activeItemId}
+              tooltip={item.label}
+              render={renderLink(
+                item,
+                <>
+                  {item.icon && <item.icon />}
+                  <span>{item.label}</span>
+                </>,
+              )}
+            />
+            {/* A sibling, not a child, so it never enters the button's row —
+                see the SidebarMenuBadge note in sidebar.tsx. */}
+            {item.badge !== undefined && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+          </SidebarMenuItem>
+        ))}
+      </SidebarMenu>
+    </SidebarGroup>
+  );
+}
+
+function flatten(items: NavItem[]): NavItem[] {
+  return items.flatMap((i) => [i, ...flatten(i.children ?? [])]);
+}
+
+// ── Pinned and recent ───────────────────────────────────────────────────────
+
+interface ShellMemory {
+  pinned: Destination[];
+  recent: Destination[];
+  isPinned: (id: string) => boolean;
+  togglePin: (id: string) => void;
+  clearRecent: () => void;
+}
+
+const RECENT_MAX = 5;
+
+/**
+ * Per browser and per team (localStorage), which is the right scope for "my
+ * shortcuts" and needs no server. Storage can be blocked or throw (private
+ * windows, locked-down profiles), so every access is guarded and the shell
+ * works without it. Ids that no longer exist in the config are dropped on read.
+ *
+ * Recent records the screen being LEFT, not the one just opened: the current
+ * screen is already highlighted below, and listing it again at the top would
+ * push the useful entry down.
+ */
+function useShellMemory(teamId: string, destinations: Destination[], activeItemId?: string): ShellMemory {
+  const key = `koc-shell:${teamId}`;
+  const read = React.useCallback((): { pinned: string[]; recent: string[] } => {
+    try {
+      const raw = window.localStorage.getItem(key);
+      const parsed = raw ? (JSON.parse(raw) as { pinned?: unknown; recent?: unknown }) : {};
+      const ids = (v: unknown) => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+      return { pinned: ids(parsed.pinned), recent: ids(parsed.recent) };
+    } catch {
+      return { pinned: [], recent: [] };
+    }
+  }, [key]);
+
+  const [state, setState] = React.useState(read);
+  const write = React.useCallback(
+    (next: { pinned: string[]; recent: string[] }) => {
+      setState(next);
+      try {
+        window.localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        /* storage blocked: the session still works, it just forgets */
+      }
+    },
+    [key],
+  );
+
+  const previous = React.useRef(activeItemId);
+  React.useEffect(() => {
+    const left = previous.current;
+    previous.current = activeItemId;
+    if (!left || left === activeItemId) return;
+    setState((s) => {
+      const next = { ...s, recent: [left, ...s.recent.filter((id) => id !== left)].slice(0, RECENT_MAX) };
+      try {
+        window.localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        /* see above */
+      }
+      return next;
+    });
+  }, [activeItemId, key]);
+
+  const byId = React.useMemo(() => new Map(destinations.map((d) => [d.item.id, d])), [destinations]);
+  const resolve = (ids: string[]) => ids.map((id) => byId.get(id)).filter((d): d is Destination => Boolean(d));
+
+  return {
+    pinned: resolve(state.pinned),
+    recent: resolve(state.recent.filter((id) => id !== activeItemId && !state.pinned.includes(id))),
+    isPinned: (id) => state.pinned.includes(id),
+    togglePin: (id) =>
+      write({
+        ...state,
+        pinned: state.pinned.includes(id) ? state.pinned.filter((p) => p !== id) : [...state.pinned, id],
+      }),
+    clearRecent: () => write({ ...state, recent: [] }),
+  };
 }
 
 /**
@@ -479,108 +1010,3 @@ function AccountMenu({
   );
 }
 
-function NavSection({
-  group,
-  activeItemId,
-  renderLink,
-}: {
-  group: NavGroup;
-  activeItemId?: string;
-  renderLink: NonNullable<AppShellProps["renderLink"]>;
-}) {
-  return (
-    <SidebarGroup>
-      <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-      <SidebarMenu>
-        {group.items.map((item) =>
-          item.children?.length ? (
-            <CollapsibleNavItem
-              key={item.id}
-              item={item}
-              activeItemId={activeItemId}
-              renderLink={renderLink}
-            />
-          ) : (
-            <SidebarMenuItem key={item.id}>
-              <SidebarMenuButton
-                isActive={item.id === activeItemId}
-                tooltip={item.label}
-                render={renderLink(
-                  item,
-                  <>
-                    {item.icon && <item.icon />}
-                    <span>{item.label}</span>
-                  </>,
-                )}
-              />
-              {/*
-               * The badge is a SIBLING of the button, not a child of it, and it
-               * has to be SidebarMenuBadge rather than a span.
-               *
-               * A hand-rolled `<span className="ml-auto">` inside the button
-               * breaks two things at once. The sidebar styles the label with
-               * `[&>span:last-child]:truncate` — an inline badge becomes the last
-               * span, so the badge gets truncated and the label loses its
-               * truncation, wraps, and spills out of the collapsed 32px rail.
-               * And a plain span has no collapse rule, so it stays visible in the
-               * icon rail with nothing to attach to.
-               *
-               * SidebarMenuBadge is absolutely positioned and carries
-               * `group-data-[collapsible=icon]:hidden`, so it disappears with the
-               * label and never enters the button's flex row at all.
-               */}
-              {item.badge !== undefined && (
-                <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
-              )}
-            </SidebarMenuItem>
-          ),
-        )}
-      </SidebarMenu>
-    </SidebarGroup>
-  );
-}
-
-function CollapsibleNavItem({
-  item,
-  activeItemId,
-  renderLink,
-}: {
-  item: NavItem;
-  activeItemId?: string;
-  renderLink: NonNullable<AppShellProps["renderLink"]>;
-}) {
-  // Open the branch containing the active item, so a deep link does not land you
-  // on a page whose nav entry is hidden inside a collapsed group.
-  const containsActive = item.children?.some((c) => c.id === activeItemId) ?? false;
-
-  return (
-    <Collapsible
-      render={<SidebarMenuItem />}
-      defaultOpen={containsActive}
-      className="group/collapsible"
-    >
-        <CollapsibleTrigger render={<SidebarMenuButton tooltip={item.label} />}>
-          {item.icon && <item.icon />}
-          <span>{item.label}</span>
-          <ChevronRight
-            className={cn(
-              "ml-auto transition-transform duration-fast ease-out",
-              "group-data-open/collapsible:rotate-90",
-            )}
-          />
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          <SidebarMenuSub>
-            {item.children?.map((child) => (
-              <SidebarMenuSubItem key={child.id}>
-                <SidebarMenuSubButton
-                  isActive={child.id === activeItemId}
-                  render={renderLink(child, <span>{child.label}</span>)}
-                />
-              </SidebarMenuSubItem>
-            ))}
-          </SidebarMenuSub>
-        </CollapsibleContent>
-    </Collapsible>
-  );
-}

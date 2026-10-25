@@ -143,6 +143,7 @@ import { DWOS } from "./teams/dwos";
           className="relative h-[42rem] overflow-hidden rounded-lg border border-input"
         >
           <AppShell
+            brandMark="/koc-emblem.svg"
             team={DWOS}
             activeItemId="unit-1-ddr"
             user={DEMO_USER}
@@ -168,6 +169,7 @@ import { DWOS } from "./teams/dwos";
             Close (Esc)
           </button>
           <AppShell
+            brandMark="/koc-emblem.svg"
             team={DWOS}
             activeItemId="unit-1-ddr"
             user={DEMO_USER}
