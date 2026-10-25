@@ -1,34 +1,21 @@
-import { Droplets, Flame, Gauge, Waves } from "lucide-react";
 import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-
-import {
-  Button,
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
   StatCard,
   StatusBadge,
+  SectionHeading,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
+  TrendChart,
   type OperationalStatus,
 } from "@koc/ui";
-import { chartSeries } from "@koc/tokens";
 
 import { PageHead, Section, Note, Code } from "./parts";
 
@@ -72,133 +59,69 @@ export function DashboardDemo() {
       </Note>
 
       <div className="mt-6 space-y-5">
-        {/* KPI row */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <SectionHeading index="01" eyebrow="Figures" title="North Kuwait fields" aside="June · placeholder figures" />
+
+        {/* KPI row — the rig3 tile: tag, light figure, change, trend, one line on what it counts. */}
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             label="Oil production"
+            tag="Live"
             value="118,402"
             unit="bbl/d"
             delta={4.2}
             deltaLabel="vs May"
             intent="higher-is-better"
-            icon={<Droplets />}
+            trend={[112, 115, 113, 119, 117, 121, 118.4]}
+            description="Field total, trailing seven-day average."
           />
           <StatCard
             label="Gas flared"
+            tag="HSE"
             value="1,004"
             unit="MMscf"
             delta={2.8}
             deltaLabel="vs May"
             intent="lower-is-better"
-            icon={<Flame />}
+            trend={[930, 951, 968, 940, 982, 977, 1004]}
+            description="Flared this month — up is bad, and reportable."
           />
           <StatCard
             label="Water cut"
+            tag="Reservoir"
             value="31.8"
             unit="%"
             delta={-1.4}
             deltaLabel="vs May"
             intent="lower-is-better"
-            icon={<Waves />}
+            trend={[33.9, 33.4, 33.6, 32.9, 32.5, 32.2, 31.8]}
+            description="Water share of produced liquid."
           />
           <StatCard
             label="Wellhead pressure"
+            tag="Ops"
             value="2,318"
             unit="psi"
             delta={0.3}
             deltaLabel="vs May"
-            icon={<Gauge />}
+            trend={[2301, 2296, 2310, 2305, 2312, 2311, 2318]}
+            description="Median across producing wells. No sentiment — neutral."
           />
         </div>
 
-        {/* Trend */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Production by field</CardTitle>
-            <CardDescription>Thousand barrels per day · last six months</CardDescription>
-            <CardAction>
-              <Button variant="outline" size="sm">
-                Export
-              </Button>
-            </CardAction>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={TREND} margin={{ top: 4, right: 8, bottom: 0, left: -16 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis
-                    dataKey="month"
-                    stroke="var(--muted-foreground)"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <YAxis
-                    stroke="var(--muted-foreground)"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      background: "var(--popover)",
-                      border: "1px solid var(--border)",
-                      borderRadius: "var(--radius)",
-                      color: "var(--popover-foreground)",
-                      fontSize: 12,
-                    }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: 12 }} />
-                  {/* Series colours come straight from the token package — the same
-                      values the contrast tests assert.
-
-                      isAnimationActive={false} is NOT a style preference — it is
-                      required for correctness. Recharts 2.x animates a line by
-                      tweening stroke-dasharray from "0px <len>" up to the full
-                      length. Under React 19's StrictMode, effects are
-                      double-invoked, react-smooth's animation is cancelled, and
-                      the tween never advances past frame zero — leaving every line
-                      with stroke-dasharray "0px 858px": drawn correctly, and
-                      completely invisible. Correct `d`, correct stroke, opacity 1,
-                      zero pixels rendered.
-
-                      Disabling the mount animation sidesteps it entirely, and
-                      matches the motion policy anyway: a dashboard is a tool
-                      someone stares at for eight hours, and a chart that replays
-                      its entrance on every data refresh is noise. */}
-                  <Line
-                    type="monotone"
-                    dataKey="burgan"
-                    name="Burgan"
-                    stroke={chartSeries[0]}
-                    strokeWidth={2}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="raudhatain"
-                    name="Raudhatain"
-                    stroke={chartSeries[1]}
-                    strokeWidth={2}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="sabriyah"
-                    name="Sabriyah"
-                    stroke={chartSeries[2]}
-                    strokeWidth={2}
-                    dot={false}
-                    isAnimationActive={false}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Trend — a framed @koc/chart: title, legend, hover values and a Table toggle. */}
+        <TrendChart
+          title="Production by field"
+          subtitle="Thousand barrels per day · last six months"
+          caption="Production by field over the last six months: Burgan rises from 112 to 121 thousand barrels per day; Raudhatain and Sabriyah hold near 40 and 35."
+          data={TREND}
+          xKey="month"
+          series={[
+            { key: "burgan", label: "Burgan" },
+            { key: "raudhatain", label: "Raudhatain" },
+            { key: "sabriyah", label: "Sabriyah" },
+          ]}
+          height={256}
+        />
 
         {/* Asset table */}
         <Card>
@@ -247,6 +170,11 @@ export function DashboardDemo() {
             Every surface, line, axis and series re-maps. The chart colours lift a step in dark mode
             and the axis labels re-derive from <Code>--muted-foreground</Code> — nothing here needed
             a second implementation.
+          </Note>
+          <Note title="The chart is our own SVG">
+            No chart library since 2026-10-25: <Code>@koc/chart</Code> draws plain SVG in the rig3
+            style, hover any month for its values, and <Code>Table</Code> swaps the plot for the
+            numbers. Recharts and its dependency tree are out of the approval pack.
           </Note>
           <Note title="SA-0788 is the only filled badge on the page">
             <Code>critical</Code> is the one status that gets a solid fill. In a wall of outlined
