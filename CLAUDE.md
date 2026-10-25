@@ -70,6 +70,16 @@ that hole by asserting the shell's landmark shape directly.
 
 - **Distribution is hybrid.** `@koc/tokens` via npm (central brand control) + components via
   the `@koc/*` shadcn registry (teams own the source they pull).
+- **THE RIG3 DESIGN LANGUAGE — decided 2026-10-25 by Saud.** The DWEG landing's rig3
+  page (`~/Documents/Claude/Projects/dweg-landing`, `#/landing/rig3`) is the base for the
+  whole system: its sidebar, surfaces and type, KPI tiles and charts all became the
+  defaults (branch `claude/rig3-design-language`). Colour tokens did not change — rig3
+  runs on them; the rework is type (`font-light` figures/titles ≥24px, `tracking-caps`
+  eyebrows) and composition (hairline translucent cards, no shadows, quiet card titles,
+  numbered `SectionHeading`s, KPI tiles with trends, no desktop top bar). The unit
+  switcher stays (2026-08-09 decision, re-confirmed). **It goes into v1.0.0**: the NVDA
+  pass and the freeze-pack regeneration happen after it. First consumer pass:
+  [2026-10-25-dwos-rig3.md](docs/consumer-reports/2026-10-25-dwos-rig3.md).
 - **NO CHART LIBRARY — Recharts removed 2026-10-25 by Saud.** `@koc/chart` is plain SVG
   (TrendChart, ComparisonChart, VolumeChart, StackedChart, BarList), ported from the DWEG
   landing's rig3 page. The new information: the approve-once freeze makes every dependency
@@ -265,7 +275,8 @@ evidence at all** about consumers, and ask the session building a real app when 
 
 ## Traps that have already cost time
 
-- **Recharts lines render invisible under React 19 StrictMode.** Set
+- **Recharts lines render invisible under React 19 StrictMode.** (Since 2026-10-25 this
+  applies only to the bakeoff: `@koc/chart` is plain SVG and nothing in it animates.) Set
   `isAnimationActive={false}` on every `<Line>`. Diagnose via `stroke-dasharray` on
   `path.recharts-line-curve` — if it starts with `0px`, this is it.
   **Still present in recharts 3.8** — retested 2026-08-09 by removing the workaround under
