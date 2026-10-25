@@ -13,13 +13,14 @@ export * from "./palette.js";
 export * from "./semantic.js";
 export * from "./foundation.js";
 
-import { palette, chartSeries } from "./palette.js";
+import { palette, chartSeries, chartSeriesDark } from "./palette.js";
 import { themes } from "./semantic.js";
 import { foundation } from "./foundation.js";
 
 export const tokens = {
   palette,
   chartSeries,
+  chartSeriesDark,
   themes,
   ...foundation,
 } as const;

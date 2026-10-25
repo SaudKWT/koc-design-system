@@ -12,10 +12,10 @@
  * Run: npm run test --workspace=@koc/tokens
  */
 
-import { differenceCiede2000 } from "culori";
-import { contrast } from "./color.js";
+import { converter, differenceCiede2000 } from "culori";
+import { contrast, oklabDistance, DEFICIENCIES } from "./color.js";
 import { light, dark, type SemanticTheme } from "./semantic.js";
-import { palette, chartSeries } from "./palette.js";
+import { palette } from "./palette.js";
 
 const AA_TEXT = 4.5;
 const AA_UI = 3.0;
@@ -80,6 +80,24 @@ function checkDistinct(
   );
 }
 
+/** Assert any measured value clears a floor. For the measures that aren't a ratio or ΔE2000. */
+function checkMin(
+  label: string,
+  value: number,
+  min: number,
+  unit: string,
+  note = "",
+): void {
+  checks++;
+  const pass = value >= min;
+  if (!pass) failures++;
+  const status = pass ? "  ok  " : " FAIL ";
+  const detail = `${unit} ${value.toFixed(unit === "C" ? 3 : 1).padStart(5)} (need ${min})`;
+  console.log(
+    `${status} ${label.padEnd(46)} ${detail}${note ? `  — ${note}` : ""}`,
+  );
+}
+
 /** Every foreground/background pair the semantic layer promises is legible. */
 function auditTheme(name: string, t: SemanticTheme): void {
   console.log(`\n── ${name} ────────────────────────────────────────────────`);
@@ -121,9 +139,11 @@ function auditTheme(name: string, t: SemanticTheme): void {
   check("focus ring vs background", t.ring, t.background, AA_UI, "WCAG 2.4.11");
 
   // Charts are read, not decorated. Each series must be resolvable against the
-  // surface it is drawn on.
+  // surface it is drawn on — the page, and the card a chart usually sits in.
+  // They differ most in dark, where the card is the LIGHTER of the two.
   for (let i = 1; i <= 5; i++) {
     check(`chart-${i} vs background`, t[`chart-${i}`], t.background, AA_UI);
+    check(`chart-${i} vs card`, t[`chart-${i}`], t.card, AA_UI);
   }
 }
 
@@ -152,21 +172,71 @@ function auditStatusSeparation(): void {
 }
 
 /**
- * Adjacent chart series are checked two ways, because they can fail two ways:
+ * Chart series — the dataviz palette validator's checks, as a gate.
  *
- *   - ΔE catches "these look the same to a colour-sighted reader".
- *   - Luminance ratio catches "these collapse to the same grey" — which is what
- *     happens on a greyscale printout, on a failing projector, or to a reader
- *     with achromatopsia. Hue separation does nothing for any of them.
+ * Until 2026-10-25 adjacent series were checked two ways (ΔE2000 and
+ * greyscale), on the LIGHT series only. The set passed both and still failed
+ * the dataviz validator: purple↔teal measured ΔE 6.9 under protanopia, one
+ * slot sat below the chroma floor, and the dark tokens were never looked at —
+ * every one above the dark lightness band, neighbours at 1.03:1 in greyscale.
+ * Now both themes' shipped `--chart-*` tokens are held to all of these:
  *
- * A palette can pass either test alone and still be unreadable in the field.
+ *   - Lightness band, per theme. Too dark and a mark sinks into the plot; too
+ *     light and it glares (dark) or washes out (light).
+ *   - Chroma floor. Below OKLCH C 0.10 a hue reads as grey and stops carrying
+ *     identity, whatever its hue angle says.
+ *   - ΔE2000 ≥ 15: "these look the same to a colour-sighted reader".
+ *   - Normal-vision floor, OKLab ΔE ≥ 15 — the validator's own metric for the
+ *     same question, kept beside ΔE2000 so the two can't drift apart.
+ *   - Greyscale ≥ 1.2:1: "these collapse to the same grey" — a printout, a
+ *     failing projector, achromatopsia. Hue separation does nothing for them.
+ *   - CVD ≥ 8 under protanopia, deuteranopia and tritanopia: "these look the
+ *     same to a colour-blind reader". Roughly 1 in 12 men is red-green colour
+ *     blind and KOC's operational readership skews male.
+ *
+ * Adjacent pairs only: bars, stacks and lines touch their neighbours, and that
+ * is the pairlist the validator gates. A palette can pass any of these alone
+ * and still be unreadable in the field — the old one did.
+ *
+ * The CVD model is `oklabDistance` in color.ts — Machado 2009 in linear light,
+ * the validator's own — and not culori's filterDeficiency*; see there for why.
  */
-function auditChartSeparation(): void {
-  console.log(`\n── chart series separation ────────────────────────────────`);
-  for (let i = 0; i < chartSeries.length - 1; i++) {
-    const [a, b] = [chartSeries[i], chartSeries[i + 1]];
-    checkDistinct(`series ${i + 1} vs ${i + 2} (colour)`, a, b, 15);
-    check(`series ${i + 1} vs ${i + 2} (greyscale)`, a, b, 1.2, "tonal");
+const toOklch = converter("oklch");
+
+/** Calibrated with the dataviz validator; see its color-formula reference. */
+const CHART_BAND = { light: [0.43, 0.77], dark: [0.48, 0.67] } as const;
+const CHART_CHROMA_MIN = 0.1;
+const NORMAL_MIN = 15;
+// 6–8 is the validator's WARN band, legal only with secondary encoding (direct
+// labels, gaps, texture). A token cannot promise how it will be drawn, so the
+// gate holds the target.
+const CVD_MIN = 8;
+
+function auditChartSeries(name: string, t: SemanticTheme, mode: "light" | "dark"): void {
+  console.log(`\n── chart series: ${name} ─────────────────────────────────────`);
+  const series = [1, 2, 3, 4, 5].map((i) => t[`chart-${i}`]);
+
+  const [lo, hi] = CHART_BAND[mode];
+  series.forEach((hex, i) => {
+    const { l, c = 0 } = toOklch(hex)!;
+    checks++;
+    const inBand = l >= lo && l <= hi;
+    if (!inBand) failures++;
+    console.log(
+      `${inBand ? "  ok  " : " FAIL "} ${`chart-${i + 1} lightness band`.padEnd(46)} L ${l.toFixed(3)} (need ${lo}–${hi})`,
+    );
+    checkMin(`chart-${i + 1} chroma`, c, CHART_CHROMA_MIN, "C", "below it a hue reads as grey");
+  });
+
+  for (let i = 0; i < series.length - 1; i++) {
+    const [a, b] = [series[i], series[i + 1]];
+    const pair = `series ${i + 1} vs ${i + 2}`;
+    checkDistinct(`${pair} (colour)`, a, b, 15);
+    checkMin(`${pair} (normal vision)`, oklabDistance(a, b), NORMAL_MIN, "ΔE", "OKLab");
+    check(`${pair} (greyscale)`, a, b, 1.2, "tonal");
+    for (const kind of DEFICIENCIES) {
+      checkMin(`${pair} (${kind})`, oklabDistance(a, b, kind), CVD_MIN, "ΔE");
+    }
   }
 }
 
@@ -174,7 +244,8 @@ console.log("KOC Design System — contrast audit (WCAG 2.1 AA)");
 auditTheme("LIGHT", light);
 auditTheme("DARK", dark);
 auditStatusSeparation();
-auditChartSeparation();
+auditChartSeries("LIGHT", light, "light");
+auditChartSeries("DARK", dark, "dark");
 
 console.log(
   `\n${"─".repeat(60)}\n${checks - failures}/${checks} passed` +

@@ -27,9 +27,14 @@ import { cn } from "../lib/utils";
  *
  * ── RULES THESE FOLLOW (the dataviz method, as rig3 applied it) ───────────────
  *
- *   - Colour from tokens only: --chart-1..5 by series position. Prefer three
- *     series or fewer — chart-4 and chart-5 fail colour-blind separation against
- *     their neighbours under the dataviz validator (a token change is open).
+ *   - Colour from tokens only: --chart-1..5 by series position. All five pass
+ *     the dataviz validator in light and dark — every neighbour clears ΔE 8
+ *     under protanopia, deuteranopia and tritanopia, and @koc/tokens' contrast
+ *     test fails the build if one stops (re-derived 2026-10-25; until then
+ *     chart-4/5 failed and these charts asked for three series at most).
+ *     Five is the ceiling: a sixth series would repeat chart-1, so fold the
+ *     tail into "Other" instead. Non-neighbours are not held to that floor,
+ *     which only matters where any two marks can touch — a scatter.
  *   - Thin marks, a 2px surface gap between fills, hairline grid, one y-axis,
  *     the zero line a step darker than the rest.
  *   - A legend for two or more series; the values themselves only where they

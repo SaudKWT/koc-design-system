@@ -1,11 +1,26 @@
 import { differenceCiede2000 } from "culori";
 
-import { contrast, light, dark, palette, chartSeries } from "@koc/tokens";
+import { contrast, light, dark, palette, oklabDistance, DEFICIENCIES } from "@koc/tokens";
 import { Badge } from "@koc/ui";
 
 import { PageHead, Section, Note, Code } from "./parts";
 
 const deltaE = differenceCiede2000();
+
+const chartThemes = [
+  ["Light", light],
+  ["Dark", dark],
+] as const;
+
+/** --chart-1..5 as a theme ships them. */
+const chartTokens = (t: Record<string, string>) => [1, 2, 3, 4, 5].map((i) => t[`chart-${i}`]);
+
+/** The weakest of the three dichromacies for one pair, and which it was. */
+function worstCvd(a: string, b: string) {
+  return DEFICIENCIES.map((kind) => ({ kind, value: oklabDistance(a, b, kind) })).reduce((w, x) =>
+    x.value < w.value ? x : w,
+  );
+}
 
 function Row({
   label,
@@ -150,41 +165,72 @@ export function Accessibility() {
       </Section>
 
       <Section
-        title="Chart series — checked two ways"
-        description="Adjacent series can fail two different ways, and passing one test doesn't imply
-                     passing the other."
+        title="Chart series — checked three ways, in both themes"
+        description="Adjacent series can fail three different ways, and passing one test doesn't imply
+                     passing the others. The set before 2026-10-25 passed the first two and failed
+                     the third."
       >
-        <div className="overflow-x-auto rounded-md border">
-          <table className="w-full">
-            <tbody>
-              {chartSeries.slice(0, -1).map((c, i) => (
-                <Row
-                  key={`de-${i}`}
-                  label={`Series ${i + 1} vs ${i + 2} — colour`}
-                  value={deltaE(c, chartSeries[i + 1])}
-                  min={15}
-                  unit=""
-                  note="ΔE2000"
-                />
-              ))}
-              {chartSeries.slice(0, -1).map((c, i) => (
-                <Row
-                  key={`tone-${i}`}
-                  label={`Series ${i + 1} vs ${i + 2} — greyscale`}
-                  value={contrast(c, chartSeries[i + 1])}
-                  min={1.2}
-                  note="tonal separation"
-                />
-              ))}
-            </tbody>
-          </table>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {chartThemes.map(([name, theme]) => {
+            const series = chartTokens(theme);
+            const pairs = series.slice(0, -1).map((c, i) => [i, c, series[i + 1]] as const);
+            return (
+              <div key={name} className="overflow-x-auto rounded-md border">
+                <table className="w-full">
+                  <caption className="px-3 pt-2 text-left text-sm font-medium">{name}</caption>
+                  <tbody>
+                    {pairs.map(([i, a, b]) => (
+                      <Row
+                        key={`de-${i}`}
+                        label={`Series ${i + 1} vs ${i + 2} — colour`}
+                        value={deltaE(a, b)}
+                        min={15}
+                        unit=""
+                        note="ΔE2000"
+                      />
+                    ))}
+                    {pairs.map(([i, a, b]) => (
+                      <Row
+                        key={`tone-${i}`}
+                        label={`Series ${i + 1} vs ${i + 2} — greyscale`}
+                        value={contrast(a, b)}
+                        min={1.2}
+                        note="tonal separation"
+                      />
+                    ))}
+                    {pairs.map(([i, a, b]) => {
+                      const worst = worstCvd(a, b);
+                      return (
+                        <Row
+                          key={`cvd-${i}`}
+                          label={`Series ${i + 1} vs ${i + 2} — colour-blind`}
+                          value={worst.value}
+                          min={8}
+                          unit=""
+                          note={`OKLab ΔE, worst: ${worst.kind}`}
+                        />
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })}
         </div>
-        <div className="mt-4">
+        <div className="mt-4 space-y-3">
           <Note title="Why greyscale is tested separately">
             ΔE catches “these look the same to a colour-sighted reader”. Luminance catches “these
             collapse to the same grey” — what happens on a printout, a failing projector, or to a
             reader with achromatopsia. Hue separation does nothing for any of them. A palette can
             pass either test alone and still be unreadable in the field.
+          </Note>
+          <Note title="Why colour blindness is tested separately again">
+            Roughly 1 in 12 men is red-green colour blind. Each pair is simulated under
+            protanopia, deuteranopia and tritanopia (Machado 2009, in linear light — the dataviz
+            validator's model) and must stay ΔE 8 apart under all three. The old series 4 and 5,
+            purple and teal, were ΔE 38 apart in colour and 1.47:1 in greyscale — and 6.9 under
+            protanopia, where both read as the same blue. Until this check existed, the charts
+            asked teams to stop at three series.
           </Note>
         </div>
       </Section>

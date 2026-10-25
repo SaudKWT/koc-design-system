@@ -647,15 +647,15 @@
       "type": "color"
     },
     "chart-3": {
-      "value": "{color.success.600}",
+      "value": "#803F8F",
       "type": "color"
     },
     "chart-4": {
-      "value": "{color.accent.500}",
+      "value": "#00957C",
       "type": "color"
     },
     "chart-5": {
-      "value": "{color.info.600}",
+      "value": "#636300",
       "type": "color"
     },
     "sidebar": {
@@ -793,23 +793,23 @@
       "type": "color"
     },
     "chart-1": {
-      "value": "{color.primary.400}",
+      "value": "{color.primary.500}",
       "type": "color"
     },
     "chart-2": {
-      "value": "{color.warning.400}",
+      "value": "#C98212",
       "type": "color"
     },
     "chart-3": {
-      "value": "{color.success.400}",
+      "value": "#A05DAF",
       "type": "color"
     },
     "chart-4": {
-      "value": "{color.accent.400}",
+      "value": "#00AC8F",
       "type": "color"
     },
     "chart-5": {
-      "value": "{color.info.300}",
+      "value": "#7E7E00",
       "type": "color"
     },
     "sidebar": {
