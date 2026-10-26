@@ -119,6 +119,8 @@ function auditTheme(name: string, t: SemanticTheme): void {
     ["warning label on its tint", t["warning-muted-foreground"], t["warning-muted"], AA_TEXT],
     ["info label on its tint", t["info-muted-foreground"], t["info-muted"], AA_TEXT],
     ["destructive label on its tint", t["destructive-muted-foreground"], t["destructive-muted"], AA_TEXT],
+    // StatusBadge's warning step: dark label on the amber ground.
+    ["body text on the warning tint", t.foreground, t["warning-muted"], AA_TEXT],
     ["sidebar text on sidebar", t["sidebar-foreground"], t.sidebar, AA_TEXT],
     ["sidebar accent label", t["sidebar-accent-foreground"], t["sidebar-accent"], AA_TEXT],
     ["sidebar primary label", t["sidebar-primary-foreground"], t["sidebar-primary"], AA_TEXT],
@@ -140,6 +142,11 @@ function auditTheme(name: string, t: SemanticTheme): void {
   check("border vs background (decorative)", t.border, t.background, DECORATIVE_MIN);
   check("input border vs background", t.input, t.background, AA_UI, "WCAG 1.4.11");
   check("input border vs card", t.input, t.card, AA_UI, "WCAG 1.4.11");
+  // StatusBadge's outline step puts the hue in the icon alone, on the card.
+  // The icon shape is the required cue (1.4.1) and its colour reinforces it,
+  // so this is held to the graphical-object 3:1 rather than left to chance.
+  for (const s of ["success", "warning", "info", "destructive"])
+    check(`${s} status icon vs card`, t[`${s}-muted-foreground`], t.card, AA_UI, "WCAG 1.4.11");
   check("focus ring vs background", t.ring, t.background, AA_UI, "WCAG 2.4.11");
 
   // Charts are read, not decorated. Each series must be resolvable against the

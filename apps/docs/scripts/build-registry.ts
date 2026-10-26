@@ -258,7 +258,7 @@ const META: Record<string, Meta> = {
     description:
       "Operational state for wells, assets and jobs. Takes a status, not a colour — it derives colour, icon and label together so WCAG 1.4.1 cannot be violated by omission.",
     categories: ["data", "koc"],
-    docs: "Statuses: producing, normal, warning, critical, shutin, maintenance, offline, unknown. `critical` is the only filled variant — keep it rare so it stays pre-attentive.",
+    docs: "Statuses: producing, normal, warning, critical, shutin, maintenance, offline, unknown. Three weights: outline for states to read, a tinted ground for `warning`, a solid fill for `critical` only — keep it rare so it stays pre-attentive. Labels are the foreground colour; the hue is in the icon.",
   },
   "stat-card": {
     title: "Stat Card",

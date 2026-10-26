@@ -45,61 +45,85 @@ interface StatusSpec {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   className: string;
+  /** The icon carries the hue; the label stays dark, as on shadcn's badge. */
+  iconClassName: string;
   /** Prefix announced to screen readers, so the state is spoken, not just seen. */
   srPrefix: string;
 }
+
+/**
+ * Three steps of weight, and the step IS the importance:
+ *
+ *   outline   — a state to read: producing, normal, maintenance, shut-in…
+ *   tinted    — warning: needs attention, findable down a column without reading
+ *   solid     — critical: act now
+ *
+ * The label is always the foreground colour, as on shadcn's badge; the hue
+ * lives in the icon (and, for the top two steps, the ground). Colour is never
+ * the only carrier — each status has its own icon shape — so the hue can be
+ * this quiet on the outline step without breaking WCAG 1.4.1.
+ */
+const OUTLINE = "border-border text-foreground";
 
 const STATUS: Record<OperationalStatus, StatusSpec> = {
   producing: {
     label: "Producing",
     icon: CheckCircle2,
-    className: "bg-success-muted text-success-muted-foreground",
+    className: OUTLINE,
+    iconClassName: "text-success-muted-foreground",
     srPrefix: "Status: producing",
   },
   normal: {
     label: "Normal",
     icon: CheckCircle2,
-    className: "bg-success-muted text-success-muted-foreground",
+    className: OUTLINE,
+    iconClassName: "text-success-muted-foreground",
     srPrefix: "Status: normal",
   },
   warning: {
     label: "Warning",
     icon: AlertTriangle,
-    className: "bg-warning-muted text-warning-muted-foreground",
+    className: "border-transparent bg-warning-muted text-foreground",
+    iconClassName: "text-warning-muted-foreground",
     srPrefix: "Status: warning",
   },
   critical: {
     label: "Critical",
     icon: OctagonAlert,
-    // The only status that gets a solid fill. In a wall of outlined badges the
-    // filled one is pre-attentively visible — an operator finds it without
-    // reading. Reserved exclusively for "act now"; using it decoratively
-    // anywhere else devalues it everywhere.
-    className: "bg-destructive text-destructive-foreground",
+    // The only status that gets a solid fill. In a column of outlined and
+    // tinted badges the filled one is pre-attentively visible — an operator
+    // finds it without reading. Reserved exclusively for "act now"; using it
+    // decoratively anywhere else devalues it everywhere.
+    className: "border-transparent bg-destructive text-destructive-foreground",
+    iconClassName: "",
     srPrefix: "Status: critical, action required",
   },
   shutin: {
     label: "Shut-in",
     icon: CircleSlash,
-    className: "bg-muted text-muted-foreground",
+    className: OUTLINE,
+    iconClassName: "text-muted-foreground",
     srPrefix: "Status: shut in",
   },
   maintenance: {
     label: "Maintenance",
     icon: Wrench,
-    className: "bg-info-muted text-info-muted-foreground",
+    className: OUTLINE,
+    iconClassName: "text-info-muted-foreground",
     srPrefix: "Status: under maintenance",
   },
   offline: {
     label: "Offline",
     icon: CircleDashed,
-    className: "bg-muted text-muted-foreground",
+    className: OUTLINE,
+    iconClassName: "text-muted-foreground",
     srPrefix: "Status: offline",
   },
   unknown: {
     label: "Unknown",
     icon: Info,
-    className: "bg-muted text-muted-foreground",
+    className: OUTLINE,
+    iconClassName: "text-muted-foreground",
     srPrefix: "Status: unknown",
   },
 };
@@ -128,9 +152,10 @@ const StatusBadge = React.forwardRef<HTMLSpanElement, StatusBadgeProps>(
         data-slot="status-badge"
         data-status={status}
         className={cn(
-          // Badge's shape (shadcn's, with our corner): 20px, borderless, a
-          // pale ground with the hue as the label. Critical alone stays solid.
-          "inline-flex h-5 shrink-0 items-center rounded-md font-medium",
+          // Badge's shape (shadcn's, with our corner): 20px, 12px type. The
+          // border is always there, transparent on the tinted and solid steps,
+          // so all three are the same size in a column.
+          "inline-flex h-5 shrink-0 items-center rounded-md border font-medium",
           "text-xs whitespace-nowrap",
           iconOnly ? "w-5 justify-center" : "gap-1 px-2",
           spec.className,
@@ -140,7 +165,7 @@ const StatusBadge = React.forwardRef<HTMLSpanElement, StatusBadgeProps>(
       >
         {/* aria-hidden because the state is already announced via sr-only text —
             otherwise a screen reader says it twice. */}
-        <Icon className="size-3 shrink-0" aria-hidden="true" />
+        <Icon className={cn("size-3 shrink-0", spec.iconClassName)} aria-hidden="true" />
         <span className="sr-only">{spec.srPrefix}</span>
         {!iconOnly && <span aria-hidden="true">{text}</span>}
       </span>
