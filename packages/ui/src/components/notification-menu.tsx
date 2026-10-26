@@ -100,7 +100,7 @@ export function NotificationMenu({
               variant="destructive"
               shape="count"
               aria-hidden
-              className="absolute -right-1 -top-1 h-4 min-w-4 px-1 text-[10px]"
+              className="absolute -right-1 -top-1 h-4 min-w-4 bg-destructive px-1 text-[10px] text-destructive-foreground"
             >
               {unread > 99 ? "99+" : unread}
             </Badge>

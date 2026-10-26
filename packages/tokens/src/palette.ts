@@ -185,7 +185,7 @@ export type PaletteName = keyof typeof palette;
  * eleven steps. `fromOklch` keeps invariant 1 — the colour is derived, and
  * changing it means changing a coordinate.
  */
-const chartSlot = (
+const themePair = (
   hue: number,
   light: { l: number; c: number },
   dark: { l: number; c: number },
@@ -194,10 +194,10 @@ const chartSlot = (
   dark: fromOklch(dark.l, dark.c, hue),
 });
 
-const chartCoral = chartSlot(18, { l: 0.62, c: 0.14 }, { l: 0.59, c: 0.14 });
-const chartIndigo = chartSlot(278, { l: 0.56, c: 0.14 }, { l: 0.65, c: 0.16 });
-const chartMagenta = chartSlot(338, { l: 0.5, c: 0.14 }, { l: 0.59, c: 0.16 });
-const chartEmerald = chartSlot(160, { l: 0.59, c: 0.14 }, { l: 0.65, c: 0.16 });
+const chartCoral = themePair(18, { l: 0.62, c: 0.14 }, { l: 0.59, c: 0.14 });
+const chartIndigo = themePair(278, { l: 0.56, c: 0.14 }, { l: 0.65, c: 0.16 });
+const chartMagenta = themePair(338, { l: 0.5, c: 0.14 }, { l: 0.59, c: 0.16 });
+const chartEmerald = themePair(160, { l: 0.59, c: 0.14 }, { l: 0.65, c: 0.16 });
 
 /** Chart series, light theme. `--chart-1..5` in light resolve to these. */
 export const chartSeries = [
@@ -218,3 +218,39 @@ export const chartSeriesDark = [
   chartMagenta.dark,
   chartEmerald.dark,
 ] as const;
+
+/**
+ * STATUS TINTS — the soft ground a status label sits on: Badge's status
+ * variants and StatusBadge, in the shape shadcn's badge gives `destructive`
+ * (a pale ground, the hue as the label, no border). Adopted 2026-10-26.
+ *
+ * shadcn makes that ground with opacity, `bg-destructive/10`. It works for red,
+ * which thins to pink, and fails for warning: a 12% wash of warning[600] is
+ * #EDE8DF on white, grey-beige, greyer still on a translucent card, with brown
+ * text on it. That was the khaki badge. A pale amber has to be chosen rather
+ * than diluted — and a token can be tested where an opacity modifier over
+ * whatever surface happens to be underneath cannot, so each status gets a real
+ * tint here and its label pair is asserted in contrast.test.ts.
+ *
+ * Coordinates, not ramp steps, like the chart slots: a ramp's 50/100 steps
+ * carry 9–20% of its peak chroma by design, which is why warning[100] is
+ * peach-beige rather than amber.
+ */
+export const statusTint = {
+  success: themePair(164, { l: 0.95, c: 0.045 }, { l: 0.34, c: 0.06 }),
+  // 85, not the ramp's 70: at this lightness 70 reads as peach and 85 as amber.
+  warning: themePair(85, { l: 0.95, c: 0.07 }, { l: 0.34, c: 0.06 }),
+  info: themePair(210, { l: 0.95, c: 0.035 }, { l: 0.34, c: 0.054 }),
+  danger: themePair(22, { l: 0.95, c: 0.03 }, { l: 0.34, c: 0.066 }),
+} as const;
+
+/**
+ * Warning's label on its tint — the one status its ramp cannot supply. An
+ * orange dark enough for 4.5:1 is brown at step 600 (#835200, L 0.483), and
+ * step 500 (#B06F00) reaches only 4.1:1 on white. So the label sits between
+ * them, at hue 55 where the gamut still allows real chroma: orange, not brown.
+ */
+export const warningInk = {
+  light: fromOklch(0.53, 0.14, 55),
+  dark: fromOklch(0.82, 0.12, 75),
+} as const;

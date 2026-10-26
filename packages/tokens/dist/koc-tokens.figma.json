@@ -626,6 +626,38 @@
       "value": "#FFFFFF",
       "type": "color"
     },
+    "success-muted": {
+      "value": "#D4F9E6",
+      "type": "color"
+    },
+    "success-muted-foreground": {
+      "value": "{color.success.600}",
+      "type": "color"
+    },
+    "warning-muted": {
+      "value": "#FFEDC7",
+      "type": "color"
+    },
+    "warning-muted-foreground": {
+      "value": "#A45300",
+      "type": "color"
+    },
+    "info-muted": {
+      "value": "#D5F5FC",
+      "type": "color"
+    },
+    "info-muted-foreground": {
+      "value": "{color.info.600}",
+      "type": "color"
+    },
+    "destructive-muted": {
+      "value": "#FFE8E7",
+      "type": "color"
+    },
+    "destructive-muted-foreground": {
+      "value": "{color.danger.600}",
+      "type": "color"
+    },
     "border": {
       "value": "{color.neutral.200}",
       "type": "color"
@@ -778,6 +810,38 @@
     },
     "info-foreground": {
       "value": "{color.neutral.950}",
+      "type": "color"
+    },
+    "success-muted": {
+      "value": "#13422F",
+      "type": "color"
+    },
+    "success-muted-foreground": {
+      "value": "{color.success.300}",
+      "type": "color"
+    },
+    "warning-muted": {
+      "value": "#46350D",
+      "type": "color"
+    },
+    "warning-muted-foreground": {
+      "value": "#F2B966",
+      "type": "color"
+    },
+    "info-muted": {
+      "value": "#0A3F47",
+      "type": "color"
+    },
+    "info-muted-foreground": {
+      "value": "{color.info.300}",
+      "type": "color"
+    },
+    "destructive-muted": {
+      "value": "#552928",
+      "type": "color"
+    },
+    "destructive-muted-foreground": {
+      "value": "{color.danger.300}",
       "type": "color"
     },
     "border": {

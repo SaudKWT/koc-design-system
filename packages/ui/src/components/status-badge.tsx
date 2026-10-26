@@ -53,19 +53,19 @@ const STATUS: Record<OperationalStatus, StatusSpec> = {
   producing: {
     label: "Producing",
     icon: CheckCircle2,
-    className: "bg-success/12 text-success border-success/30",
+    className: "bg-success-muted text-success-muted-foreground",
     srPrefix: "Status: producing",
   },
   normal: {
     label: "Normal",
     icon: CheckCircle2,
-    className: "bg-success/12 text-success border-success/30",
+    className: "bg-success-muted text-success-muted-foreground",
     srPrefix: "Status: normal",
   },
   warning: {
     label: "Warning",
     icon: AlertTriangle,
-    className: "bg-warning/12 text-warning border-warning/30",
+    className: "bg-warning-muted text-warning-muted-foreground",
     srPrefix: "Status: warning",
   },
   critical: {
@@ -75,31 +75,31 @@ const STATUS: Record<OperationalStatus, StatusSpec> = {
     // filled one is pre-attentively visible — an operator finds it without
     // reading. Reserved exclusively for "act now"; using it decoratively
     // anywhere else devalues it everywhere.
-    className: "bg-destructive text-destructive-foreground border-destructive",
+    className: "bg-destructive text-destructive-foreground",
     srPrefix: "Status: critical, action required",
   },
   shutin: {
     label: "Shut-in",
     icon: CircleSlash,
-    className: "bg-muted text-muted-foreground border-border",
+    className: "bg-muted text-muted-foreground",
     srPrefix: "Status: shut in",
   },
   maintenance: {
     label: "Maintenance",
     icon: Wrench,
-    className: "bg-info/12 text-info border-info/30",
+    className: "bg-info-muted text-info-muted-foreground",
     srPrefix: "Status: under maintenance",
   },
   offline: {
     label: "Offline",
     icon: CircleDashed,
-    className: "bg-muted text-muted-foreground border-border",
+    className: "bg-muted text-muted-foreground",
     srPrefix: "Status: offline",
   },
   unknown: {
     label: "Unknown",
     icon: Info,
-    className: "bg-muted text-muted-foreground border-border",
+    className: "bg-muted text-muted-foreground",
     srPrefix: "Status: unknown",
   },
 };
@@ -128,9 +128,11 @@ const StatusBadge = React.forwardRef<HTMLSpanElement, StatusBadgeProps>(
         data-slot="status-badge"
         data-status={status}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-sm border font-medium",
-          "text-2xs whitespace-nowrap",
-          iconOnly ? "p-1" : "px-2 py-0.5",
+          // Badge's shape (shadcn's, with our corner): 20px, borderless, a
+          // pale ground with the hue as the label. Critical alone stays solid.
+          "inline-flex h-5 shrink-0 items-center rounded-md font-medium",
+          "text-xs whitespace-nowrap",
+          iconOnly ? "w-5 justify-center" : "gap-1 px-2",
           spec.className,
           className,
         )}

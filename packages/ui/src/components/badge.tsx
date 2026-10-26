@@ -5,29 +5,39 @@ import { cn } from "../lib/utils";
 /**
  * Badge — a small label for counts, tags and categories.
  *
+ * Shaped like shadcn's badge (Base UI track): 20px high, borderless, and the
+ * status variants are a pale ground with the hue as the label rather than a
+ * solid fill. The corner is ours — `rounded-md`, the radius buttons and inputs
+ * use — where shadcn's is a pill. The grounds are the `*-muted` tokens, not
+ * shadcn's `bg-destructive/10`: an opacity wash of warning is beige, and a token
+ * is a pair `test:tokens` can hold to 4.5:1.
+ *
  * For plant/asset state use `StatusBadge` instead: it forces an icon and a text
  * label, which this component does not.
  */
 const badgeVariants = cva(
   [
-    "inline-flex items-center gap-1 border",
-    "text-2xs font-medium transition-colors duration-fast ease-out",
+    "inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden",
+    "rounded-md border border-transparent px-2 py-0.5",
+    "text-xs font-medium whitespace-nowrap transition-colors duration-fast ease-out",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-    "[&_svg]:size-3 [&_svg]:shrink-0",
+    "[&_svg]:pointer-events-none [&_svg]:size-3 [&_svg]:shrink-0",
   ],
   {
     variants: {
       variant: {
-        default: "border-transparent bg-primary text-primary-foreground",
-        secondary: "border-transparent bg-secondary text-secondary-foreground",
-        destructive: "border-transparent bg-destructive text-destructive-foreground",
-        success: "border-transparent bg-success text-success-foreground",
-        warning: "border-transparent bg-warning text-warning-foreground",
-        info: "border-transparent bg-info text-info-foreground",
-        outline: "border-input text-foreground",
+        default: "bg-primary text-primary-foreground",
+        secondary: "bg-secondary text-secondary-foreground",
+        destructive: "bg-destructive-muted text-destructive-muted-foreground",
+        success: "bg-success-muted text-success-muted-foreground",
+        warning: "bg-warning-muted text-warning-muted-foreground",
+        info: "bg-info-muted text-info-muted-foreground",
+        // A badge is not a control, so its edge is the decorative `border`,
+        // not `input` (invariant 4).
+        outline: "border-border text-foreground",
       },
       shape: {
-        label: "rounded-sm px-2 py-0.5",
+        label: "",
         /**
          * A count next to a label — tab counts, unread markers, nav badges.
          *
@@ -46,7 +56,7 @@ const badgeVariants = cva(
          *
          * `tabular-nums` so a count ticking 8 → 9 → 10 does not jitter.
          */
-        count: "h-5 min-w-5 justify-center rounded-full px-1 tabular-nums",
+        count: "min-w-5 rounded-full px-1 tabular-nums",
       },
     },
     defaultVariants: { variant: "default", shape: "label" },
