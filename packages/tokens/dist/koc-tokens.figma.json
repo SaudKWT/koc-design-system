@@ -643,19 +643,19 @@
       "type": "color"
     },
     "chart-2": {
-      "value": "{color.warning.500}",
+      "value": "#CC5E66",
       "type": "color"
     },
     "chart-3": {
-      "value": "#803F8F",
+      "value": "#6369C5",
       "type": "color"
     },
     "chart-4": {
-      "value": "#00957C",
+      "value": "#933E7F",
       "type": "color"
     },
     "chart-5": {
-      "value": "#636300",
+      "value": "#009561",
       "type": "color"
     },
     "sidebar": {
@@ -793,23 +793,23 @@
       "type": "color"
     },
     "chart-1": {
-      "value": "{color.primary.500}",
+      "value": "#418AD1",
       "type": "color"
     },
     "chart-2": {
-      "value": "#C98212",
+      "value": "#C2555D",
       "type": "color"
     },
     "chart-3": {
-      "value": "#A05DAF",
+      "value": "#7A82EE",
       "type": "color"
     },
     "chart-4": {
-      "value": "#00AC8F",
+      "value": "#B7519E",
       "type": "color"
     },
     "chart-5": {
-      "value": "#7E7E00",
+      "value": "#00AA6F",
       "type": "color"
     },
     "sidebar": {

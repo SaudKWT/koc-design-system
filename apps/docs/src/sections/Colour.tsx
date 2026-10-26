@@ -192,25 +192,28 @@ export function Colour() {
           <Note title="The happy accident">
             Okabe–Ito's blue is <Code>#0072B2</Code>. KOC's blue is <Code>#0060A9</Code>. The brand
             colour is <em>already</em> a member of the colour-universal set, which is why series 1
-            is always KOC blue and series 2 its maximal-separation partner, orange.
+            is always KOC blue. Series 2 is its warm partner, coral — the one hue every form of
+            colour blindness keeps clear of the blue.
           </Note>
-          <Note title="Re-derived 2026-10-25 — five series, honestly">
-            The earlier set passed ΔE and greyscale and still failed colour blindness: series 4 and
-            5 (purple, teal) read as one blue under protanopia, teal sat below the chroma floor, and
-            every dark value was too light for a dark plot. So the charts asked for three series at
-            most. Slots 3–5 are now purple, teal and olive, chosen by search against the dataviz
-            validator in both themes at once, and the token tests fail the build if any neighbour
-            stops clearing it. Non-neighbours are not held to that floor — five hues cannot all be
-            pairwise colour-blind-safe — so a scatter chart, where any two marks can touch, should
-            still stop at three.
+          <Note title="Jewel tones — chosen 2026-10-25">
+            KOC blue, coral, indigo, magenta and emerald. The morning's colour-blind fix passed every
+            gate with an orange and an olive, and they did not sit with the brand blue; this set was
+            searched under the same gates with orange, yellow and olive excluded, and picked by eye
+            from the three that passed. No all-cool set passes: teal, sky, indigo and violet collapse
+            toward the blue for a red-green colour-blind reader, so slot 2 must be warm. Neighbours
+            are held to the dataviz validator in both themes and the token tests fail the build if
+            one stops clearing it. Non-neighbours are not — five hues cannot all be pairwise
+            colour-blind-safe — so a scatter chart, where any two marks can touch, should still stop
+            at three.
           </Note>
           <Note kind="warn" title="Why lightness alternates">
             Hue is not enough. A greyscale printout, a failing projector, and a reader with
             achromatopsia all see only <em>tone</em>. An earlier revision had series 4 and 5 both at
             step 500: ΔE 42 apart — vividly different in colour — yet 1.11:1 in luminance, meaning
-            they merged into one line in greyscale. So lightness alternates high / low (the 500 and
-            600 lightness in light; 0.665 and ~0.58 in dark), and a test asserts it in both themes so
-            nobody quietly undoes it.
+            they merged into one line in greyscale. So lightness alternates between neighbours
+            (0.48 → 0.62 → 0.56 → 0.50 → 0.59 in light; 0.62 → 0.59 → 0.65 → 0.59 → 0.65 in dark), and
+            a test asserts at least 1.2:1 in greyscale between every pair of neighbours, in both
+            themes, so nobody quietly undoes it.
           </Note>
         </div>
       </Section>

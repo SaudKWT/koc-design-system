@@ -87,8 +87,9 @@ that hole by asserting the shell's landmark shape directly.
   `@koc/ui`; rig3 then proved every chart form KOC needs in a few hundred lines with hover
   values and a table view. The StrictMode invisible-line bug goes with it. Recharts survives
   only as a docs-app dependency for the bakeoff and the pre-rework "Dashboard pattern" page.
-  **Five chart series, not three — 2026-10-25.** `--chart-1..5` were re-derived (slots 3–5
-  are now purple, teal, olive; dark re-stepped into the 0.48–0.67 band) and `test:tokens`
+  **Five chart series, not three — 2026-10-25.** `--chart-1..5` are KOC blue, coral, indigo,
+  magenta, emerald ("jewel tones", Saud's pick the same day after rejecting the gate-passing
+  orange/olive set as off-brand); dark re-stepped into the 0.48–0.67 band; `test:tokens`
   now runs the dataviz validator's checks on both themes — CVD is Machado 2009 in *linear*
   light via `oklabDistance` in `color.ts`, not culori's `filterDeficiency*`, which works in
   gamma sRGB and disagrees with the validator. Non-adjacent pairs are not gated; scatter

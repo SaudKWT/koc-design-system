@@ -133,87 +133,88 @@ export type PaletteName = keyof typeof palette;
 /**
  * Categorical chart series — five slots, each defined for light AND dark.
  *
- * ── RE-DERIVED 2026-10-25: the old set failed colour-blind separation ───────
+ * ── CHOSEN BY SAUD, 2026-10-25: "jewel tones" ────────────────────────────────
  *
- * The previous series (blue, orange, bluish-green, reddish-purple, teal) passed
- * every assertion this package made — ΔE2000 ≥ 15 and ≥ 1.2:1 greyscale between
- * neighbours — and still failed the dataviz palette validator, because nothing
- * here simulated colour-vision deficiency:
+ *   slot  colour    hue   light                      dark
+ *   1     KOC blue  251   primary[600] #0060A9       L 0.62  C 0.13
+ *   2     coral      18   L 0.62  C 0.14             L 0.59  C 0.14
+ *   3     indigo    278   L 0.56  C 0.14             L 0.65  C 0.16
+ *   4     magenta   338   L 0.50  C 0.14             L 0.59  C 0.16
+ *   5     emerald   160   L 0.59  C 0.14             L 0.65  C 0.16
  *
- *   light  chart-4↔5 (purple↔teal) ΔE 6.9 under protanopia — both read as blue
- *          chart-5 (info[600]) chroma 0.083 — below the 0.10 floor, reads grey
- *   dark   every slot sat at step 400 (L 0.71) or 300 (L 0.81), above the dark
- *          band's 0.67 ceiling; chart-3↔4 ΔE 6.4 under deuteranopia; and
- *          adjacent pairs measured 1.03–1.09:1 in greyscale, because only the
- *          LIGHT series was ever audited for tone
+ * The same morning's colour-blind fix (see below) passed the gates with an
+ * orange and an olive, and Saud rejected the look: "the orange and olives are
+ * bad looking" — the set should sit with the KOC blue theme. Three sets were
+ * then searched under the SAME gates with orange, yellow and olive excluded,
+ * drawing only on hues that sit beside the brand blue (teal, aqua, sky, slate,
+ * indigo, violet, plum, magenta, rose, coral, emerald), and this is the one he
+ * picked.
  *
- * So the rig3 charts told consumers to stop at three series. contrast.test.ts
- * now runs the validator's checks — lightness band, chroma floor, CVD under
- * protan/deutan/tritan simulation, the normal-vision floor — on both themes'
- * shipped `--chart-*` tokens, and this set is what passes them.
+ * WHY SLOT 2 IS CORAL, and why no all-cool set exists. To a protanope or a
+ * deuteranope, teal, aqua, sky, slate, indigo and violet all collapse toward
+ * the brand blue; only lightness tells them apart, and the light theme's 3:1
+ * floor against a white card leaves too little lightness to separate four of
+ * them. Every passing set in the search put a warm red/coral beside the blue —
+ * the one hue every dichromacy keeps clear of it. Coral (h 18) is that hue
+ * without the orange Saud did not want.
  *
- * ── HOW THE SLOTS WERE CHOSEN ──────────────────────────────────────────────
+ * ── THE GATES (contrast.test.ts → auditChartSeries) ─────────────────────────
  *
- * Not by eye. Slot 1 is fixed (the brand), slot 2 held at the warm pole, and
- * hue × chroma × lightness for slots 3–5 was searched in both themes at once
- * — same hue per slot in light and dark, so a series keeps its identity when
- * the theme flips — maximising the worst adjacent CVD separation under every
- * gate above, then the worst separation between NON-adjacent slots, which the
- * validator does not gate but a legend lookup on crossing lines needs.
+ * Re-derived 2026-10-25 because the original set (blue, orange, bluish-green,
+ * reddish-purple, teal) passed ΔE2000 and greyscale between neighbours and still
+ * failed the dataviz validator: nothing simulated colour-vision deficiency, a
+ * slot sat below the chroma floor, and the dark series was never audited. Both
+ * themes' shipped `--chart-*` are now held to: the lightness band per theme,
+ * chroma ≥ 0.10, ΔE2000 ≥ 15 and OKLab ΔE ≥ 15 between neighbours, ≥ 1.2:1 in
+ * greyscale, ≥ 8 under protanopia, deuteranopia and tritanopia, and 3:1 against
+ * the page and the card.
  *
- *   slot  hue        light                     dark
- *   1     blue 251   primary[600] #0060A9      primary[500]
- *   2     orange 70  warning[500]              L 0.665
- *   3     purple 320 L 0.483                   L 0.585
- *   4     teal 175   L 0.598                   L 0.665
- *   5     olive 110  L 0.483                   L 0.575
- *
- * Lightness alternates high/low so neighbours stay apart in greyscale — a
- * printout, a dying projector or achromatopsia sees only tone. (An earlier
- * revision had series 4 and 5 both at 500: ΔE 42 apart in colour, 1.11:1 in
- * luminance, one line in greyscale.) Light uses the ramp grid's own 600/500
- * lightness; dark cannot, because the dark band holds one grid step (500), which
- * is why dark slots 2–5 come from `fromOklch` rather than a ramp.
- *
- * Purple, teal and olive are coordinates, not ramps: a series needs one colour
- * per theme, not eleven steps. Olive is in for the job the old teal-cyan
- * (info[600]) could not do — at slot 5's low lightness, cyan cannot reach the
- * 0.10 chroma floor inside sRGB at all; clamped, it stops at 0.083.
+ * Lightness alternates between neighbours so they stay apart in greyscale — a
+ * printout, a dying projector or achromatopsia sees only tone.
  *
  * ── WHAT IS STILL TRUE ──────────────────────────────────────────────────────
  *
- * Adjacent pairs are what the gate holds, because bars and stacks only touch
- * their neighbours. Two non-adjacent pairs stay weak under CVD and no ordering
- * of five hues fixes that (the dataviz method calls it the series cap):
- * series 1↔3 (blue/purple, ΔE 5.0 deutan in dark) and 2↔5 (orange/olive,
- * 5.2 protan in dark). So a scatter or bubble chart, where any two marks can
- * sit side by side, should still use three series — and never rely on colour
- * alone: label lines directly or give them markers.
+ * The gate holds adjacent pairs, because bars and stacks only touch their
+ * neighbours. Non-adjacent pairs are weaker under CVD (the worst is ΔE 3.9),
+ * which no ordering of five hues fixes. So a scatter or bubble chart, where any
+ * two marks can sit side by side, should still use three series — and never
+ * rely on colour alone: label lines directly or give them markers, as
+ * @koc/chart's TrendChart already does at each line's end.
+ *
+ * These are coordinates, not ramps: a series needs one colour per theme, not
+ * eleven steps. `fromOklch` keeps invariant 1 — the colour is derived, and
+ * changing it means changing a coordinate.
  */
-const chartSlot = (hue: number, chroma: number, l: { light: number; dark: number }) => ({
-  light: fromOklch(l.light, chroma, hue),
-  dark: fromOklch(l.dark, chroma, hue),
+const chartSlot = (
+  hue: number,
+  light: { l: number; c: number },
+  dark: { l: number; c: number },
+) => ({
+  light: fromOklch(light.l, light.c, hue),
+  dark: fromOklch(dark.l, dark.c, hue),
 });
 
-const chartOrange = { light: warning[500], dark: fromOklch(0.665, 0.14, 70) };
-const chartPurple = chartSlot(320, 0.14, { light: 0.483, dark: 0.585 });
-const chartTeal = chartSlot(175, 0.14, { light: 0.598, dark: 0.665 });
-const chartOlive = chartSlot(110, 0.14, { light: 0.483, dark: 0.575 });
+const chartCoral = chartSlot(18, { l: 0.62, c: 0.14 }, { l: 0.59, c: 0.14 });
+const chartIndigo = chartSlot(278, { l: 0.56, c: 0.14 }, { l: 0.65, c: 0.16 });
+const chartMagenta = chartSlot(338, { l: 0.5, c: 0.14 }, { l: 0.59, c: 0.16 });
+const chartEmerald = chartSlot(160, { l: 0.59, c: 0.14 }, { l: 0.65, c: 0.16 });
 
 /** Chart series, light theme. `--chart-1..5` in light resolve to these. */
 export const chartSeries = [
   primary[600], // KOC blue — series 1 is always the brand
-  chartOrange.light, // the warm pole — maximal separation from blue
-  chartPurple.light,
-  chartTeal.light,
-  chartOlive.light,
+  chartCoral.light, // the warm partner every dichromacy keeps clear of blue
+  chartIndigo.light,
+  chartMagenta.light,
+  chartEmerald.light,
 ] as const;
 
 /** Chart series, dark theme. Same hues, re-stepped into the dark band. */
 export const chartSeriesDark = [
-  primary[500], // 400 is above the dark band; 500 is the brand ramp's step inside it
-  chartOrange.dark,
-  chartPurple.dark,
-  chartTeal.dark,
-  chartOlive.dark,
+  // The brand blue lifted into the dark band: 3:1 on the dark card needs more
+  // lightness than primary[500] has, and coral beside it needs the step apart.
+  fromOklch(0.62, 0.13, 250),
+  chartCoral.dark,
+  chartIndigo.dark,
+  chartMagenta.dark,
+  chartEmerald.dark,
 ] as const;
