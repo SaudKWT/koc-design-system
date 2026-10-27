@@ -173,37 +173,41 @@ export function Accessibility() {
         <div className="grid gap-4 lg:grid-cols-2">
           {chartThemes.map(([name, theme]) => {
             const series = chartTokens(theme);
-            const pairs = series.slice(0, -1).map((c, i) => [i, c, series[i + 1]] as const);
+            // Neighbours, plus 1 vs 3: the first three are gated as a set.
+            const pairs = [
+              ...series.slice(0, -1).map((c, i) => [i, i + 1, c, series[i + 1]] as const),
+              [0, 2, series[0], series[2]] as const,
+            ];
             return (
               <div key={name} className="overflow-x-auto rounded-md border">
                 <table className="w-full">
                   <caption className="px-3 pt-2 text-left text-sm font-medium">{name}</caption>
                   <tbody>
-                    {pairs.map(([i, a, b]) => (
+                    {pairs.map(([i, j, a, b]) => (
                       <Row
-                        key={`de-${i}`}
-                        label={`Series ${i + 1} vs ${i + 2} — colour`}
+                        key={`de-${i}-${j}`}
+                        label={`Series ${i + 1} vs ${j + 1} — colour`}
                         value={deltaE(a, b)}
                         min={15}
                         unit=""
                         note="ΔE2000"
                       />
                     ))}
-                    {pairs.map(([i, a, b]) => (
+                    {pairs.map(([i, j, a, b]) => (
                       <Row
-                        key={`tone-${i}`}
-                        label={`Series ${i + 1} vs ${i + 2} — greyscale`}
+                        key={`tone-${i}-${j}`}
+                        label={`Series ${i + 1} vs ${j + 1} — greyscale`}
                         value={contrast(a, b)}
                         min={1.2}
                         note="tonal separation"
                       />
                     ))}
-                    {pairs.map(([i, a, b]) => {
+                    {pairs.map(([i, j, a, b]) => {
                       const worst = worstCvd(a, b);
                       return (
                         <Row
-                          key={`cvd-${i}`}
-                          label={`Series ${i + 1} vs ${i + 2} — colour-blind`}
+                          key={`cvd-${i}-${j}`}
+                          label={`Series ${i + 1} vs ${j + 1} — colour-blind`}
                           value={worst.value}
                           min={8}
                           unit=""

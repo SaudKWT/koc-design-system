@@ -136,11 +136,25 @@ export type PaletteName = keyof typeof palette;
  * ── CHOSEN BY SAUD, 2026-10-25: "jewel tones" ────────────────────────────────
  *
  *   slot  colour    hue   light                      dark
- *   1     KOC blue  251   primary[600] #0060A9       L 0.62  C 0.13
- *   2     coral      18   L 0.62  C 0.14             L 0.59  C 0.14
- *   3     indigo    278   L 0.56  C 0.14             L 0.65  C 0.16
- *   4     magenta   338   L 0.50  C 0.14             L 0.59  C 0.16
- *   5     emerald   160   L 0.59  C 0.14             L 0.65  C 0.16
+ *   1     KOC blue  251   primary[600] #0060A9       L 0.60  C 0.14
+ *   2     coral      18   L 0.62  C 0.14             L 0.67  C 0.11
+ *   3     magenta   338   L 0.45  C 0.14             L 0.58  C 0.19
+ *   4     emerald   160   L 0.59  C 0.14             L 0.65  C 0.16
+ *   5     indigo    278   L 0.54  C 0.14             L 0.62  C 0.16
+ *
+ * REORDERED 2026-10-27 (Saud: "reorder them so the first three work
+ * together"). As first picked, indigo sat third: it cleared both neighbours and
+ * sat ΔE2000 13 from KOC blue — 5.5 under tritanopia, one colour — and a
+ * three-line chart puts slots 1 and 3 side by side. No re-ordering of the
+ * picked coordinates gives a trio that holds in both themes, so the order came
+ * with small coordinate moves, searched for the least change from the pick:
+ * in light only magenta (0.50 → 0.45) and indigo (0.56 → 0.54) moved; dark
+ * needed more, because its band between 3:1 on the card and the 0.67 ceiling
+ * barely fits three tones 1.2:1 apart in greyscale. Slots 1–3 are now gated as
+ * a set — every pair — so a three-series line chart is safe in either theme.
+ * Emerald is fourth rather than indigo because its weak pair (coral, under
+ * red-green CVD) is still ΔE 60 apart for everyone else; blue/indigo is close
+ * for everyone.
  *
  * The same morning's colour-blind fix (see below) passed the gates with an
  * orange and an olive, and Saud rejected the look: "the orange and olives are
@@ -175,11 +189,11 @@ export type PaletteName = keyof typeof palette;
  * ── WHAT IS STILL TRUE ──────────────────────────────────────────────────────
  *
  * The gate holds adjacent pairs, because bars and stacks only touch their
- * neighbours. Non-adjacent pairs are weaker under CVD (the worst is ΔE 3.9),
- * which no ordering of five hues fixes. So a scatter or bubble chart, where any
- * two marks can sit side by side, should still use three series — and never
- * rely on colour alone: label lines directly or give them markers, as
- * @koc/chart's TrendChart already does at each line's end.
+ * neighbours, and slots 1–3 as a set, because lines cross. Pairs beyond that
+ * are weaker under CVD, which no ordering of five hues fixes. So a line, scatter
+ * or bubble chart, where any two marks can sit side by side, should stop at
+ * three series — and never rely on colour alone: label lines directly or give
+ * them markers, as @koc/chart's TrendChart already does at each line's end.
  *
  * These are coordinates, not ramps: a series needs one colour per theme, not
  * eleven steps. `fromOklch` keeps invariant 1 — the colour is derived, and
@@ -194,29 +208,29 @@ const themePair = (
   dark: fromOklch(dark.l, dark.c, hue),
 });
 
-const chartCoral = themePair(18, { l: 0.62, c: 0.14 }, { l: 0.59, c: 0.14 });
-const chartIndigo = themePair(278, { l: 0.56, c: 0.14 }, { l: 0.65, c: 0.16 });
-const chartMagenta = themePair(338, { l: 0.5, c: 0.14 }, { l: 0.59, c: 0.16 });
+const chartCoral = themePair(18, { l: 0.62, c: 0.14 }, { l: 0.67, c: 0.11 });
+const chartMagenta = themePair(338, { l: 0.45, c: 0.14 }, { l: 0.58, c: 0.19 });
 const chartEmerald = themePair(160, { l: 0.59, c: 0.14 }, { l: 0.65, c: 0.16 });
+const chartIndigo = themePair(278, { l: 0.54, c: 0.14 }, { l: 0.62, c: 0.16 });
 
 /** Chart series, light theme. `--chart-1..5` in light resolve to these. */
 export const chartSeries = [
   primary[600], // KOC blue — series 1 is always the brand
   chartCoral.light, // the warm partner every dichromacy keeps clear of blue
-  chartIndigo.light,
-  chartMagenta.light,
+  chartMagenta.light, // third: clear of BOTH, so three crossing lines hold
   chartEmerald.light,
+  chartIndigo.light,
 ] as const;
 
 /** Chart series, dark theme. Same hues, re-stepped into the dark band. */
 export const chartSeriesDark = [
   // The brand blue lifted into the dark band: 3:1 on the dark card needs more
   // lightness than primary[500] has, and coral beside it needs the step apart.
-  fromOklch(0.62, 0.13, 250),
+  fromOklch(0.6, 0.14, 250),
   chartCoral.dark,
-  chartIndigo.dark,
   chartMagenta.dark,
   chartEmerald.dark,
+  chartIndigo.dark,
 ] as const;
 
 /**

@@ -239,9 +239,18 @@ function auditChartSeries(name: string, t: SemanticTheme, mode: "light" | "dark"
     checkMin(`chart-${i + 1} chroma`, c, CHART_CHROMA_MIN, "C", "below it a hue reads as grey");
   });
 
-  for (let i = 0; i < series.length - 1; i++) {
-    const [a, b] = [series[i], series[i + 1]];
-    const pair = `series ${i + 1} vs ${i + 2}`;
+  const pairs: Array<[number, number]> = [];
+  for (let i = 0; i < series.length - 1; i++) pairs.push([i, i + 1]);
+  // The first three are a SET, not a chain. A line chart with three series lets
+  // every line cross every other, so 1 vs 3 is held to the same bar as the
+  // neighbours. The jewel tones as first ordered (2026-10-25) passed every
+  // neighbour and put KOC blue beside indigo at ΔE2000 13 — 5.5 under
+  // protanopia, one colour — in every three-line chart; nothing here could see it.
+  pairs.push([0, 2]);
+
+  for (const [i, j] of pairs) {
+    const [a, b] = [series[i], series[j]];
+    const pair = `series ${i + 1} vs ${j + 1}`;
     checkDistinct(`${pair} (colour)`, a, b, 15);
     checkMin(`${pair} (normal vision)`, oklabDistance(a, b), NORMAL_MIN, "ΔE", "OKLab");
     check(`${pair} (greyscale)`, a, b, 1.2, "tonal");

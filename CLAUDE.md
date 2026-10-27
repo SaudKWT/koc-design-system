@@ -47,7 +47,7 @@ Each one exists because documentation already failed to hold the line:
 
 | Gate | Catches | Why a test and not a comment |
 | --- | --- | --- |
-| `test:tokens` | contrast regressions, **and chart series that fail colour-blind separation** | 131 assertions; a guideline drifts the first time someone is in a hurry. The chart set passed ΔE2000 and greyscale for months while failing under protanopia — nothing simulated CVD, and dark chart tokens were never audited at all |
+| `test:tokens` | contrast regressions, **and chart series that fail colour-blind separation** | 161 assertions; a guideline drifts the first time someone is in a hurry. The chart set passed ΔE2000 and greyscale for months while failing under protanopia — nothing simulated CVD, and dark chart tokens were never audited at all |
 | `check:drift` | redefinition of KOC tokens | `shadcn add` appends stock theme blocks that silently de-brand the app — it appended one *directly beneath the warning comment telling it not to* |
 | `check:motion` | off-scale duration/easing, transitions that name no duration, **and `animate-in` that names no easing or duration** | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed; a bare `transition-all` was then reported from a consuming KOC app, and 11 such sites existed |
 | `test:a11y` | broken ARIA, unreachable controls, invisible focus, unannounced state, **and best-practice rules** | Playwright + axe in a real browser. Found a `Tabs` with no `TabsContent` — `aria-controls` pointing at an id that didn't exist — on its first run |
@@ -87,13 +87,14 @@ that hole by asserting the shell's landmark shape directly.
   `@koc/ui`; rig3 then proved every chart form KOC needs in a few hundred lines with hover
   values and a table view. The StrictMode invisible-line bug goes with it. Recharts survives
   only as a docs-app dependency for the bakeoff and the pre-rework "Dashboard pattern" page.
-  **Five chart series, not three — 2026-10-25.** `--chart-1..5` are KOC blue, coral, indigo,
-  magenta, emerald ("jewel tones", Saud's pick the same day after rejecting the gate-passing
-  orange/olive set as off-brand); dark re-stepped into the 0.48–0.67 band; `test:tokens`
+  **Five chart series, not three — 2026-10-25.** `--chart-1..5` are KOC blue, coral, magenta,
+  emerald, indigo ("jewel tones", Saud's pick the same day after rejecting the gate-passing
+  orange/olive set as off-brand; **reordered 2026-10-27** so slots 1–3 hold as a set — indigo
+  third was ΔE 13 from the blue, one colour to a colour-blind reader in any three-line chart); dark re-stepped into the 0.48–0.67 band; `test:tokens`
   now runs the dataviz validator's checks on both themes — CVD is Machado 2009 in *linear*
   light via `oklabDistance` in `color.ts`, not culori's `filterDeficiency*`, which works in
-  gamma sRGB and disagrees with the validator. Non-adjacent pairs are not gated; scatter
-  stays at three series.
+  gamma sRGB and disagrees with the validator. Neighbours AND every pair of slots 1–3
+  are gated; beyond that, line and scatter charts stay at three series.
   **[superseded — kept for the record]** Recharts 3.8, deliberately. It arrived as a side
   effect of installing `dashboard-01` and was then kept on purpose: today the blast radius is
   one file, and once chart wrappers land in `@koc/ui` and teams consume them a major-version

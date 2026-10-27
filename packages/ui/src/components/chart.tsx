@@ -33,8 +33,10 @@ import { cn } from "../lib/utils";
  *     test fails the build if one stops (re-derived 2026-10-25; until then
  *     chart-4/5 failed and these charts asked for three series at most).
  *     Five is the ceiling: a sixth series would repeat chart-1, so fold the
- *     tail into "Other" instead. Non-neighbours are not held to that floor,
- *     which only matters where any two marks can touch — a scatter.
+ *     tail into "Other" instead. Slots 1–3 are also held as a set, every pair
+ *     (2026-10-27), because lines cross; beyond three, non-neighbours are not
+ *     held to the floor, so a line chart or scatter — where any two marks can
+ *     touch — should stop at three.
  *   - Thin marks, a 2px surface gap between fills, hairline grid, one y-axis,
  *     the zero line a step darker than the rest.
  *   - A legend for two or more series; the values themselves only where they

@@ -199,15 +199,18 @@ export function Colour() {
             is always KOC blue. Series 2 is its warm partner, coral — the one hue every form of
             colour blindness keeps clear of the blue.
           </Note>
-          <Note title="Jewel tones — chosen 2026-10-25">
-            KOC blue, coral, indigo, magenta and emerald. The morning's colour-blind fix passed every
+          <Note title="Jewel tones — chosen 2026-10-25, reordered 2026-10-27">
+            KOC blue, coral, magenta, emerald and indigo. The morning's colour-blind fix passed every
             gate with an orange and an olive, and they did not sit with the brand blue; this set was
             searched under the same gates with orange, yellow and olive excluded, and picked by eye
             from the three that passed. No all-cool set passes: teal, sky, indigo and violet collapse
             toward the blue for a red-green colour-blind reader, so slot 2 must be warm. Neighbours
             are held to the dataviz validator in both themes and the token tests fail the build if
-            one stops clearing it. Non-neighbours are not — five hues cannot all be pairwise
-            colour-blind-safe — so a scatter chart, where any two marks can touch, should still stop
+            one stops clearing it. The first three are held as a set as well, every pair: as first
+            ordered, indigo sat third, cleared both its neighbours, and was ΔE 13 from KOC blue — one
+            colour to a colour-blind reader in every three-line chart. Reordered with magenta third,
+            with small lightness moves, mostly in dark. Beyond three, five hues cannot all be pairwise
+            colour-blind-safe, so a line or scatter chart, where any two marks can touch, should stop
             at three.
           </Note>
           <Note kind="warn" title="Why lightness alternates">
@@ -215,7 +218,7 @@ export function Colour() {
             achromatopsia all see only <em>tone</em>. An earlier revision had series 4 and 5 both at
             step 500: ΔE 42 apart — vividly different in colour — yet 1.11:1 in luminance, meaning
             they merged into one line in greyscale. So lightness alternates between neighbours
-            (0.48 → 0.62 → 0.56 → 0.50 → 0.59 in light; 0.62 → 0.59 → 0.65 → 0.59 → 0.65 in dark), and
+            (0.48 → 0.62 → 0.45 → 0.59 → 0.54 in light; 0.60 → 0.67 → 0.58 → 0.65 → 0.62 in dark), and
             a test asserts at least 1.2:1 in greyscale between every pair of neighbours, in both
             themes, so nobody quietly undoes it.
           </Note>
