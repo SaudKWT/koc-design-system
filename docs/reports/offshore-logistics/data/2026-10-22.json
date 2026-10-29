@@ -1,0 +1,250 @@
+{
+  "reportDate": "2026-10-22",
+  "reportLabel": "22 Oct 2026",
+  "tabLabel": "15 to 21 Oct",
+  "periodStart": "2026-10-15",
+  "periodEnd": "2026-10-21",
+  "periodLabel": "15 to 21 Oct 2026",
+  "periodDays": 7,
+  "marsec": "Level 2",
+  "showArrows": true,
+  "provenance": "Email of 22.10.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_22.10.2026.xlsx (report 30, sheets Port, Vessel and Truck).",
+  "tripRule": "Trips are as reported in the covering email, which supersedes the workbook derivation.",
+  "movementRule": "One movement is one transfer between locations: port to rig, rig to port, or rig to rig. Repositioning at the rig already occupied does not count, nor does a shift between two port-side locations.",
+  "vesselTrips": {
+    "CA1": 2,
+    "CA3": 2,
+    "CA5": 1,
+    "Charlie-3": 8
+  },
+  "vesselMovements": {
+    "CA1": 4,
+    "CA3": 3,
+    "CA5": 3,
+    "Charlie-3": 16
+  },
+  "movementsAudit": {
+    "CA1": "4. OD1 to Shuaiba (17.10, Vessel E12); Shuaiba to OD1 (18.10, E16); OD1 to Shuaiba and Shuaiba to OD1 (21.10, E28). Excludes the anchorage moves at OD1.",
+    "CA3": "3. Shuaiba to OD1 (17.10, E13); OD1 to Shuaiba and Shuaiba to OD1 (19.10, E21). Excludes the standoffs at OD1 on 18.10, 20.10 and 21.10.",
+    "CA5": "3. OD1 to Shuaiba (16.10, E10); Shuaiba to OD1 (18.10, E18); OD1 to Shuaiba (19.10, E22).",
+    "Charlie-3": "16. Four on 15.10 (two OD1 rounds, E7); four on 16.10 (berth 4 to OD1, OD1 to Khiran, then an OD1 round, E11); two on 18.10 (Khiran to OD1, OD1 to Khiran, E19); four on 20.10 (Khiran to OD1, OD1 to Shuaiba, then an OD1 round, E27); two on 21.10 (OD1 round, E31). Excludes the Shuaiba and Khiran legs, port to port, and the 19.10 run to Khiran recalled after 30 minutes."
+  },
+  "movementsByDay": [
+    {
+      "label": "Thu 15",
+      "n": 4
+    },
+    {
+      "label": "Fri 16",
+      "n": 5
+    },
+    {
+      "label": "Sat 17",
+      "n": 2
+    },
+    {
+      "label": "Sun 18",
+      "n": 4
+    },
+    {
+      "label": "Mon 19",
+      "n": 3
+    },
+    {
+      "label": "Tue 20",
+      "n": 4
+    },
+    {
+      "label": "Wed 21",
+      "n": 4
+    }
+  ],
+  "trucks": {
+    "rule": "From report 30, the daily IN and OUT counts are the workbook's own Truck sheet. Each day's audit lists the Port sheet rows behind it, and notes any row the Truck sheet reads differently.",
+    "byDay": [
+      {
+        "label": "Thu 15",
+        "date": "15.10.2026",
+        "out": 3,
+        "in": 3,
+        "audit": [
+          "Truck sheet: in 3, out 3",
+          "E4 out 2",
+          "E7 out 1 (loaded and sent to Odfjell, no other dispatch row)",
+          "E5 in 1",
+          "E6 in 2",
+          "E11 summary of E5 and E6",
+          "E14 food lorry for CA3: not in the Truck sheet's count"
+        ]
+      },
+      {
+        "label": "Fri 16",
+        "date": "16.10.2026",
+        "out": 1,
+        "in": 3,
+        "audit": [
+          "Truck sheet: in 3, out 1",
+          "E19 out 1 (to the pipe yard)",
+          "E20 in 1 (from the pipe yard)",
+          "E21 in 1 pickup",
+          "E22 in 1 pickup",
+          "E24 loading, no dispatch"
+        ]
+      },
+      {
+        "label": "Sat 17",
+        "date": "17.10.2026",
+        "out": 4,
+        "in": 2,
+        "audit": [
+          "Truck sheet: in 2, out 4",
+          "E31 to E34 out 4",
+          "E35 in 1",
+          "E36 in 1",
+          "E37 summary"
+        ]
+      },
+      {
+        "label": "Sun 18",
+        "date": "18.10.2026",
+        "out": 2,
+        "in": 2,
+        "audit": [
+          "Truck sheet: in 2, out 2",
+          "E44 out 1",
+          "E45 out 1",
+          "E46 in 1",
+          "E47 in 1",
+          "E49 summary"
+        ]
+      },
+      {
+        "label": "Mon 19",
+        "date": "19.10.2026",
+        "out": 7,
+        "in": 3,
+        "audit": [
+          "Truck sheet: in 3, out 7",
+          "E55 out 3",
+          "E56 out 1",
+          "E57 out 1",
+          "E58 out 1 pickup",
+          "E59 out 1 (written 'will be dispatched')",
+          "E60 to E62 in 3",
+          "E64 summary: 7 trucks",
+          "E66 summary",
+          "E67 the E59 truck"
+        ]
+      },
+      {
+        "label": "Tue 20",
+        "date": "20.10.2026",
+        "out": 3,
+        "in": 1,
+        "audit": [
+          "Truck sheet: in 1, out 3",
+          "E73 out 2",
+          "E77 summary: 3 trucks to Cementing and COSL",
+          "E74 boom truck Varel to HETCO, facility to facility",
+          "E75 in 1 (HETCO to berth 4)"
+        ]
+      },
+      {
+        "label": "Wed 21",
+        "date": "21.10.2026",
+        "out": 2,
+        "in": 9,
+        "audit": [
+          "Truck sheet: in 9, out 2",
+          "E82 out 1",
+          "E83 out 1 (DWS to Raith, facility to facility)",
+          "E84 in 2",
+          "E85 in 1",
+          "E86 in 1 boom truck",
+          "E87 in 1",
+          "E88 in 2 lorries",
+          "E89 in 1 lorry",
+          "E90 in 1"
+        ]
+      }
+    ]
+  },
+  "fluids": {
+    "bunkered": {
+      "Fresh water": 684,
+      "Fuel": 216,
+      "Drill water": 1548
+    },
+    "delivered": {
+      "Fresh water": 200,
+      "Fuel": 200,
+      "Drill water": 1228
+    },
+    "audit": {
+      "Fresh water bunkered": "Port E16 216 CA3 (15.10, Vessel E5); Port E40 72 CA1 (17.10, Vessel E12); Port E42 108 CA5 (17.10, Vessel E14); Vessel E26 180 CA5 (20.10, of Port E71's 396); Port E97 108 CA1 (21.10)",
+      "Drill water bunkered": "Port E17 216 CA3 (15.10); Port E28 648 CA3 (16.10, Vessel E9); Port E39 252 CA1 (17.10, Vessel E12); Port E53 216 CA1 (18.10, Vessel E16); 216 CA5 (19.10, Port E71's 396 less the 180 fresh)",
+      "Fuel bunkered": "Port E29 72.002 CA5 (16.10, Vessel E10); Port E41 72.004 CA5 (17.10, Vessel E14); Vessel E30 72.004 CA5 (21.10, and the email). Total 216.01, shown as 216.",
+      "Fresh water delivered": "Vessel E22 200 CA5 to OD1 (19.10). Vessel E17 records CA3 fresh water to OD1 on 18.10 with no quantity.",
+      "Fuel delivered": "Vessel E6 100 CA5 to OD1 (15.10); Vessel E22 100 CA5 to OD1 (19.10)",
+      "Drill water delivered": "Vessel E4 288 CA1 (15.10); E12 200 CA1 (17.10); E22 300 CA5 (19.10); E28 108 CA1 (20.10 to 21.10); E29 332 CA3 (21.10), all to OD1",
+      "Dry bulk": "Barite, bentonite and G cement moved to and from CA1, CA3 and CA5 all week. Tonnes, so not in the cubic-metre totals."
+    }
+  },
+  "slops": {
+    "receivedBbl": 0,
+    "dischargedBbl": 0,
+    "note": "No slops in barrels recorded."
+  },
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "Work on stuck pipe",
+      "lastWeek": "Disengage fish; POOH and L/D fishing BHA; RIH with CMT stinger 5-1/2\" OEDP to 270; performed P&A CMT job #1; skid out rig to 20.1 m and traverse derrick 0.6 m STBD; spudding of well SHU-0001R",
+      "personnelOnboard": 87,
+      "visaHolders": 50,
+      "overstay": {
+        "KOC": 0,
+        "HLB": 2,
+        "COSL": 1
+      },
+      "nextSteps": "Work on string; RIH 42\" stiff BHA to bottom without pumps to check fill; drop gyro; P/O and L/D 42\" stiff BHA; RIH 38\" and 36\" casing as per tally; install 38\" bowl and slip to CTU"
+    }
+  },
+  "highlights": [],
+  "dataNotes": [
+    "<b>The email now gives trips as IN and OUT.</b> CA1 2 IN / 2 OUT, CA3 1 IN / 2 OUT, CA5 2 IN / 1 OUT, Charlie-3 8 IN / 8 OUT. The OUT figure is used for each vessel, because a trip starts with an outbound voyage. The IN and OUT totals are both 13, so the total is the same either way.",
+    "<b>OPH is not shown from this week.</b> It is off hired, and the email no longer reports it.",
+    "<b>Truck moves now come from the workbook's Truck sheet,</b> a new third sheet giving IN and OUT for each day: 23 in, 22 out. Reading the Port rows by the earlier rule gives 46. The one difference is a food lorry on 15.10 (E14), which the sheet leaves out; on 21.10 the sheet counts three lorries (E88, E89).",
+    "<b>The Truck sheet counts pipe yard moves.</b> E19 and E20 on 16.10 (a truck to and from the pipe yard) are in its figures. This settles the question left open in reports 28 and 29: those weeks' 79 and 70 follow the same practice.",
+    "<b>CA3 drill water on 15.10 and 16.10: 864 or 648 m³.</b> Port E17 records 216 on 15.10 and E28 648 on 16.10. Vessel E5 has 15.10 as 'in progress' and E9 648 on 16.10. Both Port rows are used. If 648 includes the 216, drill water bunkered is 1,332, not 1,548.",
+    "<b>CA5 water on 19.10 and 20.10.</b> Port E71 records 396 m³ 'drill and fresh water'. Vessel E22 records 200 drill and E26 180 fresh, 380 in all. The Port total is used: 180 fresh, as the Vessel sheet says, and 216 drill.",
+    "<b>Port E97 and E98 are the same row</b>, 108 m³ of fresh water to CA1 on 21.10. The email lists one CA1 fresh water line and one CA5 fuel line (72.004 m³), and Vessel E30 records the CA5 fuel. Read as one fresh water bunkering and one fuel bunkering. Vessel E28 also records CA1 receiving 100 m³ of drill water that day, with no Port row.",
+    "<b>Well name SHU-0001R.</b> The email's last week activities include 'Spudding of well SHU-0001R', and the call-offs now read OD-SH1R."
+  ],
+  "headline": "OD1 is working on stuck pipe. Last week's activities include spudding of well SHU-0001R.",
+  "dailyOperations": {
+    "label": "Wed 21 Oct 2026",
+    "source": "Daily Ground Operations, as circulated in the 22.10.2026 email",
+    "lines": [
+      "One truck dispatched to COSL Mina Abdallah with two lifts received from OD1 (RCM-OD-957), per delivery ticket RM-SP-9093.",
+      "One truck dispatched to KOC DWS Hanger 1 to collect a 24\" ECP and port collar and deliver them to Raith Engineering & Manufacturing Co. W.L.L at Mina Abdallah, per KOC delivery ticket 2026/10/21/0561.",
+      "Two trucks arrived from OWS Mina Abdallah with five baskets of TRS tools for OD1 (call-offs OD-SH1-B-1-13 and OD-SH1-B-2-13), per delivery ticket OWS-DT-TRS-082.",
+      "One truck arrived from OWS Mina Abdallah with 42 joints of 1.66\" tubing for OD1 (call-offs OD-SH1-B-1-13 and OD-SH1-B-2-13), per delivery ticket OWS-DT-TRS-082.",
+      "One boom truck arrived from Solas Marine Mina Abdallah with a rack of three empty H2S cylinders for OD1, per delivery ticket HPM-DT-1621.",
+      "One truck arrived from OWS Mina Abdallah with a 4.5 m basket of fishing tools for OD1 (call-off OD-SH1-B-2-14), per delivery ticket OWS-DT-FIS-027.",
+      "Two lorries arrived at Shuaiba Port with CA1 food provisions; the provisions were offloaded and transferred to CA1.",
+      "One lorry arrived at Shuaiba Port with 10 full lube oil drums for CA1; the drums were offloaded, put in a cargo basket and transferred to CA1.",
+      "One truck arrived with Odfjell fishing tools for OD1 (call-off OD-SH-B-1-14).",
+      "10 full lube oil drums containerised and transferred to CA1; 24 empty oil drums offloaded from CA1 and loaded on the Al-Rashed lorry.",
+      "CA1 food provisions loaded in containers and transferred to CA1.",
+      "Cargo offloaded from <b>CA1</b>, per manifest RCM-OD-957.",
+      "Cargo offloaded from <b>Charlie-3</b>, per manifest RCM-OD-958.",
+      "Cargo loaded on <b>CA1</b>, per manifest CM-OD-1033.",
+      "<b>108 m³ of fresh water</b> bunkered to CA1.",
+      "<b>72.004 m³ of fuel</b> bunkered to CA5."
+    ],
+    "extraNotes": [
+      "Vessel movements remain under <b>MARSEC Level 2</b>."
+    ]
+  }
+}

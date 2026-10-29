@@ -1,0 +1,250 @@
+{
+  "reportDate": "2026-10-29",
+  "reportLabel": "29 Oct 2026",
+  "tabLabel": "22 to 28 Oct",
+  "periodStart": "2026-10-22",
+  "periodEnd": "2026-10-28",
+  "periodLabel": "22 to 28 Oct 2026",
+  "periodDays": 7,
+  "marsec": "Level 2",
+  "showArrows": true,
+  "provenance": "Email of 29.10.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_29.10.2026.xlsx (report 31, sheets Port, Vessel and Truck).",
+  "tripRule": "Trips are as reported in the covering email, which supersedes the workbook derivation.",
+  "movementRule": "One movement is one transfer between locations: port to rig, rig to port, or rig to rig. Repositioning at the rig already occupied does not count, nor does a shift between two port-side locations.",
+  "vesselTrips": {
+    "CA1": 2,
+    "CA3": 2,
+    "CA5": 3,
+    "Charlie-3": 10
+  },
+  "vesselMovements": {
+    "CA1": 5,
+    "CA3": 4,
+    "CA5": 5,
+    "Charlie-3": 20
+  },
+  "movementsAudit": {
+    "CA1": "5. OD1 to Shuaiba (23.10, Vessel E8); Shuaiba to OD1 and OD1 to Shuaiba (25.10, E16); Shuaiba to OD1 (26.10, E20); OD1 to Shuaiba (28.10, E28). Excludes the anchorage moves at OD1.",
+    "CA3": "4. OD1 to Shuaiba and Shuaiba to OD1 (22.10, E5); OD1 to Shuaiba (27.10, E25); Shuaiba to OD1 (28.10, E29). Excludes the anchorage moves at OD1 on 24.10 to 26.10.",
+    "CA5": "5. Shuaiba to OD1 and OD1 to Shuaiba (22.10, E6); Shuaiba to OD1 (25.10, E18); OD1 to Shuaiba (27.10, E26); Shuaiba to OD1 (28.10, E30).",
+    "Charlie-3": "20. Four on 22.10 (Khiran to OD1, OD1 to Shuaiba, then an OD1 round, E7); two on 23.10 (berth 4 to OD1, OD1 to Khiran, E11); three on 24.10 (an OD1 round, then berth 4 to OD1 at 21:55, E15); three on 25.10 (OD1 to berth 4 at 00:12, Khiran to OD1, OD1 to Khiran, E19); four on 26.10 (Khiran to OD1, OD1 to Shuaiba, then an OD1 round, E23); four on 27.10 (an OD1 round, then berth 4 to OD1 and OD1 to Khiran, E27). Excludes the Shuaiba and Khiran legs, port to port."
+  },
+  "movementsByDay": [
+    {
+      "label": "Thu 22",
+      "n": 8
+    },
+    {
+      "label": "Fri 23",
+      "n": 3
+    },
+    {
+      "label": "Sat 24",
+      "n": 3
+    },
+    {
+      "label": "Sun 25",
+      "n": 6
+    },
+    {
+      "label": "Mon 26",
+      "n": 5
+    },
+    {
+      "label": "Tue 27",
+      "n": 6
+    },
+    {
+      "label": "Wed 28",
+      "n": 3
+    }
+  ],
+  "trucks": {
+    "rule": "From report 30, the daily IN and OUT counts are the workbook's own Truck sheet. Each day's audit lists the Port sheet rows behind it, and notes any row the Truck sheet reads differently.",
+    "byDay": [
+      {
+        "label": "Thu 22",
+        "date": "22.10.2026",
+        "out": 2,
+        "in": 5,
+        "audit": [
+          "Truck sheet: in 5, out 2",
+          "E4 out 1 pickup",
+          "E5 out 1",
+          "E6 to E10 in 5"
+        ]
+      },
+      {
+        "label": "Fri 23",
+        "date": "23.10.2026",
+        "out": 6,
+        "in": 4,
+        "audit": [
+          "Truck sheet: in 4, out 6",
+          "E16 out 2",
+          "E17 out 1 boom truck",
+          "E18 out 1 (sent empty to COSL to collect)",
+          "E21 out 2 (sent empty to KGL-4 to collect)",
+          "E19 in 1 (the E18 truck back)",
+          "E20 in 1",
+          "E22 in 2 (the E21 trucks back)",
+          "E23, E24, E26, E28 summaries"
+        ]
+      },
+      {
+        "label": "Sat 24",
+        "date": "24.10.2026",
+        "out": 2,
+        "in": 5,
+        "audit": [
+          "Truck sheet: in 5, out 2",
+          "E32 out 1",
+          "E33 out 1",
+          "E34 to E38 in 5",
+          "E40 offload of E37"
+        ]
+      },
+      {
+        "label": "Sun 25",
+        "date": "25.10.2026",
+        "out": 6,
+        "in": 2,
+        "audit": [
+          "Truck sheet: in 2, out 6",
+          "E42 to E44 out 3",
+          "E47 to E49 out 3 (sent to PS and brought back, the return not counted)",
+          "E45 in 1",
+          "E46 in 1",
+          "E50, E51 summaries"
+        ]
+      },
+      {
+        "label": "Mon 26",
+        "date": "26.10.2026",
+        "out": 9,
+        "in": 3,
+        "audit": [
+          "Truck sheet: in 3, out 9",
+          "E52 to E58 out 7",
+          "E59 out 1 boom truck (from the KOC pipe yard)",
+          "E60 out 1",
+          "E61 in 1",
+          "E62 in 1",
+          "E63 in 1 (to the pipe yard)"
+        ]
+      },
+      {
+        "label": "Tue 27",
+        "date": "27.10.2026",
+        "out": 11,
+        "in": 2,
+        "audit": [
+          "Truck sheet: in 2, out 11",
+          "E65 to E73 out 9",
+          "E76 out 2",
+          "E74 in 1",
+          "E75 in 1",
+          "E79, E80 summaries"
+        ]
+      },
+      {
+        "label": "Wed 28",
+        "date": "28.10.2026",
+        "out": 6,
+        "in": 17,
+        "audit": [
+          "Truck sheet: in 17, out 6",
+          "E81 out 1 (to the pipe yard)",
+          "E82 to E86 out 5",
+          "E87 to E94 in 8 (E87, E88, E91 to E94 from the pipe yard)",
+          "E95 in 9 (nine day-hired trucks)",
+          "E97, E98 pipe yard loading",
+          "E102 offload: says 7 trucks for the same 55 joints"
+        ]
+      }
+    ]
+  },
+  "fluids": {
+    "bunkered": {
+      "Fresh water": 189,
+      "Fuel": 144,
+      "Drill water": 1431
+    },
+    "delivered": {
+      "Fresh water": 215,
+      "Fuel": 0,
+      "Drill water": 1617
+    },
+    "audit": {
+      "Fresh water bunkered": "Port E30 36 Charlie-3 (23.10; Vessel E11 records 19); Vessel E8 153 CA1 (23.10, of Port E31's 612)",
+      "Drill water bunkered": "Port E13 360 CA3 (22.10, Vessel E5); 459 CA1 (23.10, Port E31's 612 less the 153 fresh); Vessel E29 612 CA3 (28.10, no Port row)",
+      "Fuel bunkered": "Vessel E12 71.998 CA1 (24.10); Vessel E18 36.006 CA5 (25.10); Vessel E27 36.006 Charlie-3 (27.10). None is on the Port sheet. Total 144.01, shown as 144.",
+      "Fresh water delivered": "Vessel E8 100 CA1 (23.10); Vessel E24 115 CA1 (27.10), both to OD1",
+      "Drill water delivered": "Vessel E4 355 CA1 (22.10); E8 110 CA1 (23.10); E13 152 CA3 (24.10); E17 200 CA3 (25.10); E21 300 CA3 (26.10); E24 100 CA1 (27.10); E29 400 CA3 (28.10), all to OD1",
+      "Dry bulk": "Barite, bentonite and cement moved to and from CA1 and CA3 all week; the Vessel sheet gives some of them in M3. Tonnes, so not in the cubic-metre totals."
+    }
+  },
+  "slops": {
+    "receivedBbl": 0,
+    "dischargedBbl": 0,
+    "note": "No slops in barrels recorded."
+  },
+  "activeRigs": 1,
+  "rigs": {
+    "OD1": {
+      "currentOperation": "L/D 38\" cut joints",
+      "lastWeek": "Work on stuck string with surface jar action down; drill 42\"; L/D BHA; sweep hole with hi-vis; wash up; ream down full stand; run 38\" and 36\" casing; cementing; cut 38\" casing",
+      "personnelOnboard": 87,
+      "visaHolders": 52,
+      "overstay": {
+        "KOC": 0,
+        "HLB": 2,
+        "COSL": 0
+      },
+      "nextSteps": "M/U 33\" clean-out BHA; RIH 33\" clean-out BHA and tag FC; drill out 36\" shoe track; drill 33\" x 35\" hole to 1,067 ft"
+    }
+  },
+  "highlights": [],
+  "dataNotes": [
+    "<b>Trips as IN and OUT.</b> CA1 3 IN / 2 OUT, CA3 2 IN / 2 OUT, CA5 2 IN / 3 OUT, Charlie-3 10 IN / 10 OUT. The OUT figure is used for each vessel. The IN and OUT totals are both 17.",
+    "<b>OPH is not shown from this week.</b> It is off hired, and the email no longer reports it.",
+    "<b>The Truck sheet counts empty outbound legs.</b> On 23.10 it counts the trucks sent out empty to collect (E18, E21) as OUT, and their loaded returns (E19, E22) as IN. Report 29 counted only the loaded leg. On 25.10 it counts three trucks sent to PS and brought back (E47 to E49) as OUT only.",
+    "<b>Nine trucks or seven.</b> E95 (28.10) says nine day-hired trucks arrived with 55 joints of 24\" casing; E102 says seven trucks were offloaded with the same 55 joints. The Truck sheet's 17 in follows nine.",
+    "<b>CA1 water on 23.10 and 24.10.</b> Port E31 records 612 m³ 'drill and fresh water' on 23.10. Vessel E8 records 231 drill and 153 fresh on 23.10, and E12 204 drill on 24.10. The Port total is used: 153 fresh and 459 drill. If the 24.10 204 m³ is a separate bunkering, drill water is 1,635, not 1,431.",
+    "<b>Charlie-3 fresh water on 23.10: 36 or 19 m³.</b> Port E30 records 36; Vessel E11 records 19. 36 is used.",
+    "<b>Bunkerings on the Vessel sheet only:</b> CA3 612 m³ of drill water (28.10, the same figure as Port E31's CA1 bunkering), and all three fuel bunkerings: CA1 71.998 (24.10), CA5 36.006 (25.10) and Charlie-3 36.006 (27.10).",
+    "<b>The Vessel sheet's date column reads '22.10.202' to '26.10.202'.</b> Truncated; the Port sheet and the Truck sheet give the full dates."
+  ],
+  "headline": "OD1 is laying down 38\" cut joints. Last week the 38\" and 36\" casing was run and cemented.",
+  "dailyOperations": {
+    "label": "Wed 28 Oct 2026",
+    "source": "Daily Ground Operations, as circulated in the 29.10.2026 email",
+    "lines": [
+      "One truck dispatched to the Shuaiba Port pipe yard with two tubular crossovers received from OD1 (RCM-OD-968), per delivery ticket RM-SP-9122.",
+      "One truck dispatched to the WPS hall at Mina Abdallah with two lifts received from OD1 (RCM-OD-969), per delivery ticket RM-SP-9123.",
+      "One truck dispatched to Odfjell Mina Abdallah with one lift received from OD1 (RCM-OD-969), per delivery ticket RM-SP-9123.",
+      "One truck dispatched to Gyro Ahmadi with a 6 ft mini container of Gyro tools received from OD1 (RCM-OD-969), per delivery ticket RM-SP-9124.",
+      "One truck dispatched to Odfjell Mina Abdallah with two lifts received from OD1 (RCM-OD-968 and 969), per delivery ticket RM-SP-9125.",
+      "One truck dispatched to Odfjell Mina Abdallah with two lifts received from OD1 (RCM-OD-969), per delivery ticket RM-SP-9125.",
+      "One truck arrived from the Shuaiba Port pipe yard with five MLS wooden boxes and a drift, per delivery ticket HPM-DT-1631.",
+      "One truck arrived from the Shuaiba Port pipe yard with five MLS wooden boxes, per delivery ticket HPM-DT-1631.",
+      "One truck arrived from COSL Mina Abdallah with a 10 ft container for OD1 (call-off OD-SH1R-B-5-3), per delivery ticket COSL-DT-OD-SH1R-B-5-3A.",
+      "One truck arrived from COSL Mina Abdallah with three lifts of HWDP and DC for OD1 (call-off OD-SH1R-B-5-3), per delivery ticket COSL-DT-OD-SH1R-B-5-3B.",
+      "One truck arrived from the Shuaiba Port pipe yard with two 30\" circulating swages, per delivery ticket HPM-DT-1632.",
+      "One truck arrived from the Shuaiba Port pipe yard with a 30\" float shoe and collar, per delivery ticket HPM-DT-1632.",
+      "One truck arrived from the Shuaiba Port pipe yard with an empty 6 ft mini container, per delivery ticket HPM-DT-1632.",
+      "One truck arrived at berth 20 from the Shuaiba Port pipe yard with four 5-1/2\" x 30\" centerlines.",
+      "<b>Nine day-hired trucks</b> arrived at Shuaiba Port from KOC Yard 4 with 55 joints of 24\" 203 ppf L80 TSHERR-3 casing (CAT 70126893), a 26-3/4\" x 21-1/4\" drilling adapter and a 26-3/4\" casing spool, delivered to the Shuaiba pipe yard.",
+      "The Al Mansoori team inspected 30 of the 55 joints of 24\" R3 casing (CAT ID 70126893): 29 accepted and 1 rejected.",
+      "One truck loaded with two 36\" x 38\" crossover joints, sent to the Shuaiba pipe yard and offloaded there.",
+      "Two trucks loaded with 30\" MLS equipment and casing accessories at the Shuaiba pipe yard.",
+      "Cargo operation with <b>CA1</b>: 21 backload cargo lifts offloaded (RCM-OD-696), and the deck arranged and prepared for the 30\" casing joints, MLS equipment and casing accessories.",
+      "Cargo operation with <b>CA1</b>: 40 joints of 30\" 234.51 ppf X-56 XLW-M70 R-3 casing with a float shoe and a float collar, and 4 joints of 30\" 196.26 ppf X-56 XLW-M70 R-3 casing, loaded on deck.",
+      "The full 30\" casing package loaded on <b>CA1</b>: 22 joints R3 196.26 ppf (CAT ID 70126875), 3 joints R2 196.26 ppf (70126877), 5 joints R1 196.26 ppf (70126876), 3 joints R2 234.5 ppf (70126884), 3 joints R1 234.5 ppf (70126883), 2 × 5 ft pup joints (70126878), 2 × 10 ft pup joints (70126879), 2 × 15 ft pup joints (70126880) and a 196.26 × 234.5 ppf crossover joint (70126886).",
+      "Seven trucks offloaded at the pipe yard with 55 joints of 24\" R3 casing (CAT ID 70126893)."
+    ],
+    "extraNotes": [
+      "Vessel movements remain under <b>MARSEC Level 2</b>."
+    ]
+  }
+}

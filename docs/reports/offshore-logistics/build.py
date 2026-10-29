@@ -193,13 +193,16 @@ def movements(w):
     return sum(w.get("vesselMovements", {}).values())
 
 
+# The rigs are whatever the week's data lists, not a fixed pair. OPH was
+# off-hired, and from report 30 the email stops reporting it, so those weeks
+# carry OD1 only.
 def overstay(w):
-    return sum(w["rigs"][r]["overstay"][k]
-               for r in ("OD1", "OPH") for k in ("KOC", "HLB", "COSL"))
+    return sum(r["overstay"][k]
+               for r in w["rigs"].values() for k in ("KOC", "HLB", "COSL"))
 
 
 def overstay_by(w):
-    return {k: sum(w["rigs"][r]["overstay"][k] for r in ("OD1", "OPH"))
+    return {k: sum(r["overstay"][k] for r in w["rigs"].values())
             for k in ("KOC", "HLB", "COSL")}
 
 
@@ -930,7 +933,8 @@ def rig_strip(w):
     The tables gave every field equal weight. A reader wants three things at a
     glance: which rig, what state, and whether anyone is overstaying."""
     cells = ""
-    for rig_id in ("OD1", "OPH"):
+    width = f"{100 // len(w['rigs'])}%"
+    for rig_id in w["rigs"]:
         r = w["rigs"][rig_id]
         off = "off-hired" in r["currentOperation"].lower()
         chip_bg, chip_ink, chip = ((SURFACE, INK_MUTED, "OFF HIRED") if off
@@ -943,12 +947,12 @@ def rig_strip(w):
                f'{r["personnelOnboard"]} <span style="font-size:{FS["2xs"]};'
                f'color:{INK_MUTED};font-weight:{FW["normal"]};">'
                f'incl. {r["visaHolders"]} visa</span>')
-        cells += f"""      <td class="rig" width="50%" valign="top" style="background:{CARD};border:1px solid {RULE};border-radius:{RADIUS_MD};padding:14px 16px;">
+        cells += f"""      <td class="rig" width="{width}" valign="top" style="background:{CARD};border:1px solid {RULE};border-radius:{RADIUS_MD};padding:14px 16px;">
         <div><span style="font-size:{FS['lg']};font-weight:{FW['bold']};color:{INK};">Rig {rig_id}</span>
           <span style="font-size:{FS['2xs']};font-weight:{FW['bold']};color:{chip_ink};background:{chip_bg};border-radius:{RADIUS};padding:3px 8px;letter-spacing:.05em;margin-left:8px;white-space:nowrap;">{chip}</span></div>
         <div style="font-size:{FS['sm']};color:{INK};padding:8px 0 10px;line-height:1.45;">{r['currentOperation']}</div>
         <table width="100%" style="font-size:{FS['xs']};border-collapse:collapse;">
-          <tr><td style="color:{INK_MUTED};padding:3px 0;width:42%;">Personnel onboard</td><td style="color:{INK};font-weight:{FW['semibold']};font-variant-numeric:tabular-nums;">{pob}</td></tr>
+          <tr><td style="color:{INK_MUTED};padding:3px 20px 3px 0;width:1%;white-space:nowrap;">Personnel onboard</td><td style="color:{INK};font-weight:{FW['semibold']};font-variant-numeric:tabular-nums;">{pob}</td></tr>
           <tr><td style="color:{INK_MUTED};padding:3px 0;">Overstay crew</td><td style="color:{INK};font-variant-numeric:tabular-nums;">{ov_txt}</td></tr>
           <tr><td style="color:{INK_MUTED};padding:3px 0;vertical-align:top;">Last week</td><td style="color:{INK};">{r['lastWeek']}</td></tr>
           <tr><td style="color:{INK_MUTED};padding:3px 0;vertical-align:top;">Next steps</td><td style="color:{INK};">{r['nextSteps']}</td></tr>
@@ -1144,12 +1148,11 @@ def daily_log(log, key, title):
 
 
 DEFAULT_SIGNATURE = {
-    "name": "Naser M Gh Hassan",
+    "name": "Saud Abdulaziz AlKharji",
     "lines": ["Kuwait Oil Company (KOC)",
-              "Snr Drilling &amp; Workover Engineer | "
-              "Drilling &amp; Workover Engineering Group"],
-    "muted": ["NHassan@kockw.com | www.kockw.com",
-              "Tel: +965 238 72718"],
+              "Engineer Drilling &amp; Workover | "
+              "Drilling &amp; Workover Operational Support Team"],
+    "muted": ["skharji@kockw.com | www.kockw.com"],
 }
 
 
@@ -1157,9 +1160,8 @@ def signature(w):
     """Whoever is circulating the report signs it, which is the default below.
 
     A week may override it with a `signature` key. Nothing is invented: only
-    what the person's own email signature states goes in. That signature has a
-    phone number, so it is here. Its fax field is blank, so it is not. Its
-    postal box is left off: nobody posts a reply to a dashboard."""
+    what the person's own profile or email states goes in, which is why there is
+    no phone or postal line here."""
     sig = w.get("signature") or DEFAULT_SIGNATURE
     body = "<br>\n      ".join(sig.get("lines", []))
     muted = "<br>\n      ".join(sig.get("muted", []))
@@ -1919,8 +1921,9 @@ def main():
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
-    dates = args or ["2026-10-15", "2026-10-08", "2026-10-01", "2026-09-24",
-                     "2026-09-17", "2026-09-10", "2026-09-03", "2026-08-26"]
+    dates = args or ["2026-10-29", "2026-10-22", "2026-10-15", "2026-10-08",
+                     "2026-10-01", "2026-09-24", "2026-09-17", "2026-09-10",
+                     "2026-09-03", "2026-08-26"]
 
     picked = flags & {"--dashboard", "--email", "--notes", "--artifact"}
     want = {name: (f"--{name}" in flags or not picked)

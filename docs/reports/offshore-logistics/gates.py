@@ -170,7 +170,9 @@ with sync_playwright() as p:
         check(top <= 110 and not pinned, f"{w}px: header {top:.0f}px, scrolls away")
         check(vis, f"{w}px: newest tab in view")
         check(doc[0] <= doc[1], f"{w}px: no page sideways scroll {doc}")
-        check(len(set(rigs)) == 2, f"{w}px: rig cards stacked")
+        # From report 30 a week can carry one rig, so stacked means one
+        # card per row, whatever the number of cards.
+        check(len(set(rigs)) == len(rigs), f"{w}px: {len(rigs)} rig card(s), one per row")
         pg.close()
     b.close()
 

@@ -357,10 +357,11 @@ and reports a 7-day week for an 8-day period.
 ## Signatures
 
 **Whoever circulates the report signs it.** That is `DEFAULT_SIGNATURE` in
-`build.py`. From report 29 it is Naser M Gh Hassan, Snr Drilling & Workover
-Engineer, Drilling & Workover Engineering Group, NHassan@kockw.com, taken from
-his own email signature. The signature belongs to the build, not to a week, so
-changing it re-signs every tab and every PDF. A week that must keep an earlier
+`build.py`: Saud Abdulaziz AlKharji, Engineer Drilling & Workover, Drilling &
+Workover Operational Support Team, skharji@kockw.com. Report 29 was briefly
+signed by Naser M Gh Hassan; the signature then returned to Saud. The
+signature belongs to the build, not to a week, so changing it re-signs every
+tab and every PDF. A week that must keep an earlier
 signer can set its own `signature` key.
 
 The sender of the source email is a different thing and belongs in
