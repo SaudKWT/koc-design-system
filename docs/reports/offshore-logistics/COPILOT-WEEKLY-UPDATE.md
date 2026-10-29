@@ -12,8 +12,9 @@ Each week the user attaches four things:
 2. **The covering email**, as a file or as pasted text. Subject: "Offshore
    Logistics Weekly Updates DD-MM-YYYY".
 3. **The weekly workbook**, `DWOS Weekly Offshore Logistics Report
-   DD.MM.YYYY.xlsx`. It has two sheets: **Port** and **Vessel**.
-4. **Last week's data file**, for example `2026-10-15.json`. This is your
+   DD.MM.YYYY.xlsx`. From report 30 it has three sheets: **Port**,
+   **Vessel** and **Truck**.
+4. **Last week's data file**, for example `2026-10-29.json`. This is your
    model. Your output must have exactly the same structure.
 
 If any of the four is missing, stop and ask for it. Do not continue without it.
@@ -45,8 +46,34 @@ Exactly four things, in this order:
   as written and add a query.
 - **Never copy a figure from last week's file.** Use last week's file only
   for its structure and for the "last week" column of the summary.
+- **Never change the design.** The look of the dashboard (colours, fonts,
+  layout, header, footer, wording of headings) is fixed. See "The design".
+  A weekly update changes the data only.
 - **Never silently fix the source.** If the email and the workbook disagree,
   follow the rule for that figure and add a query.
+
+## The design
+
+Saud adopted the current dashboard design on 2026-10-29. It is used for
+every weekly update from now on. `build.py` draws all of it. You never
+write any of it, and you never suggest a change to it. For reference, so
+you can recognise it:
+
+- **Header:** the KOC emblem in KOC blue, the title "Offshore Logistics /
+  Weekly Dashboard" in blue capitals on two lines, and the line "DWOS ·
+  Drilling & Workover Operations Support Team". Under it, the weeks as
+  chips. The newest week opens first.
+- **Each week:** the headline, then four numbered sections: 01 Figures
+  (four figure cards with a sparkline), 02 Rigs, 03 Daily ground
+  operations, 04 Detail (charts, the comparison table and the daily log,
+  folded).
+- **Footer:** only the words "Drilling & Workover Engineering Group" in
+  large blue capitals and the 3D drill bit beside them. No other text and
+  no signature.
+- **The email** keeps its own table layout and the signature.
+
+If the user asks for a design change, tell them it is made in `build.py`,
+not in the data file, and do not attempt it.
 
 ## Step 1: dates and labels
 
@@ -55,15 +82,15 @@ Read the period from cell B1 of the Port sheet, for example
 
 | Field | Format | Example |
 |---|---|---|
-| `reportDate` | the email date, YYYY-MM-DD | `2026-10-15` |
-| `reportLabel` | DD Mon YYYY | `15 Oct 2026` |
-| `tabLabel` | DD to DD Mon (two months: DD Mon to DD Mon) | `08 to 14 Oct` |
-| `periodStart`, `periodEnd` | YYYY-MM-DD | `2026-10-08`, `2026-10-14` |
-| `periodLabel` | tabLabel plus the year | `08 to 14 Oct 2026` |
+| `reportDate` | the email date, YYYY-MM-DD | `2026-10-29` |
+| `reportLabel` | DD Mon YYYY | `29 Oct 2026` |
+| `tabLabel` | DD to DD Mon (two months: DD Mon to DD Mon) | `22 to 28 Oct` |
+| `periodStart`, `periodEnd` | YYYY-MM-DD | `2026-10-22`, `2026-10-28` |
+| `periodLabel` | tabLabel plus the year | `22 to 28 Oct 2026` |
 | `periodDays` | number of days | `7` |
 | `marsec` | from the email's Extra Notes | `Level 2` |
 | `showArrows` | always `true` | `true` |
-| `provenance` | see the example | `Email of 15.10.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_15.10.2026.xlsx (report 29, sheets Port and Vessel).` |
+| `provenance` | see the example | `Email of 29.10.2026 from Rejeesh Kumar Kunjupillai plus DWOS_Weekly_Offshore_Logistics_Report_29.10.2026.xlsx (report 31, sheets Port, Vessel and Truck).` |
 
 `periodStart` must be the day after last week's `periodEnd`. If it is not,
 add a query.
@@ -76,10 +103,15 @@ week's file.
 **Take the trips from the email's "Vessels Status" table. Always.** Put them
 in `vesselTrips` for CA1, CA3, CA5 and Charlie-3.
 
-The workbook usually gives a different number. That is known. Do not use
-the workbook figure. Add a query that states both, for example: "The email
-reports CA1 4, CA3 2, CA5 3, Charlie-3 7. On the Vessel sheet Charlie-3
-casts off from berth 4 seven times."
+From report 30 the email gives each vessel's trips as **IN** and **OUT**.
+**Use the OUT figure for each vessel**, because a trip starts with an
+outbound voyage. Add a query that states every pair and both totals, for
+example: "<b>Trips as IN and OUT.</b> CA1 3 IN / 2 OUT, CA3 2 IN / 2 OUT,
+CA5 2 IN / 3 OUT, Charlie-3 10 IN / 10 OUT. The OUT figure is used for each
+vessel. The IN and OUT totals are both 17." If the two totals differ, say so
+in the query.
+
+Do not use the workbook for trips.
 
 ## Step 3: vessel movements (Vessel sheet)
 
@@ -93,8 +125,11 @@ A movement is one transit between two locations. Only three kinds count:
 the port, MT Sedra II (the bunker barge), Khiran (Khiran Mall, Khiran
 Marina) and Jal Boot Village.
 
-**Rigs** are OD1 (Oriental Dragon-1) and OPH (Oriental Phoenix), including
-OD1's well location after a rig move.
+**Rigs** are the rigs the email reports. From report 30 that is OD1
+(Oriental Dragon-1) only, including its well location after a rig move.
+OPH (Oriental Phoenix) is off hired and no longer reported. If the Vessel
+sheet names OPH, or any rig the email does not report, count the transit as
+written and add a query.
 
 **Do not count:**
 
@@ -122,60 +157,40 @@ Fill in:
   anchorage area and back on 09.10, port to port."`
 - `movementsByDay`: seven entries, `{"label": "Thu 08", "n": 4}`.
 
-## Step 4: truck moves (Port sheet)
+## Step 4: truck moves (Truck sheet, from report 30)
 
-Go through every row of column E, day by day. Give every row one result in
-that day's `audit` list, with its cell. Example: `"E33 out 1"`.
+**Take each day's IN and OUT from the workbook's Truck sheet.** Use the
+sheet's own figures. Do not recount them from the Port sheet.
 
-**Count as OUT (one for each truck):**
+Then give each day an `audit` list:
 
-- "X truck(s) was/were dispatched" or "sent" with cargo. "2 X trucks" is 2.
-  Pickups, boom trucks and call-off trucks count.
+1. First entry: the Truck sheet's figures, as
+   `"Truck sheet: in 4, out 6"`.
+2. Then every row of the Port sheet's column E for that day, each with its
+   cell, saying what the row is. Examples:
+   - `"E16 out 2"`, `"E17 out 1 boom truck"`, `"E20 in 1"`
+   - `"E18 out 1 (sent empty to COSL to collect)"`,
+     `"E19 in 1 (the E18 truck back)"`
+   - `"E19 out 1 (to the pipe yard)"`
+   - `"E23, E24, E26, E28 summaries"`, `"E24 loading, no dispatch"`
+   - `"E16 fluid"`, `"E14 vessel op"`, `"E12 inspection"`,
+     `"E61 dry bulk"`, `"E10 no night shift"`
 
-**Count as IN (one for each truck):**
+**If the Port rows and the Truck sheet disagree, keep the Truck sheet's
+figure and add a query.** State the day, the cells, what the Port rows say
+and what the sheet counts. Cases seen so far:
 
-- "X truck(s) arrived", including pickups, boom trucks, call-off trucks and
-  lorries. "7 x trucks arrived" is 7.
-
-**Do not count:**
-
-| Row | Why | Audit text |
-|---|---|---|
-| Fuel or water bunkering | fluid | `"E16 fluid"` |
-| "Loaded cargo on vessel X", "cargo operation" | vessel operation | `"E14 vessel op"` |
-| Inspection | not a move | `"E12 inspection"` |
-| "Loaded X truck(s) ... and sent", when a dispatch row for the same truck exists | summary of that row | `"E40 summary of E35"` |
-| "Offloaded ...", when an arrival row for the same truck exists | offload of that row | `"E43 offload of E39"` |
-| Loading, slinging, shifting or moving casing inside the pipe yard or to the berth, not written as a dispatch or arrival | yard work | `"E59 yard work"` |
-| "No Night shift operation" | nothing | `"E10 no night shift"` |
-| A truck between two outside facilities that never reaches the port | not a port move | `"E52 OWS to Weatherford, not counted"` |
-| Bulk cement, barite or bentonite transfers | dry bulk | `"E61 dry bulk"` |
-
-**Special cases:**
-
-1. **Loaded one day, dispatched the next.** Count it once, on the dispatch
-   day. Example: "10X truck loaded" on 04.10 and "Sent ..." on 05.10 is 10
-   OUT on 05.10.
-2. **A repeated row.** If two rows have the same delivery ticket and the
-   same cargo, count once. This also applies when the repeat is on a later
-   day. Add a query.
-3. **The same ticket on different cargo.** Count each row as a separate
-   truck. Add a query.
-4. **Collection runs.** "Trucks sent to X for collection ... arrived back"
-   is ONE move for each truck: the loaded leg only.
-5. **An offload with no arrival row.** If the row states the number of
-   trucks (for example "Offloaded 2 X trucks ... received from KOC Yard 5")
-   and no arrival row matches, count them as IN. If no truck number is
-   stated, do not count, and add a query.
-6. **Pipe yard rows.** A row that says a truck was dispatched to, or
-   arrived from, the Shuaiba Port pipe yard is counted. This is an open
-   question with the user. Every week, add a query that states the total
-   with these rows removed.
-7. **A summary row that disagrees with the detail rows.** Count the
-   detail rows. Add a query.
+- The sheet counts a truck sent out empty to collect as OUT, and its loaded
+  return as IN.
+- The sheet counts trucks sent out and brought back as OUT only.
+- The sheet leaves out a row, for example a food lorry.
+- A Port row says a different number of trucks from the sheet, for example
+  "nine trucks" where the sheet counts seven.
 
 Fill in `trucks.byDay`: seven entries with `label`, `date` (DD.MM.YYYY),
-`out`, `in` and `audit`.
+`out`, `in` and `audit`. Copy `trucks.rule` word for word from last week.
+
+If a week's workbook has no Truck sheet, stop and ask the user.
 
 ## Step 5: fluids (both sheets)
 
@@ -183,7 +198,8 @@ Only cubic metres (m³). Three fluids: **Fresh water**, **Fuel** and
 **Drill water**.
 
 - **bunkered**: fluid received by a vessel, at the port or from MT Sedra II.
-- **delivered**: fluid a vessel transferred to a rig (OD1 or OPH).
+- **delivered**: fluid a vessel transferred to a rig the email reports
+  (from report 30, OD1).
 
 **Rules:**
 
@@ -225,9 +241,12 @@ to normal case, and use semicolons between items.
 | Overstay Crew KOC / HLB / COSL | `overstay`, with "Nil" as 0 and "03 Nos" as 3 |
 | Next Steps / Requirements | `nextSteps` |
 
-For an off-hired rig, copy last week's OPH entry if the email still says
-"RIG OFF HIRED" with Nil everywhere. `activeRigs` is the number of rigs
-that are not off hired.
+Put in `rigs` only the rigs the email reports. From report 30 that is OD1
+only: OPH is off hired, and the email no longer reports it. Do not copy an
+old OPH entry forward. Every week, add the query "<b>OPH is not shown from
+this week.</b> It is off hired, and the email no longer reports it." while
+it stays that way. `activeRigs` is the number of rigs in `rigs` that are
+not off hired.
 
 ## Step 7: headline (email)
 
@@ -236,8 +255,8 @@ comparison with last week. No reason. No adjective.
 
 Examples that are correct:
 
-- `OD1 is working on a stuck string. OPH remains off hired.`
-- `OD1 under tow to SH-0001. OPH remains off hired.`
+- `OD1 is working on a stuck string.`
+- `OD1 is laying down 38" cut joints. Last week the 38" and 36" casing was run and cemented.`
 
 Examples that are WRONG: "Overstay down to its lowest", "a quieter week",
 "OD1 still delayed".
@@ -257,7 +276,7 @@ Take the email's "Daily Ground Operations" list.
 4. **Find the day it covers.** Compare the bullets with the Port sheet. In
    every week so far, the list has been the last day of the period. Put
    that day in `label`, for example `Wed 14 Oct 2026`.
-5. `source`: `Daily Ground Operations, as circulated in the 15.10.2026 email`
+5. `source`: `Daily Ground Operations, as circulated in the 29.10.2026 email`
    (with this week's date).
 6. `extraNotes`: `["Vessel movements remain under <b>MARSEC Level 2</b>."]`,
    using the level from the email.
@@ -275,25 +294,27 @@ Put every open question in `dataNotes`, as a list of strings. Each query:
 
 Do not resolve a query by guessing. The user decides.
 
-Always include a query for the trips gap (Step 2) and one for the pipe yard
-rows (Step 4, case 6).
+Always include the trips query (Step 2) and the OPH query (Step 6). Add a
+truck query for every day where the Port rows and the Truck sheet disagree
+(Step 4).
 
 ## Self-checks
 
 Do all of these before you reply. Report each one.
 
 1. Sum of `out` + `in` over the seven days = the truck total in your
-   summary.
+   summary, and each day's `out` and `in` = that day's Truck sheet figures.
 2. Sum of `movementsByDay` = sum of `vesselMovements`.
 3. The six fluid figures add up to the fluids total in your summary.
 4. `trucks.byDay` has exactly `periodDays` entries, with the right dates.
 5. Every row of the Port sheet column E appears once in an `audit` list.
 6. `dailyOperations.lines` has the same number of bullets as the email.
-7. Every figure in the email matches your JSON: four trip figures, both rig
-   tables, personnel, visas, overstay and MARSEC.
+7. Every figure in the email matches your JSON: four trip figures (the
+   OUT figures), the rig table, personnel, visas, overstay and MARSEC.
 8. The JSON is valid: double quotes, no comments, no trailing commas, and
    the same keys as last week's file.
 9. The headline and the operations bullets contain no conclusions.
+10. Your reply contains no HTML, no CSS and no design suggestion.
 
 If a check fails, fix it before you reply. If you cannot fix it, say so
 clearly at the top of your reply.
@@ -312,10 +333,17 @@ Copilot chat cannot do this part. It needs Python and the repository.
 4. Run `python3 build.py`. It makes the dashboard, the email and the notes.
 5. Run `python3 check_contrast.py` and
    `python3 gates.py dashboard/Offshore_Logistics_Weekly_Dashboard.html <axe.min.js>`.
-   Both must pass.
-6. Run `python3 to_pdf.py dashboard/Offshore_Logistics_Weekly_Dashboard.html --week latest`
-   for this week's PDF.
+   Both must pass. The gates also check that the page is the same height
+   with and without its script, and in a very tall frame, which is how
+   OneDrive and SharePoint preview it.
+6. Only if a PDF is wanted: run
+   `python3 to_pdf.py dashboard/Offshore_Logistics_Weekly_Dashboard.html --week latest`.
 7. Open the dashboard and compare the newest tab with the email once more.
+   Check the design is unchanged: the header, the four numbered sections,
+   and a footer with only the group name and the drill bit.
+
+`build.py` needs the `vendor/` folder (the KOC emblem and the drill bit).
+It is in the repository. Do not delete it.
 
 ## What to type to Copilot each week
 
