@@ -709,6 +709,12 @@ peers.
 
 ## Design: rig3, fei3 masthead, fi3 drill bit (2026-10-29)
 
+**Adopted by Saud on 2026-10-29 as the design for every weekly update from
+now on.** A weekly update changes the data, not the design. Keep the footer
+as it is: only the "Drilling & Workover Engineering Group" wordmark and the
+drill bit, centred as one group, with no small text, no callouts and no
+signature. The email keeps its own table layout and its signature.
+
 The browser dashboard follows the KOC rig3 design language and the DWEG landing's
 fei3 page (dweg-landing, branch `rig3-design-system-sync`):
 
