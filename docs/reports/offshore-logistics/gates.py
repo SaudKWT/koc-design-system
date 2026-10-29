@@ -182,6 +182,18 @@ with sync_playwright() as p:
         # card per row, whatever the number of cards.
         check(len(set(rigs)) == len(rigs), f"{w}px: {len(rigs)} rig card(s), one per row")
         pg.close()
+    # ── 6. a frame as tall as the page, as OneDrive previews it ──────────
+    print("6. frame sized to the content")
+    pg = b.new_page(viewport={"width": 1280, "height": 900})
+    # The footer's bottom edge, not scrollHeight: scrollHeight is never less
+    # than the frame, so it follows a tall frame whatever the page does.
+    hs = []
+    for fh in (900, 12000, 30000):
+        pg.set_content(host.format(w=1280, h=fh).replace("__D__", esc)); pg.wait_for_timeout(600)
+        hs.append(pg.frame_locator("#f").locator("body").evaluate(
+            "() => Math.round(document.querySelector('.foot').getBoundingClientRect().bottom + scrollY)"))
+    check(len(set(hs)) == 1, f"page height does not follow the frame height {hs}")
+    pg.close()
     b.close()
 
 print(f"\n{'ALL GATES PASS' if not fails else str(len(fails)) + ' FAILED'}")
