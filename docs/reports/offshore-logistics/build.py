@@ -2231,7 +2231,12 @@ def build_dashboard(weeks, logs, artifact=False):
         body = week_body(w, other, logs.get(wid),
                          with_comparison=has_predecessor,
                          all_weeks=weeks)
-        panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0">
+        # Hidden in the markup, not only by the script. OneDrive and
+        # SharePoint measure the page before the script runs and size their
+        # preview frame to it: with all ten weeks showing it measured 14,914px,
+        # the script then hid nine, and the frame scrolled on past the footer.
+        hide = "" if is_current else " hidden"
+        panels += f"""    <div role="tabpanel" id="panel-{wid}" aria-labelledby="tab-{wid}" tabindex="0"{hide}>
       <div class="panel-head">
         <h2>{w['periodLabel']}</h2>
       </div>

@@ -194,6 +194,18 @@ with sync_playwright() as p:
             "() => Math.round(document.querySelector('.foot').getBoundingClientRect().bottom + scrollY)"))
     check(len(set(hs)) == 1, f"page height does not follow the frame height {hs}")
     pg.close()
+    # ── 7. the same height before the script runs ─────────────────────────
+    # The previewer measures before scripts run. Every panel was visible in
+    # the markup and hidden by script, so it measured 14,914px for a
+    # 2,505px page.
+    print("7. height before and after the script")
+    hh = []
+    for js in (False, True):
+        c = b.new_context(java_script_enabled=js, viewport={"width": 1280, "height": 900})
+        pg = c.new_page(); pg.goto(SRC.as_uri()); pg.wait_for_timeout(500)
+        hh.append(pg.evaluate("document.documentElement.scrollHeight"))
+        c.close()
+    check(hh[0] == hh[1], f"page height without script equals with it {hh}")
     b.close()
 
 print(f"\n{'ALL GATES PASS' if not fails else str(len(fails)) + ' FAILED'}")
