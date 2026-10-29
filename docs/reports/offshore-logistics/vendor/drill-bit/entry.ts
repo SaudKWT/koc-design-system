@@ -31,9 +31,21 @@ function autoExplode(t: number): number {
 }
 const AZ0 = (22 * Math.PI) / 180;
 const EL0 = (27 * Math.PI) / 180;
-// The bit stands centred in its plate. fi3 sets it left of a callout
-// column; the report draws no callouts.
-const LAYOUT: Layout = { shiftX: 0, shiftY: 0.02, availW: 0.9, availH: 0.9 };
+// Where the bit stands in its plate. The page may set it with data-layout
+// (JSON: shiftX, shiftY, availW, availH) so placement is tuned in build.py
+// without rebuilding this bundle; otherwise it stands centred.
+const CENTRED: Layout = { shiftX: 0, shiftY: 0.02, availW: 0.9, availH: 0.9 };
+// A narrow plate (a phone, where the bit sits under the wordmark) always
+// stands centred; data-layout is for the wide plate beside the wordmark.
+const NARROW = 600;
+function layoutOf(wrap: HTMLElement): Layout {
+  if (wrap.clientWidth < NARROW) return CENTRED;
+  try {
+    const l = JSON.parse(wrap.dataset.layout || "null");
+    if (l && [l.shiftX, l.shiftY, l.availW, l.availH].every((n) => typeof n === "number")) return l;
+  } catch { /* fall through */ }
+  return CENTRED;
+}
 
 function loadModel(): Promise<BitModel> {
   return new Promise((resolve) => {
@@ -60,6 +72,7 @@ function mount(wrap: HTMLElement) {
   if (!canvas || !probe) return;
   if (!hardwareContext(canvas)) return; // the line drawing stays
   const reducedQ = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let LAYOUT = layoutOf(wrap);
 
   const start = (model: BitModel) => {
     const renderer = new PlateRenderer(canvas);
@@ -108,6 +121,7 @@ function mount(wrap: HTMLElement) {
     };
     const resize = () => {
       const w = wrap.clientWidth, h = wrap.clientHeight;
+      LAYOUT = layoutOf(wrap);
       const budget = Math.sqrt(3.2e6 / Math.max(1, w * h));
       renderer.resize(w, h, Math.min(dpr, budget));
       renderer.setLayout(LAYOUT);

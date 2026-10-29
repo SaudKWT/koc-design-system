@@ -1893,14 +1893,24 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
    past the bit. The wordmark is centred on
    the bit's height, not pinned to the top, so no empty quarter sits under it. */
 .foot-in{{position:relative;max-width:1120px;margin:0 auto;padding:0 24px;
-  height:34rem;display:flex;align-items:center}}
+  height:34rem;display:flex;align-items:center;justify-content:center;gap:clamp(3rem,12vw,11rem)}}
 .foot-mark{{position:relative;z-index:1;margin:0;font-size:clamp(2.5rem,5vw,5.75rem);
   font-weight:{FW['medium']};text-transform:uppercase;line-height:.86;letter-spacing:-.04em;color:{PRIMARY}}}
 .foot-mark>span{{display:block;white-space:nowrap}}
 .foot-mark .i1{{padding-left:1.55em}}
 .foot-mark .i2{{padding-left:2.3em}}
-.bitplate{{position:absolute;top:0;bottom:0;left:44%;right:0}}
+/* The wordmark and the bit are one group, centred in the column, so the
+   space left of the name equals the space right of the bit. */
+/* Part of the plate on the right is room for the shadow, not the bit; a negative
+   margin takes it out of the centring, so the gaps are the bit's own. */
+.bitplate{{position:relative;flex:0 0 auto;width:min(28rem,46%);height:100%;
+  margin-right:calc(min(28rem,46%) * -0.115)}}
+/* The shadow falls to the right of the bit, so the plate is wider than the
+   bit by the shadow's reach, and its right edge fades out, as fi3 masks its
+   own canvas, instead of ending in a hard line. */
 .bitplate canvas{{position:absolute;inset:0;width:100%;height:100%;opacity:0;
+  -webkit-mask-image:linear-gradient(90deg,var(--foreground) 78%,transparent);
+  mask-image:linear-gradient(90deg,var(--foreground) 78%,transparent);
   transition:opacity {DUR_SLOWER} {EASE_OUT}}}
 .bitplate[data-live] canvas{{opacity:1}}
 .bitplate[data-live] .bit-line{{opacity:0}}
@@ -1962,8 +1972,9 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   .cx-svg{{min-width:680px}}
   .foot-in{{display:block;height:auto;padding:28px 16px 0}}
   .foot-mark{{font-size:clamp(2.25rem,11vw,3.5rem)}}
-  .bitplate{{position:relative;left:auto;right:auto;top:auto;bottom:auto;
+  .bitplate{{position:relative;left:auto;right:auto;top:auto;bottom:auto;width:auto;
     height:min(122vw,40rem);margin:12px -16px 0}}
+  .bitplate canvas{{-webkit-mask-image:none;mask-image:none}}
 }}
 @media (max-width:420px){{
   .kpis{{grid-template-columns:1fr 1fr}}
@@ -2190,6 +2201,13 @@ def _emblem_css():
     return ':root{--emblem:url("data:image/svg+xml;base64,' + b64 + '")}'
 
 
+# The bit's place in its plate, in the renderer's terms: shiftX/shiftY move
+# its centre in clip space, availW/availH cap how much of the plate it fills.
+# Left of centre in its plate by the room the shadow takes on the right, so
+# the bit and its ring, not the plate, are what the footer centres.
+BIT_LAYOUT = '{"shiftX":-0.18,"shiftY":0,"availW":0.78,"availH":0.9}'
+
+
 def bit_plate():
     """fi3's drill bit, for the footer.
 
@@ -2199,7 +2217,8 @@ def bit_plate():
     is fi3's own WebGL2 renderer, bundled; when it gets a frame on screen it
     fades the canvas in over the drawing. Decorative throughout, so hidden from
     assistive technology: the bit says nothing the report needs."""
-    return (f'<div class="bitplate" aria-hidden="true"><span class="bit-probe"></span>'
+    return (f'<div class="bitplate" aria-hidden="true" '
+            f"data-layout='{BIT_LAYOUT}'>" '<span class="bit-probe"></span>'
             f'{_vendor("drill-bit/drill-bit.svg").strip()}<canvas></canvas></div>')
 
 
