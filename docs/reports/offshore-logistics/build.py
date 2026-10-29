@@ -762,8 +762,6 @@ def spark_svgs(weeks, upto):
         out[label] = (
             f'<svg class="k-spark" viewBox="0 0 {W:g} {H:g}" role="group"\n'
             f'             aria-label="{name}">\n'
-            f'          <line class="base" x1="0" y1="{H - 0.5:g}" '
-            f'x2="{W:g}" y2="{H - 0.5:g}"/>\n'
             f'          {hits}<polyline class="ln" points="{poly}"/>{dots}\n'
             f'        </svg>')
     return out
@@ -1762,12 +1760,11 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
    round at any tile width; overflow:visible so a hover halo at the top or
    bottom of the band is a full circle. */
 .k-spark{{display:block;width:100%;height:auto;margin:8px 0 0;overflow:visible}}
-.k-spark .base{{stroke:{RULE};stroke-width:1;vector-effect:non-scaling-stroke}}
 .k-spark .ln{{fill:none;stroke:{PRIMARY};stroke-opacity:.7;stroke-width:1.5;
   stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}}
 .k-spark .d{{fill:{PRIMARY};stroke:{CARD};stroke-width:1}}
 .k-spark .dl{{stroke-width:1.4}}
-.k-spark .base,.k-spark .ln,.k-spark .d{{pointer-events:none}}
+.k-spark .ln,.k-spark .d{{pointer-events:none}}
 .k-spark .h{{fill:transparent;stroke:none;cursor:pointer;transition:fill {DUR_FAST} {EASE_OUT}}}
 .k-spark .h:hover{{fill:{tok('color.primary.100')}}}
 .k-spark .h:focus-visible{{outline:none;fill:{tok('color.primary.100')};
