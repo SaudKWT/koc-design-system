@@ -1881,17 +1881,19 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
    canvas is transparent and its ground grid runs out into a breath of KOC
    blue. Under it, before any script runs and wherever there is no hardware
    WebGL2, is fi3's own line elevation of the same bit. ── */
-.foot{{margin-top:56px;border-top:1px solid {rgba(INK, 0.1)};
+.foot{{margin-top:56px;border-top:1px solid {rgba(INK, 0.1)};overflow:hidden;
   background:radial-gradient(110% 90% at 72% 45%,{rgba(PRIMARY, 0.1)} 0%,transparent 70%)}}
-.foot-in{{max-width:1120px;margin:0 auto;padding:36px 24px 26px;box-sizing:border-box;
-  display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:center}}
-.foot-title{{margin:10px 0 0;font-size:clamp(1.25rem,1.9vw,1.75rem);font-weight:{FW['medium']};
-  text-transform:uppercase;line-height:.9;letter-spacing:-.035em;color:{PRIMARY}}}
-.foot-title>span{{display:block;white-space:nowrap}}
-.foot-title .l2{{padding-left:1.2em}}
-.foot-team{{margin:10px 0 0;font-size:{FS['sm']};color:{INK}}}
-.foot-group{{margin:2px 0 0;font-size:{FS['xs']};color:{INK_MUTED}}}
-.bitplate{{position:relative;height:440px;min-width:0}}
+/* fi3's Plate I: the group's name at display scale, staggered, with the bit
+   filling the right of the band. fi3's own 90rem width, wider than the report
+   column, because the footer is a band and not a card. */
+.foot-in{{position:relative;max-width:90rem;margin:0 auto;padding:40px 32px 80px;box-sizing:border-box;
+  min-height:36rem;height:min(100svh,52rem)}}
+.foot-mark{{position:relative;z-index:1;margin:0;font-size:clamp(2.5rem,5vw,5.75rem);
+  font-weight:{FW['medium']};text-transform:uppercase;line-height:.86;letter-spacing:-.04em;color:{PRIMARY}}}
+.foot-mark>span{{display:block;white-space:nowrap}}
+.foot-mark .i1{{padding-left:1.55em}}
+.foot-mark .i2{{padding-left:2.3em}}
+.bitplate{{position:absolute;top:0;bottom:0;left:42%;right:0}}
 .bitplate canvas{{position:absolute;inset:0;width:100%;height:100%;opacity:0;
   transition:opacity {DUR_SLOWER} {EASE_OUT}}}
 .bitplate[data-live] canvas{{opacity:1}}
@@ -1952,8 +1954,10 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   .cx{{padding:14px}}
   .cx-plot{{overflow-x:auto;overscroll-behavior-x:contain}}
   .cx-svg{{min-width:680px}}
-  .foot-in{{grid-template-columns:1fr;padding:28px 16px 18px}}
-  .bitplate{{height:300px;order:-1}}
+  .foot-in{{height:auto;min-height:0;padding:28px 16px 0}}
+  .foot-mark{{font-size:clamp(2.25rem,11vw,3.5rem)}}
+  .bitplate{{position:relative;left:auto;right:auto;top:auto;bottom:auto;
+    height:min(122vw,40rem);margin:12px -16px 0}}
 }}
 @media (max-width:420px){{
   .kpis{{grid-template-columns:1fr 1fr}}
@@ -2253,12 +2257,7 @@ def build_dashboard(weeks, logs, artifact=False):
 {panels}  </main>
   <footer class="foot">
     <div class="foot-in">
-      <div>
-        <p class="eyebrow"><span class="idx">DWEG</span> &mdash; Drilling &amp; Workover Engineering Group</p>
-        <p class="foot-title"><span>Offshore Logistics</span> <span class="l2">Weekly Dashboard</span></p>
-        <p class="foot-team">Drilling &amp; Workover Operations Support Team</p>
-        <p class="foot-group">Exploration &amp; Drilling Directorate &middot; Kuwait Oil Company</p>
-      </div>
+      <p class="foot-mark"><span>Drilling &amp;</span><span class="i1">Workover</span><span>Engineering</span><span class="i2"><span aria-hidden="true">&mdash; </span>Group</span></p>
       {bit_plate()}
     </div>
   </footer>
