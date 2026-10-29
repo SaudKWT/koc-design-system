@@ -765,9 +765,7 @@ def spark_svgs(weeks, upto):
             f'          <line class="base" x1="0" y1="{H - 0.5:g}" '
             f'x2="{W:g}" y2="{H - 0.5:g}"/>\n'
             f'          {hits}<polyline class="ln" points="{poly}"/>{dots}\n'
-            f'        </svg>\n'
-            f'        <div class="k-spark-foot">{len(ys)} wks, '
-            f'from {fmt.format(ys[0])}</div>')
+            f'        </svg>')
     return out
 
 
@@ -1047,19 +1045,18 @@ def stat_cards(w, other, sparks=None):
         # overwriting the change row. A change describes this week against
         # last; put an older week's figure above it and the two contradict
         # each other. Swapping which is displayed keeps the tile one height.
-        # Each scrubbed line takes the slot of the line it replaces -- the
-        # week for the change row, its position for the sparkline's foot -- so
-        # the tile never changes height. It did, by one line, and the point
-        # under the pointer moved away from it, which reset the tile, which
-        # moved the point back: a flicker for as long as the mouse stayed.
+        # The scrubbed week takes the change row's slot, so the tile never
+        # changes height. It did, by one line, and the point under the pointer
+        # moved away from it, which reset the tile, which moved the point
+        # back: a flicker for as long as the mouse stayed.
         swap = "" if not spark else '\n      <div class="k-week"></div>'
-        wsub = "" if not spark else '<div class="k-wsub"></div>' 
+
         unit_html = f'<span class="k-unit">{unit}</span>' if unit else ""
         cards += f"""    <div class="k{' k-alert' if alert else ''}">
       <div class="k-top"><span class="k-label">{label}</span><span class="tag">{tag}</span></div>
       <div class="k-fig"><span class="k-value" data-default="{value}">{value}</span>{unit_html}</div>
       <div class="k-delta {tone}">{change}</div>{swap}
-      {spark}{wsub}</div>
+      {spark}</div>
 """
     return f'  <div class="kpis">\n{cards}  </div>\n'
 
@@ -1755,12 +1752,10 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 /* The scrubbed week swaps in for the change row, so the tile keeps its height
    and a figure from an older week never sits above a change describing this
    one. */
-.k-week,.k-wsub{{display:none;font-size:{FS['2xs']};font-variant-numeric:tabular-nums}}
-.k-week{{align-items:center;min-height:1.5em;font-weight:{FW['medium']};color:{INK}}}
-.k-wsub{{padding-top:2px;color:{INK_MUTED}}}
-.k[data-scrub] .k-delta,.k[data-scrub] .k-spark-foot{{display:none}}
+.k-week{{display:none;align-items:center;min-height:1.5em;font-size:{FS['2xs']};
+  font-weight:{FW['medium']};color:{INK};font-variant-numeric:tabular-nums}}
+.k[data-scrub] .k-delta{{display:none}}
 .k[data-scrub] .k-week{{display:flex}}
-.k[data-scrub] .k-wsub{{display:block}}
 /* Sparkline inside each tile. Inline SVG, so it costs a tenth of a PNG,
    prints as vectors, and can be hovered or tabbed a point at a time.
    width:100% with height:auto keeps the viewBox aspect, so the marks stay
@@ -1777,7 +1772,6 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .k-spark .h:hover{{fill:{tok('color.primary.100')}}}
 .k-spark .h:focus-visible{{outline:none;fill:{tok('color.primary.100')};
   stroke:{RING};stroke-width:2;vector-effect:non-scaling-stroke}}
-.k-spark-foot{{font-size:{FS['2xs']};color:{INK_MUTED};padding-top:2px;font-variant-numeric:tabular-nums}}
 
 /* Rig cards and the outline StatusBadge */
 .rigs{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}}
