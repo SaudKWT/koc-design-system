@@ -14,7 +14,7 @@
  *     the null origin SharePoint previews an uploaded file in
  */
 import { buildBit, type BitModel } from "@fi3gl/bit";
-import { PlateRenderer, hardwareContext, type Layout, type Projection } from "@fi3gl/renderer";
+import { PlateRenderer, hardwareContext, type Layout } from "@fi3gl/renderer";
 import { readPalette } from "@fi3gl/tokens";
 
 declare const WORKER_SRC: string;
@@ -31,12 +31,9 @@ function autoExplode(t: number): number {
 }
 const AZ0 = (22 * Math.PI) / 180;
 const EL0 = (27 * Math.PI) / 180;
-// Wide: the bit stands left in its plate, with fi3's callout column to its
-// right. Narrow: the bit owns the box and the callouts are not drawn.
-const WIDE = 560;
-const layoutFor = (w: number): Layout =>
-  w >= WIDE ? { shiftX: -0.26, shiftY: 0.04, availW: 0.5, availH: 0.9 }
-            : { shiftX: 0, shiftY: 0.02, availW: 0.9, availH: 0.9 };
+// The bit stands centred in its plate. fi3 sets it left of a callout
+// column; the report draws no callouts.
+const LAYOUT: Layout = { shiftX: 0, shiftY: 0.02, availW: 0.9, availH: 0.9 };
 
 function loadModel(): Promise<BitModel> {
   return new Promise((resolve) => {
@@ -68,42 +65,14 @@ function mount(wrap: HTMLElement) {
     const renderer = new PlateRenderer(canvas);
     if (!renderer.init(model)) return;
     renderer.setPalette(readPalette(probe));
-    let wide = false;
-    // fi3's callouts, from its CALLOUTS list, as markup the page already has:
-    // each .bit-callout carries data-id, and one <line>/<circle> pair per id.
-    const labels = Array.from(wrap.querySelectorAll<HTMLElement>(".bit-callout"));
-    const place = (p: Projection | null) => {
-      if (!p) return;
-      const w = wrap.clientWidth;
-      const rows = labels
-        .map((label) => ({ label, id: label.dataset.id as keyof Projection["anchors"] }))
-        .map((r) => ({ ...r, a: p.anchors[r.id] }))
-        .filter((r) => r.a)
-        .sort((x, y) => x.a.y - y.a.y);
-      const colX = Math.min(w - 190, Math.max(p.right + 28, 0));
-      let prevY = -Infinity;
-      for (const { label, id, a } of rows) {
-        const line = wrap.querySelector<SVGLineElement>(`line[data-id="${id}"]`);
-        const dot = wrap.querySelector<SVGCircleElement>(`circle[data-id="${id}"]`);
-        let y = Math.max(a.y - 14, prevY + 46);
-        y = Math.min(y, wrap.clientHeight - 60);
-        prevY = y;
-        label.style.transform = `translate(${colX}px, ${y}px)`;
-        label.style.opacity = wide ? "1" : "0";
-        if (line) {
-          line.setAttribute("x1", String(a.x)); line.setAttribute("y1", String(a.y));
-          line.setAttribute("x2", String(colX - 6)); line.setAttribute("y2", String(y + 9));
-        }
-        if (dot) { dot.setAttribute("cx", String(a.x)); dot.setAttribute("cy", String(a.y)); }
-      }
-    };
+    renderer.setLayout(LAYOUT);
     let raf = 0, lost = false, onScreen = true, clock = 0, last = performance.now();
     let explode = 0, az = AZ0, el = EL0;
     const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
     let frames = 0, fpsT = last, slow = 0, degraded = false;
     let dpr = Math.min(2, window.devicePixelRatio || 1);
 
-    const draw = () => { if (!lost) place(renderer.render({ explode, azimuth: az, elevation: el })); };
+    const draw = () => { if (!lost) renderer.render({ explode, azimuth: az, elevation: el }); };
     const shouldRun = () => !lost && !degraded && onScreen && !document.hidden && !reducedQ.matches;
     const tick = (now: number) => {
       raf = 0;
@@ -140,10 +109,8 @@ function mount(wrap: HTMLElement) {
     const resize = () => {
       const w = wrap.clientWidth, h = wrap.clientHeight;
       const budget = Math.sqrt(3.2e6 / Math.max(1, w * h));
-      wide = w >= WIDE;
-      wrap.toggleAttribute("data-wide", wide);
       renderer.resize(w, h, Math.min(dpr, budget));
-      renderer.setLayout(layoutFor(w));
+      renderer.setLayout(LAYOUT);
       draw();
     };
     new ResizeObserver(resize).observe(wrap);

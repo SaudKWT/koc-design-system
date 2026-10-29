@@ -716,7 +716,7 @@ fei3 page (dweg-landing, branch `rig3-design-system-sync`):
   horizon line, and the weeks as chips in a translucent bar.
 - rig3 surfaces: card colour at 70% over fei3's fog, hairline borders, no shadow;
   numbered tracked-caps section labels; light figures; the jewel-tone chart series.
-- fi3 footer plate: the 8½ in PDC bit in WebGL2, with fi3's callouts. Its renderer
+- fi3 footer plate: the 8½ in PDC bit in WebGL2, centred, with no callouts. Its renderer
   is dweg-landing's own `src/landing/fi3/gl/`, bundled into `vendor/drill-bit/`.
   Without hardware WebGL2, and on paper, fi3's line elevation shows instead.
 - The email is unchanged in layout. It is still tables with inline styles.

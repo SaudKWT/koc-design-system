@@ -1891,10 +1891,6 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .foot-title .l2{{padding-left:1.2em}}
 .foot-team{{margin:10px 0 0;font-size:{FS['sm']};color:{INK}}}
 .foot-group{{margin:2px 0 0;font-size:{FS['xs']};color:{INK_MUTED}}}
-.foot .sig{{margin-top:20px;padding-top:16px;border-top:1px solid {RULE};font-size:{FS['sm']};
-  line-height:1.6;color:{INK}}}
-.foot .sig p{{margin:0}}
-.foot .sig .soft{{color:{INK_MUTED}}}
 .bitplate{{position:relative;height:440px;min-width:0}}
 .bitplate canvas{{position:absolute;inset:0;width:100%;height:100%;opacity:0;
   transition:opacity {DUR_SLOWER} {EASE_OUT}}}
@@ -1906,21 +1902,6 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .bit-line .bo{{fill:{CARD};stroke:currentColor;stroke-width:.03;stroke-linejoin:round}}
 .bit-line .bl{{stroke:currentColor;stroke-width:.02}}
 .bit-line .bc{{fill:{rgba(PRIMARY, 0.15)};stroke:currentColor;stroke-width:.025}}
-/* fi3's callouts: the part in italic serif, its figure in small caps, on a
-   leader line. Placed by the render loop; drawn only on a wide plate. */
-.bit-leads{{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;display:none}}
-.bit-leads line{{stroke:{INK_MUTED};stroke-width:.75}}
-.bit-leads circle{{fill:{CARD};stroke:{PRIMARY};stroke-width:1.25}}
-.bit-callout{{position:absolute;left:0;top:0;width:176px;opacity:0;pointer-events:none}}
-.bit-callout p{{margin:0}}
-.bit-callout .t{{font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;font-style:italic;
-  font-size:{FS['sm']};line-height:1.2;color:{INK}}}
-.bit-callout .s{{margin-top:2px;font-size:{FS['2xs']};text-transform:uppercase;letter-spacing:.05em;color:{INK_MUTED}}}
-.bitplate[data-live][data-wide] .bit-leads{{display:block}}
-.bitplate:not([data-live]) .bit-callout{{display:none}}
-.copy{{max-width:1120px;margin:0 auto;padding:0 24px 24px;box-sizing:border-box;
-  font-size:{FS['2xs']};color:{INK_MUTED}}}
-
 @media (max-width:900px){{
   .kpis{{grid-template-columns:repeat(2,minmax(0,1fr))}}
 }}
@@ -1973,7 +1954,6 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   .cx-svg{{min-width:680px}}
   .foot-in{{grid-template-columns:1fr;padding:28px 16px 18px}}
   .bitplate{{height:300px;order:-1}}
-  .copy{{padding:0 16px 20px}}
 }}
 @media (max-width:420px){{
   .kpis{{grid-template-columns:1fr 1fr}}
@@ -1983,7 +1963,7 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   body::before{{display:none}}
   .k,.rig,.panel,.cx,.fold,.ct-wrap,.weeks{{-webkit-backdrop-filter:none;backdrop-filter:none;background:{CARD}}}
   /* Paper gets the line drawing, never a canvas frame. */
-  .bitplate canvas,.bit-leads,.bit-callout{{display:none!important}}
+  .bitplate canvas{{display:none!important}}
   .bitplate[data-live] .bit-line{{opacity:1}}
   .tabs-wrap{{display:none}}
   [role=tabpanel][hidden]{{display:block!important}}
@@ -2200,16 +2180,6 @@ def _emblem_css():
     return ':root{--emblem:url("data:image/svg+xml;base64,' + b64 + '")}'
 
 
-# fi3's callouts, verbatim from src/landing/fi3/Plate.tsx.
-BIT_CALLOUTS = [
-    ("cutter", "PDC cutter", "16 mm &middot; 20&deg; back-rake"),
-    ("nozzle", "Nozzle, one of six", "12/32 in &middot; threaded"),
-    ("gauge", "Gauge pad", "8&frac12; in"),
-    ("breaker", "Breaker slot", "5&frac34; in steel shank"),
-    ("pin", "API 4&frac12; in REG pin", "5 tpi &middot; 3 in/ft taper"),
-]
-
-
 def bit_plate():
     """fi3's drill bit, for the footer.
 
@@ -2219,25 +2189,8 @@ def bit_plate():
     is fi3's own WebGL2 renderer, bundled; when it gets a frame on screen it
     fades the canvas in over the drawing. Decorative throughout, so hidden from
     assistive technology: the bit says nothing the report needs."""
-    leads = "".join(f'<line data-id="{i}"/><circle data-id="{i}" r="2.75"/>'
-                    for i, _, _ in BIT_CALLOUTS)
-    labels = "".join(f'<div class="bit-callout" data-id="{i}"><p class="t">{t}</p>'
-                     f'<p class="s">{sp}</p></div>' for i, t, sp in BIT_CALLOUTS)
     return (f'<div class="bitplate" aria-hidden="true"><span class="bit-probe"></span>'
-            f'{_vendor("drill-bit/drill-bit.svg").strip()}<canvas></canvas>'
-            f'<svg class="bit-leads">{leads}</svg>{labels}</div>')
-
-
-def signature_web(w):
-    """The same signature as the email's, as page markup. Nothing is invented:
-    only what the person's own profile or email states goes in."""
-    sig = w.get("signature") or DEFAULT_SIGNATURE
-    lines = "<br>".join(sig.get("lines", []))
-    muted = "<br>".join(sig.get("muted", []))
-    return (f'<p>Thanks and Best Regards,</p>'
-            f'<p style="margin-top:8px"><b>{sig["name"]}</b><br>{lines}'
-            + (f'<br><span class="soft">{muted}</span>' if muted else "")
-            + '</p>')
+            f'{_vendor("drill-bit/drill-bit.svg").strip()}<canvas></canvas></div>')
 
 
 def build_dashboard(weeks, logs, artifact=False):
@@ -2305,11 +2258,9 @@ def build_dashboard(weeks, logs, artifact=False):
         <p class="foot-title"><span>Offshore Logistics</span> <span class="l2">Weekly Dashboard</span></p>
         <p class="foot-team">Drilling &amp; Workover Operations Support Team</p>
         <p class="foot-group">Exploration &amp; Drilling Directorate &middot; Kuwait Oil Company</p>
-        <div class="sig">{signature_web(cur)}</div>
       </div>
       {bit_plate()}
     </div>
-    <p class="copy">Drill bit: the DWEG landing&rsquo;s fi3 plate, an 8&frac12; in PDC bit drawn from its own dimensions.</p>
   </footer>
 <script>
 {JS}
