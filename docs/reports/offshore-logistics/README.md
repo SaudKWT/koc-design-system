@@ -706,3 +706,26 @@ sixty rows of numbers. The email is ordered the same way.
 A nested fold is indented 18px (`details details`), so **Port operations** and
 **Vessel movements** read as children of **Daily log** rather than as three
 peers.
+
+## Design: rig3, fei3 masthead, fi3 drill bit (2026-10-29)
+
+The browser dashboard follows the KOC rig3 design language and the DWEG landing's
+fei3 page (dweg-landing, branch `rig3-design-system-sync`):
+
+- fei3 masthead: the KOC emblem in KOC blue, the staggered uppercase title, the
+  horizon line, and the weeks as chips in a translucent bar.
+- rig3 surfaces: card colour at 70% over fei3's fog, hairline borders, no shadow;
+  numbered tracked-caps section labels; light figures; the jewel-tone chart series.
+- fi3 footer plate: the 8½ in PDC bit in WebGL2, with fi3's callouts. Its renderer
+  is dweg-landing's own `src/landing/fi3/gl/`, bundled into `vendor/drill-bit/`.
+  Without hardware WebGL2, and on paper, fi3's line elevation shows instead.
+- The email is unchanged in layout. It is still tables with inline styles.
+
+The rig3 tokens (chart series, status tints, `light` weight, `tracking-caps`)
+come from `packages/tokens`, taken from the `claude/rig3-design-language` branch.
+`vendor/` is committed, so `build.py` needs neither Node nor dweg-landing.
+To rebuild the bit after a change in dweg-landing, run
+`vendor/drill-bit/build.sh /path/to/dweg-landing`.
+
+The KOC emblem goes only into the SharePoint file. The artifact preview is
+hosted outside KOC, so it carries the names but not the logo.

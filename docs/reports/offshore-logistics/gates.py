@@ -106,15 +106,19 @@ with sync_playwright() as p:
     calls = [m.start() for m in re.finditer(r"history\.replaceState\(", code)]
     guarded = all("try{" in code[max(0, i - 80):i].replace(" ", "") for i in calls)
     check(calls and guarded, f"replaceState called {len(calls)}x, all inside try")
-    t1 = f.locator(L + "td.k").first
+    t1 = f.locator(L + ".k").first
     before = t1.locator(".k-value").inner_text()
     t1.locator(".h").first.hover(); pg.wait_for_timeout(250)
     during = t1.locator(".k-value").inner_text()
     f.locator(L + ".panel-head h2").hover(); pg.wait_for_timeout(250)
     after = t1.locator(".k-value").inner_text()
-    check(after == before, f"sparkline hover scrubs and restores ({before} -> {during} -> {after})")
+    # during != before as well: a scrub that changed the tile's height moved
+    # the point out from under the mouse and reset it at once, and a check of
+    # after == before alone passed through that flicker.
+    check(during != before and after == before,
+          f"sparkline hover scrubs and restores ({before} -> {during} -> {after})")
     f.locator("[role=tab]").nth(0).click(); pg.wait_for_timeout(300)
-    check(f.locator(L + "td.k .k-spark").count() == 0, "baseline tab draws no sparklines")
+    check(f.locator(L + ".k .k-spark").count() == 0, "baseline tab draws no sparklines")
     f.locator("[role=tab]").last.click(); pg.wait_for_timeout(300)
     check(not errs, f"console errors in the frame: {errs or 'none'}")
     pg.close()
@@ -133,7 +137,7 @@ with sync_playwright() as p:
         loc.scroll_into_view_if_needed(); pg.wait_for_timeout(150)
         c = loc.evaluate("e=>{const r=e.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2]}")
         pg.touchscreen.tap(fb["x"] + c[0], fb["y"] + c[1]); pg.wait_for_timeout(300)
-    t1 = f.locator(L + "td.k").first
+    t1 = f.locator(L + ".k").first
     rest = t1.locator(".k-value").inner_text()
     t1.locator(".h").first.scroll_into_view_if_needed()
     tap_center(t1.locator(".h").first)
@@ -148,7 +152,7 @@ with sync_playwright() as p:
     rd0 = fig.locator(".cx-read").inner_text()
     tap_center(fig.locator(".cx-g").nth(0).locator(".cx-hit"))
     rd1 = fig.locator(".cx-read").inner_text()
-    check(rd1 != rd0 and ":" in rd1, f"chart column tap reads out: {rd1[:70]!r}")
+    check(rd1 != rd0 and "·" in rd1, f"chart column tap reads out: {rd1[:70]!r}")
     check(not errs, f"page errors: {errs or 'none'}")
     pg.close()
 
@@ -165,9 +169,13 @@ with sync_playwright() as p:
         vis = pg.evaluate("""()=>{const t=document.querySelector('[role=tab][aria-selected=true]'),
             r=t.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1}""")
         doc = pg.evaluate("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")
-        rigs = pg.evaluate("""()=>[...document.querySelectorAll('[role=tabpanel]:not([hidden]) td.rig')]
+        rigs = pg.evaluate("""()=>[...document.querySelectorAll('[role=tabpanel]:not([hidden]) .rig')]
             .map(e=>Math.round(e.getBoundingClientRect().top))""")
-        check(top <= 110 and not pinned, f"{w}px: header {top:.0f}px, scrolls away")
+        # 135, not the 110 of the old blue bar: the fei3 masthead carries the
+        # emblem, a two-line title and the team, over the weeks bar. What the
+        # phone complaint was about -- 222 to 237px pinned over the page --
+        # is held by `not pinned`; this caps how much the first screen loses.
+        check(top <= 135 and not pinned, f"{w}px: header {top:.0f}px, scrolls away")
         check(vis, f"{w}px: newest tab in view")
         check(doc[0] <= doc[1], f"{w}px: no page sideways scroll {doc}")
         # From report 30 a week can carry one rig, so stacked means one

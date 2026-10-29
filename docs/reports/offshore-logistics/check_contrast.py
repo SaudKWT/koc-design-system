@@ -7,10 +7,11 @@ so cannot resolve what is behind the text, and it skips a one-character label
 like "0" as "too short to determine if it is actual text content". Eighty-six
 nodes per tab come back that way.
 
-Incomplete is not a pass. So the pairs are asserted here, against the card the
-charts are drawn on, at the 4.5:1 that applies: nothing in these charts is
-WCAG "large text" -- the biggest is a 15px bold title, and large starts at
-18.66px bold.
+Incomplete is not a pass. So the pairs are asserted here, against the darkest
+surface the translucent rig3 card can show, at the 4.5:1 that applies: nothing
+small on this page is WCAG "large text", and large starts at 18.66px bold.
+The small type outside the charts -- eyebrows, tags, change rows -- sits on the
+same cards and is asserted with it.
 
 Run it after any change to the chart palette. It reads the same tokens
 build.py does, so a colour changed at source is checked here without edit.
@@ -38,21 +39,41 @@ def ratio(fg, bg):
     return (max(a, b) + 0.05) / (min(a, b) + 0.05)
 
 
+def _hex(c):
+    return "#" + "".join(f"{round(v):02X}" for v in c)
+
+
+def _over(fg, a, bg):
+    """fg at opacity a, composited over bg. Both hex."""
+    f = [int(fg.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
+    g = [int(bg.lstrip("#")[i:i + 2], 16) for i in (0, 2, 4)]
+    return _hex([a * x + (1 - a) * y for x, y in zip(f, g)])
+
+
 def main():
-    card = B.CARD
+    # The rig3 card is the card colour at 70% over the page's fog, so the text
+    # sits on a composite, not on the card. Asserted against the darkest one
+    # the page can produce: the page with both fog washes at full strength
+    # (primary 8%, success 6%) under the card at 70%.
+    fog = _over(B.GOOD, 0.06, _over(B.PRIMARY, 0.08, B.PAGE))
+    card = _over(B.CARD, 0.7, fog)
     pairs = [
-        ("chart title, 15px bold", B.PRIMARY),
-        ("y axis title, 11.5px", B.INK),
-        ("axis tick labels, 11.5px", B.INK),
-        ("legend text, 12px", B.INK),
-        ("value label, this week, 11.5px bold", B.PRIMARY),
-        ("value label, previous week, 11.5px bold", B.INK_MUTED),
-        ("value label, arrivals, 11.5px bold", B.INK_MUTED),
+        ("chart title, 13px medium", B.INK),
+        ("chart subtitle, 12px", B.INK_MUTED),
+        ("axis tick labels, 11px", B.INK_MUTED),
+        ("legend text, 11px", B.INK_MUTED),
+        ("value label, this week, 11.5px semibold", B.PRIMARY),
+        ("value label, previous week, 11.5px semibold", B.INK_MUTED),
+        ("value label, arrivals, 11.5px semibold", B.INK_MUTED),
         ("column readout, 12px", B.INK),
-        ("slops caption, 11px", B.INK_MUTED),
+        ("slops note, 12px", B.INK_MUTED),
+        ("eyebrow and tags, 11px", B.INK_MUTED),
+        ("section number, 11px mono", B.PRIMARY),
+        ("good change, 11px", B.GOOD),
+        ("bad change, 11px", B.DANGER),
     ]
     need, bad = 4.5, []
-    print(f"Chart text against the card, {card}. Floor {need}:1.\n")
+    print(f"Text on the translucent card, worst composite {card}. Floor {need}:1.\n")
     for name, fg in pairs:
         r = ratio(fg, card)
         if r < need:
@@ -62,7 +83,7 @@ def main():
     # Bar fills are non-text and exempt from 1.4.3. The pale one is *why* a
     # direct value label on every bar is mandatory rather than decorative.
     print("\nBar fills (non-text; the value labels are the required relief):")
-    for name, fg in (("this week / dispatched", B.PRIMARY),
+    for name, fg in (("this week / dispatched", B.CHART[0]),
                      ("previous week", B.PRIOR),
                      ("arrived (in)", B.CHART[1])):
         print(f"        {ratio(fg, card):5.2f}:1  {fg}  {name}")

@@ -12,9 +12,9 @@
  * drops into a KOC app and is automatically on-brand, with no re-styling.
  */
 
-import { palette, chartSeries } from "./palette.js";
+import { palette, chartSeries, chartSeriesDark, statusTint, warningInk } from "./palette.js";
 
-const { primary, neutral, success, warning, danger, info, accent } = palette;
+const { primary, neutral, success, warning, danger, info } = palette;
 
 export interface SemanticTheme {
   [token: string]: string;
@@ -123,6 +123,17 @@ export const light: SemanticTheme = {
   info: info[600],
   "info-foreground": "#FFFFFF",
 
+  // Status tints: shadcn's badge shape — a pale ground with the hue as the
+  // label. Tokens rather than `bg-success/10`; statusTint in palette.ts says why.
+  "success-muted": statusTint.success.light,
+  "success-muted-foreground": success[600],
+  "warning-muted": statusTint.warning.light,
+  "warning-muted-foreground": warningInk.light,
+  "info-muted": statusTint.info.light,
+  "info-muted-foreground": info[600],
+  "destructive-muted": statusTint.danger.light,
+  "destructive-muted-foreground": danger[600],
+
   // Decorative separators only — card edges, dividers, table rules. These are
   // exempt from WCAG 1.4.11 (nothing about them is "required to identify a
   // component"), so they are tuned to be quiet: ~1.3:1, in line with every
@@ -229,6 +240,14 @@ export const dark: SemanticTheme = {
   "warning-foreground": neutral[950],
   info: info[400],
   "info-foreground": neutral[950],
+  "success-muted": statusTint.success.dark,
+  "success-muted-foreground": success[300],
+  "warning-muted": statusTint.warning.dark,
+  "warning-muted-foreground": warningInk.dark,
+  "info-muted": statusTint.info.dark,
+  "info-muted-foreground": info[300],
+  "destructive-muted": statusTint.danger.dark,
+  "destructive-muted-foreground": danger[300],
 
   border: neutral[800], // decorative — see light theme note
   // Same 1.4.11 reasoning as light. neutral[700] measured 2.11:1 against the
@@ -237,12 +256,15 @@ export const dark: SemanticTheme = {
   input: neutral[500],
   ring: primary[400],
 
-  // Charts lift one step on dark so series keep their punch against a dark plot.
-  "chart-1": primary[400],
-  "chart-2": warning[400],
-  "chart-3": success[400],
-  "chart-4": accent[400],
-  "chart-5": info[300],
+  // Charts are re-stepped, not lifted. These were primary/warning/success/
+  // accent[400] and info[300] — L 0.71–0.81, above the 0.67 ceiling where marks
+  // start to glare on a dark plot, and all but one at the same lightness, so
+  // neighbours merged in greyscale (1.03:1). See chartSeriesDark in palette.ts.
+  "chart-1": chartSeriesDark[0],
+  "chart-2": chartSeriesDark[1],
+  "chart-3": chartSeriesDark[2],
+  "chart-4": chartSeriesDark[3],
+  "chart-5": chartSeriesDark[4],
 
   // Dark was already restrained, but its active item was a neutral grey — which
   // means in dark mode you could not tell "hovered" from "current page" by

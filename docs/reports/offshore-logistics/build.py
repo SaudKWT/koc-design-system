@@ -35,6 +35,7 @@ import base64
 import io
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -132,10 +133,47 @@ def px(rem_token):
 
 FS = {k: px(f"typography.fontSize.{k}") for k in
       ("2xs", "xs", "sm", "base", "md", "lg", "xl", "2xl", "3xl", "4xl")}
+# light (300) is rig3's figure-and-title weight, for 24px and up only.
 FW = {k: tok(f"typography.fontWeight.{k}")
-      for k in ("normal", "medium", "semibold", "bold")}
+      for k in ("light", "normal", "medium", "semibold", "bold")}
 RADIUS = px("dimension.radius.DEFAULT")
 RADIUS_MD = px("dimension.radius.md")
+RADIUS_LG = px("dimension.radius.lg")
+RADIUS_XL = px("dimension.radius.xl")
+
+
+def _css_var(name):
+    """A foundation value the DTCG JSON does not carry, read from the generated
+    stylesheet instead of being retyped here. letterSpacing.caps is emitted
+    only as --tracking-caps."""
+    css = (TOKENS_JSON.parent / "koc-tokens.css").read_text(encoding="utf-8")
+    m = re.search(rf"--{name}:\s*([^;]+);", css)
+    if not m:
+        sys.exit(f"--{name} not in koc-tokens.css. Run: npm run build:tokens")
+    return m.group(1).strip()
+
+
+TRACK_CAPS = _css_var("tracking-caps")   # rig3 eyebrows and tags
+
+
+def rgba(hexcol, a):
+    """A token colour at an opacity: Tailwind's `bg-card/70`, spelled for a
+    stylesheet that has no Tailwind. The hex still comes from the token."""
+    h = hexcol.lstrip("#")
+    r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
+    return f"rgba({r},{g},{b},{a:g})"
+
+
+# rig3 surfaces. A card is the card colour at 70% over the page's fog, with a
+# hairline border and no shadow. The fog is fei3's: a breath of primary from
+# the top left and of success from the right, over the page background.
+CARD_GLASS = rgba(CARD, 0.7)
+FOG_A = rgba(PRIMARY, 0.08)
+FOG_B = rgba(GOOD, 0.06)
+DUR_SLOWER = _css_var("duration-slower")   # the bit's canvas fading in
+ACCENT = sem("accent")
+INPUT = sem("input")
+RING = sem("ring")
 
 # Motion comes from the scale, never a literal. duration-fast + ease-out.
 EASE_OUT = "cubic-bezier(0,0,.2,1)"
@@ -420,18 +458,22 @@ def _nice_step(top, target=5, integer=False):
     return max(1, round(step)) if integer else step
 
 
-def svg_bars(uid, cats, series, ylabel, title, readout_default,
+def svg_bars(uid, cats, series, title, sub, readout_default,
              aria, xpos=None, floor=0, headroom=1.18, fmt="{:g}",
              integer=False, caption="", diff=False):
-    """A grouped bar chart as inline SVG.
+    """A grouped bar chart as inline SVG, in the rig3 chart grammar.
 
-    Same grammar as the PNG it replaces, so a reader who learned one has
-    learned the other: recessive y grid, no top or right spine, a direct value
-    label on every bar, and the legend below the axis rather than inside it.
+    That is @koc/chart's grammar on the rig3 branch: a framed card with a quiet
+    14px title and a muted subtitle, the legend as swatches above the plot, a
+    hairline grid with the zero line a step darker, no axis spines, 2px-radius
+    bars with a 2px surface gap between a pair, and muted 10px axis text. The
+    unit moves from a rotated y-axis title into the subtitle, where it reads
+    without turning the head.
 
-    The value labels are not decoration. They are the relief that discharges
-    the sub-3:1 contrast of the pale fills, so they are drawn whatever else
-    changes.
+    One deliberate departure from @koc/chart: every bar keeps its value label,
+    not only a single series' bars. The previous week is drawn in a pale
+    neutral, under 3:1 against the card, and the label beside it is the relief
+    that discharges that. It is drawn whatever else changes.
 
     Hovering or tabbing a column reads the whole category out under the chart
     -- every series and the change between them -- rather than popping a
@@ -441,13 +483,13 @@ def svg_bars(uid, cats, series, ylabel, title, readout_default,
     difference."""
     n = len(series)
     two_line = any("\n" in c for c in cats)
-    W, PAD_L, PAD_R, PAD_T = 950.0, 66.0, 14.0, 42.0
-    PLOT_H = 232.0
-    XLAB_H = 40.0 if two_line else 24.0
-    LEG_H = 30.0 if n > 1 else 4.0
-    H = PAD_T + PLOT_H + XLAB_H + LEG_H
+    W, PAD_L, PAD_R, PAD_T = 950.0, 46.0, 6.0, 24.0
+    PLOT_H = 236.0
+    XLAB_H = 42.0 if two_line else 26.0
+    H = PAD_T + PLOT_H + XLAB_H
     plot_w = W - PAD_L - PAD_R
     y0 = PAD_T + PLOT_H
+    GAP = 2.0   # the surface gap between the bars of a pair
 
     us = list(xpos) if xpos else list(range(len(cats)))
     span = (max(us) - min(us)) + 1.0
@@ -465,8 +507,6 @@ def svg_bars(uid, cats, series, ylabel, title, readout_default,
     # thing that gets clipped -- and rounding every chart up a whole step
     # unconditionally would leave the fluids chart a fifth empty.
     # A multiple of the step, so the top edge of the plot is a labelled tick.
-    # It was max(floor, ...) unrounded, which left the trips chart topping out
-    # at 7 with its last gridline at 6.
     ymax = math.ceil(max(floor, peak, step) / step) * step
     while (ymax - peak) / ymax * PLOT_H < 20:
         ymax += step
@@ -478,25 +518,26 @@ def svg_bars(uid, cats, series, ylabel, title, readout_default,
     def py(v):
         return y0 - (v / ymax) * PLOT_H if ymax else y0
 
-    # Grid and y tick labels.
+    # Hairline grid, the zero line a step darker, tick labels in muted ink.
+    # No spines: the grid already says where the values are.
     grid = ""
     for t in ticks:
         yy = py(t)
-        grid += (f'<line class="cx-grid" x1="{PAD_L:.1f}" y1="{yy:.1f}" '
+        grid += (f'<line class="{"cx-zero" if t == 0 else "cx-grid"}" '
+                 f'x1="{PAD_L:.1f}" y1="{yy:.1f}" '
                  f'x2="{W - PAD_R:.1f}" y2="{yy:.1f}"/>'
-                 f'<text class="cx-yt" x="{PAD_L - 9:.1f}" y="{yy + 4:.1f}" '
+                 f'<text class="cx-yt" x="{PAD_L - 8:.1f}" y="{yy + 4:.1f}" '
                  f'text-anchor="end">{fmt.format(t)}</text>')
-    axes = (f'<line class="cx-axis" x1="{PAD_L:.1f}" y1="{PAD_T:.1f}" '
-            f'x2="{PAD_L:.1f}" y2="{y0:.1f}"/>'
-            f'<line class="cx-axis" x1="{PAD_L:.1f}" y1="{y0:.1f}" '
-            f'x2="{W - PAD_R:.1f}" y2="{y0:.1f}"/>')
 
-    # A group per category: its bars, its labels, and one hit target spanning
-    # the whole column, so the pointer finds it above a one-unit bar too.
+    # A group per category: one hit target spanning the whole column, then
+    # its bars and labels. The target is drawn first, under the bars, so its
+    # hover band sits behind them; the bars take no pointer events, so the
+    # pointer still reaches it through a bar.
     # Capped in absolute units as well as in slot fractions: four vessels
-    # across 950 units gives a 217-unit slot, where a slot fraction alone drew
+    # across 950 units gives a 226-unit slot, where a slot fraction alone drew
     # bars wide enough to read as blocks rather than bars.
-    bw = min((0.52 if n == 1 else 0.56 / n - 0.02) * unit, 54.0)
+    bw = min((0.5 if n == 1 else 0.58 / n) * unit - (0 if n == 1 else GAP),
+             54.0)
     groups = ""
     for i, cat in enumerate(cats):
         cx = px(us[i])
@@ -504,62 +545,55 @@ def svg_bars(uid, cats, series, ylabel, title, readout_default,
         parts = []
         for k, s in enumerate(series):
             v = s["values"][i]
-            off = 0.0 if n == 1 else (k - (n - 1) / 2.0) * (bw + 0.02 * unit)
+            off = 0.0 if n == 1 else (k - (n - 1) / 2.0) * (bw + GAP)
             x = cx + off - bw / 2
             h = y0 - py(v)
             bars += (f'<rect class="cx-bar" x="{x:.1f}" y="{py(v):.1f}" '
-                     f'width="{bw:.1f}" height="{max(h, 0.0):.1f}" '
+                     f'width="{bw:.1f}" height="{max(h, 0.0):.1f}" rx="2" '
                      f'fill="{s["fill"]}"/>'
                      f'<text class="cx-vl" x="{x + bw / 2:.1f}" '
-                     f'y="{py(v) - 5:.1f}" text-anchor="middle" '
+                     f'y="{py(v) - 6:.1f}" text-anchor="middle" '
                      f'fill="{s["ink"]}">{fmt.format(v)}</text>')
             parts.append(f'{s["name"]} {fmt.format(v)}')
         flat = cat.replace("\n", " ")
-        read = f"{flat}: " + ", ".join(parts)
+        change = ""
         if diff and n == 2:
             d = series[-1]["values"][i] - series[0]["values"][i]
-            read += (f" &middot; no change" if d == 0 else
-                     f" &middot; {'up' if d > 0 else 'down'} "
-                     f"{fmt.format(abs(d))}")
+            change = ("no change" if d == 0 else
+                      f"{'up' if d > 0 else 'down'} {fmt.format(abs(d))}")
+        read = (f"<b>{flat}</b> &middot; " + ", ".join(parts)
+                + (f" &middot; {change}" if change else ""))
+        label = f"{flat}: " + ", ".join(parts) + (f", {change}" if change else "")
         lines = cat.split("\n")
         xlab = "".join(
-            f'<text class="cx-xt" x="{cx:.1f}" '
-            f'y="{y0 + 17 + j * 14:.1f}" text-anchor="middle">{ln}</text>'
+            f'<text class="cx-xt{" cx-xt2" if j else ""}" x="{cx:.1f}" '
+            f'y="{y0 + 18 + j * 14:.1f}" text-anchor="middle">{ln}</text>'
             for j, ln in enumerate(lines))
         groups += (f'<g class="cx-g" tabindex="{0 if i == 0 else -1}" '
-                   f'role="img" aria-label="{read.replace("&middot;", ",")}" '
-                   f'data-r="{read}">{bars}{xlab}'
-                   f'<rect class="cx-hit" x="{cx - unit / 2:.1f}" '
-                   f'y="{PAD_T:.1f}" width="{unit:.1f}" '
-                   f'height="{PLOT_H:.1f}"/></g>')
+                   f'role="img" aria-label="{label}" '
+                   f'data-r="{read}">'
+                   f'<rect class="cx-hit" x="{cx - unit / 2 + 3:.1f}" '
+                   f'y="{PAD_T - 14:.1f}" width="{unit - 6:.1f}" '
+                   f'height="{PLOT_H + 14:.1f}" rx="6"/>'
+                   f'{bars}{xlab}</g>')
 
+    # Above the plot, as swatches, as @koc/chart draws it. Below the axis it
+    # was a second thing to look for after the bars; above, it is read first.
     legend = ""
     if n > 1:
-        # Below the axis, never inside it: inside, it collides with whatever
-        # bar happens to be tall that week, which has happened twice.
-        ly = H - LEG_H + 18
-        widths = [len(s["name"]) * 6.6 + 26 for s in series]
-        tot = sum(widths)
-        lx = (W - tot) / 2
-        for s, wd in zip(series, widths):
-            legend += (f'<rect class="cx-sw" x="{lx:.1f}" y="{ly - 9:.1f}" '
-                       f'width="12" height="12" fill="{s["fill"]}"/>'
-                       f'<text class="cx-lg" x="{lx + 18:.1f}" y="{ly:.1f}">'
-                       f'{s["name"]}</text>')
-            lx += wd
-
-    cap = (f'\n    <figcaption class="cx-cap">{caption}</figcaption>'
-           if caption else "")
+        legend = ('\n    <ul class="cx-leg" aria-hidden="true">'
+                  + "".join(f'<li><span class="cx-sw" style="background:'
+                            f'{s["fill"]}"></span>{s["name"]}</li>'
+                            for s in series)
+                  + "</ul>")
+    note = (f'\n    <div class="cx-note">{caption}</div>' if caption else "")
     return f"""  <figure class="cx" id="cx-{uid}">
-    <svg class="cx-svg" viewBox="0 0 {W:g} {H:g}" role="group"
+    <figcaption class="cx-head"><span class="cx-title">{title}</span><span class="cx-sub">{sub}</span></figcaption>{legend}
+    <div class="cx-plot"><svg class="cx-svg" viewBox="0 0 {W:g} {H:g}" role="group"
          aria-label="{aria}">
-      <text class="cx-title" x="{PAD_L:.1f}" y="24">{title}</text>
-      <text class="cx-ax" x="{PAD_L - 52:.1f}" y="{PAD_T + PLOT_H / 2:.1f}"
-            transform="rotate(-90 {PAD_L - 52:.1f} {PAD_T + PLOT_H / 2:.1f})"
-            text-anchor="middle">{ylabel}</text>
-      {grid}{axes}{groups}{legend}
-    </svg>
-    <div class="cx-read" data-default="{readout_default}">{readout_default}</div>{cap}
+      {grid}{groups}
+    </svg></div>
+    <div class="cx-read" data-default="{readout_default}">{readout_default}</div>{note}
   </figure>
 """
 
@@ -569,14 +603,14 @@ def svg_trips(mine, theirs):
     mv = [mine["vesselTrips"][n] for n in names]
     if theirs is None:
         series = [dict(name="Trips", values=mv, fill=PRIMARY, ink=PRIMARY)]
-        title = f"Vessel trips by vessel  ({trips(mine)} total)"
+        sub = f"Trips per vessel &middot; {trips(mine)} in total"
     else:
         tv = [theirs["vesselTrips"][n] for n in names]
         series = _two_week_series(mine, mv, theirs, tv)
-        title = (f"Vessel trips by vessel  ({trips(mine)} this week, "
-                 f"{trips(theirs)} previous week)")
+        sub = (f"Trips per vessel &middot; {trips(mine)} this week, "
+               f"{trips(theirs)} the week before")
     return svg_bars(
-        f"trips-{mine['reportDate']}", names, series, "No. of trips", title,
+        f"trips-{mine['reportDate']}", names, series, "Vessel trips", sub,
         # 7 was the 26-08 report's ceiling, kept as a floor so the weeks stay
         # visually comparable. It grows rather than clipping: CA1 reached 6 in
         # report 24 and a fixed ceiling would fail silently on the first 8.
@@ -588,15 +622,15 @@ def svg_ground(w):
     days = w["trucks"]["byDay"]
     out = [d["out"] for d in days]
     inn = [d["in"] for d in days]
-    series = [dict(name="Dispatched (out)", values=out, fill=PRIMARY,
+    series = [dict(name="Dispatched (out)", values=out, fill=CHART[0],
                    ink=PRIMARY),
               dict(name="Arrived (in)", values=inn, fill=CHART[1],
                    ink=INK_MUTED)]
-    title = (f"Daily ground transport movements  ({sum(out)} out / "
-             f"{sum(inn)} in, {sum(out) + sum(inn)} total)")
+    sub = (f"Trucks and tankers per day &middot; {sum(out)} out, "
+           f"{sum(inn)} in, {sum(out) + sum(inn)} in total")
     return svg_bars(
         f"ground-{w['reportDate']}", [d["label"] for d in days], series,
-        "Trucks / tankers", title,
+        "Ground transport", sub,
         "Tap or hover over a day to read its dispatches and arrivals.",
         alt_ground(w), floor=12, integer=True)
 
@@ -609,16 +643,16 @@ def svg_fluids(mine, theirs):
     if theirs is None:
         series = [dict(name="Cubic metres", values=mv, fill=PRIMARY,
                        ink=PRIMARY)]
-        title = f"Fluids and bulk managed  ({fluid_total(mine):,} m³ total)"
+        sub = f"Cubic metres (m³) &middot; {fluid_total(mine):,} in total"
     else:
         tv = [theirs["fluids"][d][f] for d, f in cats]
         series = _two_week_series(mine, mv, theirs, tv)
-        title = (f"Fluids and bulk managed  ({fluid_total(mine):,} m³ this "
-                 f"week, {fluid_total(theirs):,} m³ previous week)")
+        sub = (f"Cubic metres (m³) &middot; {fluid_total(mine):,} this week, "
+               f"{fluid_total(theirs):,} the week before")
     return svg_bars(
         # A gap between the bunkered trio and the delivered trio.
-        f"fluids-{mine['reportDate']}", labels, series, "Cubic metres (m³)",
-        title, _readout_hint(len(series)), alt_fluids(mine, theirs),
+        f"fluids-{mine['reportDate']}", labels, series, "Fluids and bulk",
+        sub, _readout_hint(len(series)), alt_fluids(mine, theirs),
         xpos=[0, 1, 2, 3.45, 4.45, 5.45], headroom=1.22, fmt="{:,g}",
         caption=slops_caption(mine, theirs), diff=len(series) == 2)
 
@@ -918,6 +952,153 @@ def kpi_row(w, other, sparks=None):
     return cells
 
 
+# ── rig3 components (dashboard only) ───────────────────────────────────────
+# The browser page is built from the rig3 pieces in @koc/ui: StatCard,
+# SectionHeading, the translucent Card and the outline StatusBadge. The email
+# keeps kpi_row and rig_strip above, because Outlook lays out neither grid nor
+# flex and strips <svg>; its tiles stay tables with every style inline.
+
+MINUS = "−"   # a real minus, as StatCard prints it, never a hyphen
+
+# lucide's trending-up, trending-down and minus, the glyphs StatCard draws.
+GLYPH = {
+    "up": '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>'
+          '<polyline points="16 7 22 7 22 13"/>',
+    "down": '<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/>'
+            '<polyline points="16 17 22 17 22 11"/>',
+    "flat": '<path d="M5 12h14"/>',
+}
+
+
+def glyph(kind):
+    return (f'<svg class="k-glyph" viewBox="0 0 24 24" aria-hidden="true" '
+            f'focusable="false">{GLYPH[kind]}</svg>')
+
+
+def section_head(index, eyebrow, aside=""):
+    """fei3's section label: one tracked-caps eyebrow carrying the section
+    number in the brand blue, an aside on the right, over a hairline. fei3
+    gives a section no display title; the masthead and the week are the only
+    large type on the page."""
+    side = f'<p class="sec-aside">{aside}</p>' if aside else ""
+    return (f'  <div class="sec-head"><h3 class="eyebrow">'
+            f'<span class="idx">{index}</span> &mdash; {eyebrow}</h3>{side}</div>\n')
+
+
+def stat_delta(now, was, mode, intent):
+    """StatCard's change row: (glyph, text, colour class).
+
+    intent decides the colour and the arithmetic only decides the glyph. A
+    fall in truck moves is neither good nor bad, it tracks the rig count; a
+    fall in overstay crew is unambiguously good."""
+    diff = now - was
+    if diff == 0:
+        return "flat", "No change", "neutral"
+    kind = "up" if diff > 0 else "down"
+    sign = "+" if diff > 0 else MINUS
+    if mode == "pct":
+        text = "new" if was == 0 else f"{sign}{abs(diff) / was * 100:.1f}%"
+    else:
+        text = f"{sign}{abs(diff):,g}"
+    tone = "neutral"
+    if intent == "lower-is-better":
+        tone = "good" if diff < 0 else "bad"
+    return kind, text, tone
+
+
+def stat_cards(w, other, sparks=None):
+    """Four rig3 StatCards, in the same order every week.
+
+    Same four figures as the email's tiles, and the same rules: the oldest week
+    is the baseline and carries no change row, and the corrected truck figure
+    states both numbers instead of a change against a differently counted week.
+    """
+    arrows = other is not None and w.get("showArrows", True)
+    specs = [
+        ("Vessel trips", "Vessel trips", "Marine", trips, "", "pct",
+         "neutral"),
+        ("Truck moves", "Truck moves", "Ground", truck_total, "", "pct",
+         "neutral"),
+        ("Fluids handled, m³", "Fluids handled", "Supply", fluid_total, "m³",
+         "pct", "neutral"),
+        ("Overstay crew", "Overstay crew", "Crew", overstay, "", "abs",
+         "lower-is-better"),
+    ]
+    cards = ""
+    for key, label, tag, get, unit, mode, intent in specs:
+        now = get(w)
+        value = f"{now:,}"
+        alert = key == "Overstay crew" and now > 0
+        if arrows:
+            was = get(other)
+            kind, text, tone = stat_delta(now, was, mode, intent)
+            change = (f'{glyph(kind)}<span class="k-dtext">{text}</span> '
+                      f'<span class="k-dlabel">vs {was:,} last week</span>')
+        else:
+            tone = "neutral"
+            change = '<span class="k-dlabel">Baseline week, no comparison</span>'
+        if key == "Truck moves" and not arrows and w["trucks"].get("publishedTotal"):
+            tone = "bad"
+            change = (f'<span class="k-dtext">{now} counted once each</span> '
+                      f'<span class="k-dlabel">'
+                      f'({w["trucks"]["publishedTotal"]} as published)</span>')
+        spark = (sparks or {}).get(key, "")
+        # The scrubbed week goes in its own pair of lines rather than
+        # overwriting the change row. A change describes this week against
+        # last; put an older week's figure above it and the two contradict
+        # each other. Swapping which is displayed keeps the tile one height.
+        # Each scrubbed line takes the slot of the line it replaces -- the
+        # week for the change row, its position for the sparkline's foot -- so
+        # the tile never changes height. It did, by one line, and the point
+        # under the pointer moved away from it, which reset the tile, which
+        # moved the point back: a flicker for as long as the mouse stayed.
+        swap = "" if not spark else '\n      <div class="k-week"></div>'
+        wsub = "" if not spark else '<div class="k-wsub"></div>' 
+        unit_html = f'<span class="k-unit">{unit}</span>' if unit else ""
+        cards += f"""    <div class="k{' k-alert' if alert else ''}">
+      <div class="k-top"><span class="k-label">{label}</span><span class="tag">{tag}</span></div>
+      <div class="k-fig"><span class="k-value" data-default="{value}">{value}</span>{unit_html}</div>
+      <div class="k-delta {tone}">{change}</div>{swap}
+      {spark}{wsub}</div>
+"""
+    return f'  <div class="kpis">\n{cards}  </div>\n'
+
+
+def rig_cards(w):
+    """One card per rig: which rig, what state, and whether anyone is
+    overstaying -- the three things a reader wants at a glance.
+
+    The state is StatusBadge's outline badge: a hairline pill with a coloured
+    dot. A rig on hire is the normal state, so it gets no tint; a tint, or the
+    solid red fill, is held back for what needs acting on."""
+    cards = ""
+    for rig_id in w["rigs"]:
+        r = w["rigs"][rig_id]
+        off = "off-hired" in r["currentOperation"].lower()
+        badge = (f'<span class="badge"><span class="dot {"off" if off else "on"}"'
+                 f' aria-hidden="true"></span>{"Off hired" if off else "On hire"}'
+                 f'</span>')
+        ov = sum(r["overstay"].values())
+        ov_txt = ("Nil" if not ov else " &nbsp;".join(
+            f'{k} <b class="hot">{v}</b>'
+            for k, v in r["overstay"].items() if v))
+        pob = ("Nil" if not r["personnelOnboard"] else
+               f'<b>{r["personnelOnboard"]}</b> '
+               f'<span class="soft">incl. {r["visaHolders"]} visa</span>')
+        cards += f"""    <div class="rig">
+      <div class="rig-head"><span class="rig-id">{rig_id}</span><span class="rig-meta"><span class="tag">Rig</span>{badge}</span></div>
+      <p class="rig-op">{r['currentOperation']}</p>
+      <dl class="kv">
+        <dt>Personnel onboard</dt><dd>{pob}</dd>
+        <dt>Overstay crew</dt><dd>{ov_txt}</dd>
+        <dt>Last week</dt><dd>{r['lastWeek']}</dd>
+        <dt>Next steps</dt><dd>{r['nextSteps']}</dd>
+      </dl>
+    </div>
+"""
+    return f'  <div class="rigs">\n{cards}  </div>\n'
+
+
 def status_line(w):
     """The week in one sentence, before any number. Upper management reads this
     and stops; everything below is for whoever needs to act on it."""
@@ -971,12 +1152,19 @@ def collapsible(title, inner, sub="", open_it=False, email=False):
     under it, so the email gets everything inline."""
     if email:
         return "\n" + heading(title, PRIMARY) + inner
-    note = (f' <span style="font-weight:{FW["normal"]};color:{INK_MUTED};">'
-            f'{sub}</span>' if sub else "")
-    return f"""  <details{' open' if open_it else ''} style="margin-top:14px;">
-    <summary style="cursor:pointer;font-size:{FS['base']};font-weight:{FW['semibold']};color:{PRIMARY};padding:10px 14px;background:{SURFACE};border:1px solid {RULE};border-radius:{RADIUS_MD};">{title}{note}</summary>
-{inner}  </details>
+    sub_html = f'<span class="fold-sub">{sub}</span>' if sub else ""
+    return f"""  <details class="fold"{' open' if open_it else ''}>
+    <summary><span class="fold-title">{title}</span>{sub_html}{CHEVRON}</summary>
+    <div class="fold-body">
+{inner}    </div>
+  </details>
 """
+
+
+# lucide's chevron-down. It turns a half turn when the fold opens, on the
+# motion scale, so the state change is visible and not only announced.
+CHEVRON = ('<svg class="chev" viewBox="0 0 24 24" aria-hidden="true" '
+           'focusable="false"><path d="m6 9 6 6 6-6"/></svg>')
 
 
 # ── Tables ─────────────────────────────────────────────────────────────────
@@ -992,21 +1180,33 @@ def row(cells, bold=False, shade=False):
 
 def section_row(title, span=4):
     return (f'    <tr><td colspan="{span}" style="padding:8px 10px;'
-            f'background:{PRIMARY};color:#ffffff;font-size:11px;font-weight:700;'
+            f'background:{PRIMARY};color:{ON_PRIMARY};font-size:11px;font-weight:700;'
             f'letter-spacing:.06em;text-transform:uppercase;'
             f'border:1px solid {PRIMARY};">{title}</td></tr>\n')
 
 
-def comparison_table(cur, prev):
+def comparison_table(cur, prev, email=True):
     """The week-on-week comparison, and the text fallback for every chart.
     Each charted figure appears here, so a recipient whose client blocks images
-    still receives all of it."""
+    still receives all of it.
+
+    One table, two dresses. The email gets the bordered table with every style
+    inline, which is what Outlook renders. The dashboard gets @koc/chart's
+    table: hairline rows, no vertical rules, and each block opened by a
+    tracked-caps eyebrow instead of a solid blue bar."""
     c_out, c_in = truck_split(cur)
     p_out, p_in = truck_split(prev)
     c_over, p_over = overstay_by(cur), overstay_by(prev)
 
     def line(name, now, was, mode="abs", intent="neutral", unit="",
              bold=False, fmt="{:,g}"):
+        if not email:
+            kind, text, tone = stat_delta(now, was, mode, intent)
+            b = ' class="tot"' if bold else ""
+            return (f'    <tr{b}><th scope="row">{name}</th>'
+                    f'<td>{fmt.format(now)}{unit}</td>'
+                    f'<td class="soft">{fmt.format(was)}{unit}</td>'
+                    f'<td class="chg {tone}">{glyph(kind)}{text}</td></tr>\n')
         html, colour = delta(now, was, mode, intent, unit)
         return row([
             (name, "left", ""),
@@ -1016,25 +1216,40 @@ def comparison_table(cur, prev):
             (html, "right", f"color:{colour};font-weight:700;font-size:12px;"),
         ], bold=bold)
 
-    h = ('  <table width="100%" cellspacing="0" style="font-size:13px;'
-         'border-collapse:collapse;margin-top:8px;">\n  <thead>\n')
-    h += row([
-        ("Metric", "left", ""),
-        (f"{cur['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
-         f"{cur['periodDays']} days</span>", "right", ""),
-        (f"{prev['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
-         f"{prev['periodDays']} days</span>", "right", ""),
-        ("Change", "right", ""),
-    ], bold=True, shade=True)
+    def sec(title):
+        if email:
+            return section_row(title)
+        return (f'    <tr class="ct-sec"><th colspan="4" scope="colgroup">'
+                f'{title}</th></tr>\n')
+
+    if email:
+        h = ('  <table width="100%" cellspacing="0" style="font-size:13px;'
+             'border-collapse:collapse;margin-top:8px;">\n  <thead>\n')
+        h += row([
+            ("Metric", "left", ""),
+            (f"{cur['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
+             f"{cur['periodDays']} days</span>", "right", ""),
+            (f"{prev['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
+             f"{prev['periodDays']} days</span>", "right", ""),
+            ("Change", "right", ""),
+        ], bold=True, shade=True)
+    else:
+        h = ('  <div class="ct-wrap"><table class="ct">\n'
+             f'  <caption>Week on week, {cur["tabLabel"]} against '
+             f'{prev["tabLabel"]}</caption>\n  <thead>\n'
+             f'    <tr><th scope="col">Metric</th>'
+             f'<th scope="col">{cur["tabLabel"]}<span>{cur["periodDays"]} days</span></th>'
+             f'<th scope="col">{prev["tabLabel"]}<span>{prev["periodDays"]} days</span></th>'
+             f'<th scope="col">Change</th></tr>\n')
     h += "  </thead>\n  <tbody>\n"
 
-    h += section_row("Vessel trips")
+    h += sec("Vessel trips")
     for v in ("CA1", "CA3", "CA5", "Charlie-3"):
         h += line(v, cur["vesselTrips"][v], prev["vesselTrips"][v])
     h += line("Total vessel trips", trips(cur), trips(prev), bold=True)
 
     if cur.get("vesselMovements") and prev.get("vesselMovements"):
-        h += section_row("Vessel movements &nbsp;<span style='font-weight:400;"
+        h += sec("Vessel movements &nbsp;<span style='font-weight:400;"
                          "text-transform:none;letter-spacing:0;'>port to rig, "
                          "rig to port, rig to rig</span>")
         for v in ("CA1", "CA3", "CA5", "Charlie-3"):
@@ -1045,14 +1260,14 @@ def comparison_table(cur, prev):
                   round(movements(cur) / cur["periodDays"], 1),
                   round(movements(prev) / prev["periodDays"], 1), fmt="{:.1f}")
 
-    h += section_row("Ground transport")
+    h += sec("Ground transport")
     h += line("Dispatched (out)", c_out, p_out)
     h += line("Arrived (in)", c_in, p_in)
     h += line("Total truck / tanker moves", c_out + c_in, p_out + p_in, bold=True)
     h += line("Moves per day", round((c_out + c_in) / cur["periodDays"], 1),
               round((p_out + p_in) / prev["periodDays"], 1), fmt="{:.1f}")
 
-    h += section_row("Fluids and bulk")
+    h += sec("Fluids and bulk")
     for d, tag in (("bunkered", "bunkered at port"), ("delivered", "to rigs")):
         for f in FLUIDS:
             h += line(f"{f} {tag}", cur["fluids"][d][f], prev["fluids"][d][f],
@@ -1062,7 +1277,7 @@ def comparison_table(cur, prev):
     h += line("Slops discharged", cur["slops"]["dischargedBbl"],
               prev["slops"]["dischargedBbl"], unit=" bbl")
 
-    h += section_row("Rigs and crew")
+    h += sec("Rigs and crew")
     h += line("Active rigs", cur["activeRigs"], prev["activeRigs"])
     h += line("OD1 personnel onboard", cur["rigs"]["OD1"]["personnelOnboard"],
               prev["rigs"]["OD1"]["personnelOnboard"])
@@ -1071,7 +1286,7 @@ def comparison_table(cur, prev):
                   intent="lower-is-better")
     h += line("Total overstay crew", overstay(cur), overstay(prev),
               intent="lower-is-better", bold=True)
-    return h + "  </tbody>\n  </table>\n"
+    return h + "  </tbody>\n  </table>\n" + ("" if email else "  </div>\n")
 
 
 def rig_table(rig, accent, name):
@@ -1123,27 +1338,23 @@ def daily_log(log, key, title):
             marks.append("date inferred")
         for msg in d.get("defects", []):
             marks.append(msg)
-        mark_html = ""
-        if marks:
-            mark_html = (f'<div style="font-size:11px;color:{NOTE_INK};'
-                         f'padding-top:6px;">{"; ".join(marks)}</div>')
+        mark_html = (f'<div class="log-mark">{"; ".join(marks)}</div>'
+                     if marks else "")
         status = d["status"] or "not stated"
-        tone = INK_MUTED if status.lower() == "normal" else NOTE_INK
-        rows += f"""    <tr>
-      <td valign="top" style="background:{SURFACE};padding:8px 10px;border:1px solid {RULE};width:23%;">
-        <div style="font-weight:700;">{d['day']}</div>
-        <div style="font-size:12px;color:{INK_MUTED};font-variant-numeric:tabular-nums;">{d['date']}</div>
-        <div style="font-size:11px;color:{tone};padding-top:4px;">{status}</div></td>
-      <td valign="top" style="padding:8px 10px;border:1px solid {RULE};">
-        <ul style="margin:0;padding-left:18px;line-height:1.5;">{ops}</ul>{mark_html}</td>
-    </tr>
+        tone = "" if status.lower() == "normal" else " note"
+        rows += f"""      <tr>
+        <th scope="row"><span class="log-day">{d['day']}</span><span class="log-date">{d['date']}</span><span class="log-status{tone}">{status}</span></th>
+        <td><ul>{ops}</ul>{mark_html}</td>
+      </tr>
 """
     n = sum(len(d["lines"]) for d in days)
-    return f"""  <details style="margin-top:10px;">
-    <summary style="cursor:pointer;font-size:13px;font-weight:600;color:{PRIMARY};padding:8px 10px;background:{SURFACE};border:1px solid {RULE};border-radius:6px;">{title} &nbsp;<span style="font-weight:400;color:{INK_MUTED};">{len(days)} days, {n} operations</span></summary>
-  <table width="100%" cellspacing="0" style="font-size:13px;border-collapse:collapse;margin-top:8px;">
-{rows}  </table>
-  </details>
+    return f"""      <details class="fold fold-in">
+        <summary><span class="fold-title">{title}</span><span class="fold-sub">{len(days)} days, {n} operations</span>{CHEVRON}</summary>
+        <div class="fold-body">
+        <table class="log">
+{rows}        </table>
+        </div>
+      </details>
 """
 
 
@@ -1240,16 +1451,85 @@ def week_body(w, other, log, with_comparison, email=False,
               all_weeks=None):
     """One week, ordered for the person with the least time.
 
-    Headline, five numbers, both rigs, the four-week shape, then what happened.
-    Everything that proves those figures -- the per-vessel and per-day tables,
-    the detail charts, the daily log, the open queries -- folds away below.
-    Nothing was dropped to get there; it was reordered and disclosed."""
+    Headline, four numbers, the rigs, what happened, then everything that
+    proves those figures -- the detail charts, the comparison table, the daily
+    log -- folded away below. Nothing was dropped to get there; it was
+    reordered and disclosed.
+
+    On screen the order is set out as rig3's numbered sections, so the page
+    reads as four parts rather than one long column. The email keeps its own
+    layout, which Outlook can render."""
+    if email:
+        return _week_body_email(w, other, log, with_comparison, True,
+                                all_weeks)
+    h = (f'  <p class="lead">{w.get("headline", "")}</p>\n'
+         if w.get("headline") else "")
+
+    # Each tile carries its own sparkline, so the four figures are stated once.
+    sparks = spark_svgs(all_weeks, w) if all_weeks else {}
+    cmp_note = ("Change against the week before"
+                if other is not None and w.get("showArrows", True)
+                else "First week tracked, nothing to compare")
+    h += '  <section class="sec">\n'
+    h += section_head("01", "Figures", cmp_note)
+    h += stat_cards(w, other, sparks)
+    h += "  </section>\n"
+
+    n_rigs = len(w["rigs"])
+    h += '  <section class="sec">\n'
+    h += section_head("02", "Rigs",
+                      f"{n_rigs} rig{'s' if n_rigs != 1 else ''} in this report")
+    h += rig_cards(w)
+    h += "  </section>\n"
+
+    # Where the covering email's own operations list has been transcribed,
+    # that is what this section shows: its lines, reworded and nothing else.
+    # The alternative was a written summary of the week, which is an
+    # interpretation, and an interpretation is a place for a mistake to live.
+    # The email's list covers the last day of the period, not all seven, so
+    # the heading carries that date rather than implying a week.
+    ops = w.get("dailyOperations")
+    if ops:
+        title, aside = "Daily ground operations", ops["label"]
+        items = list(ops["lines"]) + list(ops.get("extraNotes") or [])
+    else:
+        title, aside, items = "What happened", "", w["highlights"]
+    lis = "".join(f"<li>{x}</li>" for x in items)
+    h += '  <section class="sec">\n'
+    h += section_head("03", title, aside)
+    h += f'  <div class="panel ops"><ul>{lis}</ul>'
+    if ops:
+        h += f'<p class="src">{ops["source"]}.</p>'
+    h += "</div>\n  </section>\n"
+
+    # Charts first, then the table. The shape is what a reader takes from
+    # this section; the table is what they check a single figure against, and
+    # they scroll to it deliberately.
+    detail = ('    <div class="charts">\n' + svg_ground(w) + svg_trips(w, other)
+              + svg_fluids(w, other) + "    </div>\n")
+    if with_comparison:
+        detail += comparison_table(w, other, email=False)
+    h += '  <section class="sec">\n'
+    h += section_head("04", "Detail", "Every figure, and the log behind it")
+    h += collapsible("Full figures", detail, "three charts, and every figure")
+    if log:
+        inner = (daily_log(log, "port", "Port operations")
+                 + daily_log(log, "vessel", "Vessel movements"))
+        n_ops = sum(len(d["lines"]) for k in ("port", "vessel")
+                    for d in log[k]["days"])
+        h += collapsible("Daily log", inner, f"{n_ops} operations")
+    h += "  </section>\n"
+    return h
+
+
+def _week_body_email(w, other, log, with_comparison, email=True,
+                     all_weeks=None):
+    """The email's week: the same order as the page, as tables with every
+    style inline, which is what Outlook renders. Flat tiles and the raster
+    trend chart stand in for the page's sparklines."""
     h = status_line(w)
-    # On screen each tile carries its own sparkline, so the five figures are
-    # stated once. Email keeps flat tiles and the raster chart further down.
-    sparks = spark_svgs(all_weeks, w) if (all_weeks and not email) else {}
     h += (f'  <table class="kpis" width="100%" cellspacing="10" '
-          f'cellpadding="0"><tr>\n{kpi_row(w, other, sparks)}'
+          f'cellpadding="0"><tr>\n{kpi_row(w, other)}'
           f'  </tr></table>\n')
 
     h += "\n" + rig_strip(w)
@@ -1296,15 +1576,11 @@ def week_body(w, other, log, with_comparison, email=False,
     # views of totals the sparklines and the table already give, so the email
     # drops them: four base64 charts put it over Gmail's 102 KB clip, and a
     # clipped email loses the signature, not the chart.
-    if email:
-        detail = figure(chart_ground(w), alt_ground(w), email=True)
-    else:
-        detail = svg_ground(w) + svg_trips(w, other) + svg_fluids(w, other)
+    detail = figure(chart_ground(w), alt_ground(w), email=True)
     if with_comparison:
         detail += comparison_table(w, other)
-    n = ("the daily shape, and every figure" if email
-         else "three charts, and every figure")
-    h += collapsible("Full figures", detail, n, email=email)
+    h += collapsible("Full figures", detail, "the daily shape, and every figure",
+                     email=True)
 
     if log:
         inner = (daily_log(log, "port", "Port operations")
@@ -1341,11 +1617,11 @@ def build_email(cur, prev, all_weeks=None):
 <body style="margin:0;padding:0;background:{PAGE};font-family:{EMAIL_FONT_STACK};color:{INK};">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{PAGE};padding:24px 0;">
 <tr><td align="center">
-<table role="presentation" width="720" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);">
+<table role="presentation" width="720" cellpadding="0" cellspacing="0" style="background:{CARD};border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);">
   <tr><td style="background:{PRIMARY};padding:22px 28px;">
     <table width="100%"><tr>
-      <td style="color:#fff;font-size:20px;font-weight:700;">Offshore Logistics Weekly Update</td>
-      <td align="right" style="color:#9FC0D4;font-size:13px;">{cur['periodLabel']}</td>
+      <td style="color:{ON_PRIMARY};font-size:20px;font-weight:700;">Offshore Logistics Weekly Update</td>
+      <td align="right" style="color:{tok('color.primary.200')};font-size:13px;">{cur['periodLabel']}</td>
     </tr></table></td></tr>
   <tr><td style="padding:22px 28px 6px;">
     <p style="margin:0 0 6px;font-size:15px;">Salam Bu Khaled,</p>
@@ -1382,187 +1658,353 @@ def _inter_face():
 
 FONT_FACE = _inter_face()
 
-CSS = f""":root{{color-scheme:light}}
-.wrap{{max-width:1000px;margin:0 auto;padding:0 16px 40px}}
-.card{{background:{CARD};border-radius:{RADIUS_MD};border:1px solid {RULE};overflow:hidden}}
-.top{{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:{PRIMARY}}}
-.top-in{{max-width:1000px;margin:0 auto;padding:16px 16px 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px}}
-.top h1{{margin:0;color:{ON_PRIMARY};font-size:{FS['xl']};font-weight:{FW['bold']};letter-spacing:-.015em}}
-.top .sub{{color:{tok('color.primary.100')};font-size:{FS['xs']};margin:0}}
-/* One row at every width, scrolling sideways when it overflows. It used to
-   wrap, which was fine at five tabs; at seven it wrapped to two rows at 800px
-   and doubled the pinned header to 156px. The row grows by one tab a week, so
-   wrapping would only get worse. A thin scrollbar stays visible on desktop,
-   where a mouse has no swipe to discover it with. */
-[role=tablist]{{max-width:1000px;margin:0 auto;padding:12px 16px 0;display:flex;
-  flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;gap:4px;position:relative}}
-[role=tab]{{flex:0 0 auto;white-space:nowrap}}
-[role=tab]{{appearance:none;background:transparent;border:0;border-bottom:3px solid transparent;
-  color:{tok('color.primary.100')};font:inherit;font-size:{FS['sm']};font-weight:{FW['semibold']};text-align:left;
-  padding:8px 14px 9px;cursor:pointer;border-radius:{RADIUS} {RADIUS} 0 0;
-  transition:color {DUR_FAST} {EASE_OUT},border-color {DUR_FAST} {EASE_OUT},background-color {DUR_FAST} {EASE_OUT}}}
-[role=tab] .rep{{display:block;font-weight:{FW['normal']};font-size:{FS['2xs']};color:{tok('color.primary.200')}}}
+CSS = f""":root{{color-scheme:light;
+  /* The six roles the fi3 bit's renderer reads at runtime (gl/tokens.ts). */
+  --background:{PAGE};--card:{CARD};--foreground:{INK};--primary:{PRIMARY};
+  --muted-foreground:{INK_MUTED};--border:{RULE}}}
+/* The fog, as fei3 lays it: a breath of primary from the top left and of
+   success from the right. A fixed layer behind the page, not a background on
+   body, because background-attachment:fixed repaints on every scroll on a
+   phone. */
+body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(70% 45% at 0% 0%,{FOG_A},transparent 70%),
+    radial-gradient(60% 50% at 100% 30%,{FOG_B},transparent 70%),{PAGE}}}
+.wrap{{max-width:1120px;margin:0 auto;padding:0 24px 40px}}
+/* The rig3 card: the card colour at 70% over the fog, a hairline edge, no
+   shadow. Every surface on the page is one of these. */
+.k,.rig,.panel,.cx,.fold,.ct-wrap{{background:{CARD_GLASS};border:1px solid {RULE};
+  border-radius:{RADIUS_XL};-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}}
+.eyebrow{{margin:0;font-size:{FS['2xs']};font-weight:{FW['medium']};text-transform:uppercase;
+  letter-spacing:{TRACK_CAPS};color:{INK_MUTED}}}
+.eyebrow .idx{{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:{PRIMARY}}}
+.tag{{flex:0 0 auto;font-size:{FS['2xs']};font-weight:{FW['medium']};text-transform:uppercase;
+  letter-spacing:{TRACK_CAPS};color:{INK_MUTED}}}
+
+/* ── Masthead: fei3's. The KOC emblem in KOC blue, as tall as the title
+   block; the title in staggered uppercase blue; the group under it; then
+   fei3's horizon line. No top bar, as on rig3. ── */
+.top-in{{max-width:1120px;margin:0 auto;padding:22px 24px 0}}
+.mast{{display:flex;align-items:center;gap:14px;min-width:0}}
+.emblem{{flex:0 0 auto;width:3.65rem;height:4.5rem;background:{PRIMARY};
+  -webkit-mask:var(--emblem) center/contain no-repeat;mask:var(--emblem) center/contain no-repeat}}
+.top h1{{margin:0;font-size:clamp(1.25rem,1.9vw,1.75rem);font-weight:{FW['medium']};
+  text-transform:uppercase;line-height:.9;letter-spacing:-.035em;color:{PRIMARY}}}
+.top h1>span{{display:block;white-space:nowrap}}
+.top h1 .l2{{padding-left:1.2em}}
+.top .sub{{margin:7px 0 0;font-size:{FS['xs']};color:{INK_MUTED}}}
+.top .sub b{{font-weight:{FW['semibold']};color:{PRIMARY}}}
+.horizon{{max-width:1120px;margin:14px auto 0;padding:0 24px;box-sizing:border-box}}
+.horizon i{{display:block;height:1px;background:linear-gradient(90deg,transparent,
+  {rgba(PRIMARY, 0.45)} 25%,{rgba(PRIMARY, 0.45)} 75%,transparent)}}
+/* The weeks, as fei3's pinned/recent bar: a translucent card with a caps
+   label, the weeks as chips in one row that scrolls sideways when it
+   overflows. The row grows by one week a week, so wrapping would only get
+   worse. */
+.tabs-wrap{{max-width:1120px;margin:0 auto;padding:14px 24px 0}}
+.weeks{{display:flex;align-items:center;gap:12px;min-height:44px;padding:5px 6px 5px 14px;
+  box-sizing:border-box;background:{CARD_GLASS};border:1px solid {RULE};border-radius:{RADIUS_XL};
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}}
+.weeks .eyebrow{{flex:0 0 auto}}
+[role=tablist]{{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;gap:6px;
+  padding:2px;position:relative;min-width:0;flex:1 1 auto}}
+[role=tab]{{flex:0 0 auto;white-space:nowrap;appearance:none;font:inherit;cursor:pointer;
+  display:inline-flex;align-items:baseline;gap:6px;
+  background:{rgba(CARD, 0.8)};border:1px solid {RULE};border-radius:9999px;
+  color:{INK};font-size:{FS['xs']};font-weight:{FW['medium']};padding:5px 12px;
+  transition:color {DUR_FAST} {EASE_OUT},background-color {DUR_FAST} {EASE_OUT},border-color {DUR_FAST} {EASE_OUT}}}
+[role=tab] .rep{{font-weight:{FW['normal']};color:{INK_MUTED}}}
+[role=tab]:hover{{color:{PRIMARY}}}
+[role=tab][aria-selected=true]{{color:{ON_PRIMARY};background:{PRIMARY};border-color:{PRIMARY}}}
 [role=tab][aria-selected=true] .rep{{color:{tok('color.primary.100')}}}
-[role=tab]:hover .rep{{color:{tok('color.primary.100')}}}
-[role=tab]:hover{{color:{ON_PRIMARY};background:{tok('color.primary.700')}}}
-[role=tab][aria-selected=true]{{color:{ON_PRIMARY};border-bottom-color:{ON_PRIMARY};background:{tok('color.primary.700')}}}
-[role=tab]:focus-visible{{outline:2px solid {ON_PRIMARY};outline-offset:-2px}}
-[role=tabpanel]{{padding:20px 24px 26px}}
-[role=tabpanel]:focus-visible{{outline:2px solid {PRIMARY};outline-offset:-2px}}
-/* The head is the week and nothing else. The report date is on the tab above
-   it, the day count is readable off the date range and stated again in the
-   comparison table's own header, and the MARSEC level is a highlight in every
-   week -- so the strap line under the heading repeated three facts the page
-   already carried, above the one sentence that matters. */
-.panel-head{{border-bottom:1px solid {RULE};padding-bottom:10px;
-  margin-bottom:2px}}
-.panel-head h2{{margin:0;font-size:{FS['2xl']};color:{INK};
-  letter-spacing:-.015em}}
-.sig{{border-top:1px solid {RULE};padding:18px 24px 24px}}
-details[open] summary{{border-radius:6px 6px 0 0}}
-summary::marker{{color:{INK_MUTED}}}
-table{{width:100%}}
-/* Detail charts: inline SVG, same grammar as the PNGs they replaced.
-   Fonts are declared here rather than per element so one rule changes the
-   whole set, and so print inherits them. */
-.cx{{margin:14px 0 22px}}
-.cx-svg{{display:block;width:100%;height:auto;border:1px solid {RULE};
-  border-radius:8px;background:{CARD};font-family:inherit}}
-.cx-title{{font-size:15px;font-weight:{FW['bold']};fill:{PRIMARY}}}
-.cx-ax{{font-size:11.5px;fill:{INK}}}
-.cx-yt,.cx-xt{{font-size:11.5px;fill:{INK}}}
-.cx-lg{{font-size:12px;fill:{INK}}}
-/* Recessive axes: y grid only, no top or right spine. */
-.cx-grid{{stroke:{RULE};stroke-width:1;vector-effect:non-scaling-stroke}}
-.cx-axis{{stroke:{INK_MUTED};stroke-width:1;vector-effect:non-scaling-stroke}}
-/* A white edge separates touching bars in a pair without a second hue. */
-.cx-bar{{stroke:{CARD};stroke-width:1.2;vector-effect:non-scaling-stroke;
-  transition:stroke {DUR_FAST} {EASE_OUT}}}
-.cx-sw{{stroke:{CARD};stroke-width:1}}
-/* Direct value labels. Required, not decorative: they are the relief that
-   discharges the sub-3:1 contrast of the pale fill. */
-.cx-vl{{font-size:11.5px;font-weight:{FW['bold']};
-  font-variant-numeric:tabular-nums}}
-.cx-hit{{fill:transparent;cursor:pointer}}
-.cx-bar,.cx-vl,.cx-grid,.cx-axis,.cx-xt,.cx-yt,.cx-title,.cx-ax,
-.cx-lg,.cx-sw{{pointer-events:none}}
-.cx-g{{outline:none}}
-/* Hover outlines the column's bars in ink rather than restyling the fill, so
-   the colour encoding is never touched by an interaction state. */
-.cx-g:hover .cx-bar{{stroke:{INK}}}
-.cx-g:focus-visible .cx-bar{{stroke:{INK}}}
-.cx-g:focus-visible .cx-hit{{fill:{tok('color.primary.100')};
-  fill-opacity:.45;stroke:{PRIMARY};stroke-width:2;
-  vector-effect:non-scaling-stroke}}
-.cx-read{{font-size:{FS['xs']};color:{INK};padding:7px 2px 0;
+[role=tab]:focus-visible{{outline:2px solid {RING};outline-offset:2px}}
+
+/* ── A week ── */
+[role=tabpanel]{{padding:30px 0 0}}
+[role=tabpanel]:focus-visible{{outline:2px solid {RING};outline-offset:6px;border-radius:{RADIUS_MD}}}
+.panel-head h2{{margin:6px 0 0;font-size:{FS['3xl']};font-weight:{FW['light']};
+  letter-spacing:-.02em;line-height:1.15;color:{INK}}}
+.lead{{margin:12px 0 0;max-width:72ch;font-size:{FS['md']};line-height:1.6;color:{INK}}}
+.sec{{margin-top:30px}}
+/* fei3's section label: an eyebrow and an aside over a hairline in ink at
+   15%, the directory's rule. */
+.sec-head{{display:flex;align-items:baseline;justify-content:space-between;gap:4px 24px;
+  flex-wrap:wrap;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid {rgba(INK, 0.15)}}}
+.sec-aside{{margin:0;font-size:{FS['2xs']};color:{INK_MUTED}}}
+
+/* StatCard */
+.kpis{{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}}
+/* fei3's figure cell: rounded-lg, a small muted label, a light figure. */
+.k{{display:flex;flex-direction:column;gap:2px;padding:10px 14px 12px;border-radius:{RADIUS_LG}}}
+.k-top{{display:flex;align-items:baseline;justify-content:space-between;gap:8px}}
+.k-label{{font-size:{FS['2xs']};color:{INK_MUTED}}}
+.k-alert .tag{{color:{sem('destructive-muted-foreground')};background:{sem('destructive-muted')};
+  border-radius:9999px;padding:2px 8px}}
+.k-fig{{display:flex;align-items:baseline;gap:6px;margin-top:2px}}
+.k-value{{font-size:{FS['3xl']};font-weight:{FW['light']};letter-spacing:-.025em;line-height:2.25rem;
+  color:{INK};font-variant-numeric:tabular-nums}}
+.k-unit{{font-size:{FS['2xs']};color:{INK_MUTED}}}
+.k-delta{{display:flex;align-items:center;gap:4px;flex-wrap:wrap;font-size:{FS['2xs']};
   font-variant-numeric:tabular-nums;min-height:1.5em}}
-.cx-cap{{font-size:11px;color:{INK_MUTED};padding:2px 2px 0}}
-/* A nested fold is a child of the one above it, so it reads as one. */
-details details{{margin-left:18px}}
-/* Sparkline inside each KPI tile. Inline SVG, so it costs a tenth of a PNG,
-   prints as vectors, and can be hovered or tabbed a point at a time. */
-/* overflow:visible so the hover halo around a point at the top or
-   bottom of the band is a full circle, not a clipped one. It only
-   ever reaches into this element's own 9px top margin. */
-.k-spark{{display:block;width:100%;height:auto;margin:9px 0 0;
-  overflow:visible}}
-/* width:100% with height:auto keeps the viewBox aspect, so the marks stay
-   round at any tile width. preserveAspectRatio="none" would oval them. */
+.k-glyph{{width:12px;height:12px;flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:2;
+  stroke-linecap:round;stroke-linejoin:round}}
+.neutral{{color:{INK_MUTED}}}
+.good{{color:{GOOD}}}
+.bad{{color:{DANGER}}}
+.k-dtext{{font-weight:{FW['medium']}}}
+.k-dlabel{{color:{INK_MUTED}}}
+/* The scrubbed week swaps in for the change row, so the tile keeps its height
+   and a figure from an older week never sits above a change describing this
+   one. */
+.k-week,.k-wsub{{display:none;font-size:{FS['2xs']};font-variant-numeric:tabular-nums}}
+.k-week{{align-items:center;min-height:1.5em;font-weight:{FW['medium']};color:{INK}}}
+.k-wsub{{padding-top:2px;color:{INK_MUTED}}}
+.k[data-scrub] .k-delta,.k[data-scrub] .k-spark-foot{{display:none}}
+.k[data-scrub] .k-week{{display:flex}}
+.k[data-scrub] .k-wsub{{display:block}}
+/* Sparkline inside each tile. Inline SVG, so it costs a tenth of a PNG,
+   prints as vectors, and can be hovered or tabbed a point at a time.
+   width:100% with height:auto keeps the viewBox aspect, so the marks stay
+   round at any tile width; overflow:visible so a hover halo at the top or
+   bottom of the band is a full circle. */
+.k-spark{{display:block;width:100%;height:auto;margin:8px 0 0;overflow:visible}}
 .k-spark .base{{stroke:{RULE};stroke-width:1;vector-effect:non-scaling-stroke}}
-.k-spark .ln{{fill:none;stroke:{PRIMARY};stroke-width:1.6;
+.k-spark .ln{{fill:none;stroke:{PRIMARY};stroke-opacity:.7;stroke-width:1.5;
   stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}}
 .k-spark .d{{fill:{PRIMARY};stroke:{CARD};stroke-width:1}}
 .k-spark .dl{{stroke-width:1.4}}
-/* The visual marks are painted over the hit targets, so they must not swallow
-   the pointer events the hit targets exist to receive. */
 .k-spark .base,.k-spark .ln,.k-spark .d{{pointer-events:none}}
-.k-spark .h{{fill:transparent;stroke:none;cursor:pointer;
-  transition:fill {DUR_FAST} {EASE_OUT}}}
+.k-spark .h{{fill:transparent;stroke:none;cursor:pointer;transition:fill {DUR_FAST} {EASE_OUT}}}
 .k-spark .h:hover{{fill:{tok('color.primary.100')}}}
-/* A ring on the hit target itself is the focus indicator: it marks exactly
-   the area that responds, which an outline on an SVG shape cannot. */
 .k-spark .h:focus-visible{{outline:none;fill:{tok('color.primary.100')};
-  stroke:{PRIMARY};stroke-width:2;vector-effect:non-scaling-stroke}}
-.k-spark-foot{{font-size:{FS['2xs']};color:{INK_MUTED};padding-top:2px;
-  font-variant-numeric:tabular-nums}}
-/* Two lines' worth of room whether the label needs one or two, so every
-   sparkline in the row starts at the same height. Four of the five labels
-   wrap at print width, and a ragged row of lines is harder to compare. */
-.k-label{{line-height:1.15;min-height:2.3em}}
-/* The scrubbed week swaps in for the delta pair, so the tile keeps its
-   height and a figure from an older week is never sitting above a delta that
-   describes this one. */
-.k-week,.k-wsub{{display:none;font-size:{FS['2xs']};
-  font-variant-numeric:tabular-nums}}
-.k-week{{font-weight:{FW['semibold']};color:{INK}}}
-.k-wsub{{color:{INK_MUTED}}}
-.k[data-scrub] .k-delta,.k[data-scrub] .k-cap{{display:none}}
-.k[data-scrub] .k-week,.k[data-scrub] .k-wsub{{display:block}}
+  stroke:{RING};stroke-width:2;vector-effect:non-scaling-stroke}}
+.k-spark-foot{{font-size:{FS['2xs']};color:{INK_MUTED};padding-top:2px;font-variant-numeric:tabular-nums}}
+
+/* Rig cards and the outline StatusBadge */
+.rigs{{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}}
+.rig{{padding:18px 20px}}
+/* fei3's team index: the rig's name as a large light figure in KOC blue,
+   its kind in caps and its state beside it. */
+.rig-head{{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}}
+.rig-id{{font-size:{FS['3xl']};font-weight:{FW['light']};line-height:1;letter-spacing:-.02em;
+  color:{PRIMARY};font-variant-numeric:tabular-nums}}
+.rig-meta{{display:flex;flex-direction:column;gap:4px;align-items:flex-start}}
+.badge{{display:inline-flex;align-items:center;gap:6px;border:1px solid {RULE};border-radius:{RADIUS};
+  padding:2px 8px;font-size:{FS['2xs']};font-weight:{FW['medium']};color:{INK};white-space:nowrap;
+  background:{CARD}}}
+.dot{{width:7px;height:7px;border-radius:9999px;background:{INK_MUTED}}}
+.dot.on{{background:{sem('success-muted-foreground')}}}
+.rig-op{{margin:10px 0 12px;font-size:{FS['base']};line-height:1.5;color:{INK}}}
+.kv{{display:grid;grid-template-columns:max-content 1fr;gap:6px 20px;margin:0;
+  font-size:{FS['xs']};line-height:1.5;border-top:1px solid {RULE};padding-top:12px}}
+.kv dt{{color:{INK_MUTED}}}
+.kv dd{{margin:0;color:{INK};font-variant-numeric:tabular-nums}}
+.kv b{{font-weight:{FW['semibold']}}}
+.hot{{color:{DANGER}}}
+.soft{{color:{INK_MUTED};font-weight:{FW['normal']}}}
+
+/* Operations */
+.panel{{padding:18px 22px}}
+.ops ul{{margin:0;padding-left:20px;font-size:{FS['base']};line-height:1.6;color:{INK}}}
+.ops li{{padding-bottom:6px}}
+.ops li::marker{{color:{PRIMARY}}}
+.src{{margin:6px 0 0;font-size:{FS['2xs']};color:{INK_MUTED}}}
+
+/* Folds */
+.fold+.fold{{margin-top:12px}}
+.fold summary{{display:flex;align-items:baseline;gap:10px;cursor:pointer;list-style:none;
+  padding:14px 18px;border-radius:{RADIUS_XL};transition:background-color {DUR_FAST} {EASE_OUT}}}
+.fold summary::-webkit-details-marker{{display:none}}
+.fold summary:hover{{background:{rgba(ACCENT, 0.6)}}}
+.fold summary:focus-visible{{outline:2px solid {RING};outline-offset:2px}}
+.fold-title{{font-size:{FS['sm']};font-weight:{FW['medium']};color:{INK}}}
+.fold-sub{{font-size:{FS['xs']};color:{INK_MUTED}}}
+.chev{{width:16px;height:16px;margin-left:auto;align-self:center;flex:0 0 auto;fill:none;
+  stroke:{INK_MUTED};stroke-width:2;stroke-linecap:round;stroke-linejoin:round;
+  transition:transform {DUR_FAST} {EASE_OUT}}}
+.fold[open]>summary .chev{{transform:rotate(180deg)}}
+.fold-body{{padding:4px 18px 18px}}
+/* A nested fold is a child of the one above it, so it reads as one. */
+.fold-in{{margin-left:18px;background:{CARD}}}
+.fold-in+.fold-in{{margin-top:10px}}
+.charts{{display:grid;gap:12px}}
+
+/* @koc/chart, in SVG. Fonts are declared here rather than per element so one
+   rule changes the whole set, and so print inherits them. */
+.cx{{margin:0;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}}
+.cx-head{{display:flex;flex-direction:column}}
+.cx-title{{font-size:{FS['sm']};font-weight:{FW['medium']};color:{INK}}}
+.cx-sub{{font-size:{FS['xs']};color:{INK_MUTED}}}
+.cx-leg{{display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;padding:0;list-style:none;
+  font-size:{FS['2xs']};color:{INK_MUTED}}}
+.cx-leg li{{display:flex;align-items:center;gap:6px}}
+.cx-sw{{display:inline-block;width:16px;height:8px;border-radius:2px}}
+.cx-svg{{display:block;width:100%;height:auto;font-family:inherit;overflow:visible}}
+.cx-yt,.cx-xt{{font-size:11px;fill:{INK_MUTED}}}
+.cx-grid{{stroke:{RULE};stroke-width:1;vector-effect:non-scaling-stroke}}
+.cx-zero{{stroke:{INK_MUTED};stroke-opacity:.6;stroke-width:1;vector-effect:non-scaling-stroke}}
+/* Direct value labels. Required, not decorative: they are the relief that
+   discharges the sub-3:1 contrast of the pale previous-week fill. */
+.cx-vl{{font-size:11.5px;font-weight:{FW['semibold']};font-variant-numeric:tabular-nums}}
+.cx-hit{{fill:transparent;cursor:pointer;transition:fill {DUR_FAST} {EASE_OUT}}}
+.cx-bar,.cx-vl,.cx-grid,.cx-zero,.cx-xt,.cx-yt{{pointer-events:none}}
+.cx-g{{outline:none}}
+/* Hover lays a band behind the column rather than restyling the bars, so the
+   colour encoding is never touched by an interaction state. */
+.cx-g:hover .cx-hit{{fill:{rgba(ACCENT, 0.7)}}}
+.cx-g:focus-visible .cx-hit{{fill:{rgba(tok('color.primary.100'), 0.6)};stroke:{RING};stroke-width:2;
+  vector-effect:non-scaling-stroke}}
+.cx-read{{font-size:{FS['xs']};color:{INK};font-variant-numeric:tabular-nums;min-height:1.5em;
+  border-top:1px solid {RULE};padding-top:8px}}
+.cx-read b{{font-weight:{FW['semibold']}}}
+.cx-note{{font-size:{FS['xs']};color:{INK_MUTED}}}
+
+/* The comparison table, as @koc/chart's table view draws it */
+.ct-wrap{{margin-top:12px;padding:6px 16px 10px;overflow-x:auto}}
+.ct{{width:100%;border-collapse:collapse;font-size:{FS['xs']};font-variant-numeric:tabular-nums}}
+.ct caption{{text-align:left;padding:10px 0 6px;font-size:{FS['sm']};font-weight:{FW['medium']};color:{INK}}}
+.ct th,.ct td{{padding:7px 8px;text-align:right;border-bottom:1px solid {rgba(RULE, 0.6)}}}
+.ct th:first-child{{text-align:left;padding-left:0}}
+.ct tbody th{{font-weight:{FW['normal']};color:{INK}}}
+.ct thead th{{font-weight:{FW['medium']};color:{INK_MUTED};border-bottom:1px solid {RULE};vertical-align:bottom}}
+.ct thead th span{{display:block;font-weight:{FW['normal']};font-size:{FS['2xs']}}}
+.ct .tot th,.ct .tot td{{font-weight:{FW['semibold']};color:{INK}}}
+.ct .tot td.soft{{color:{INK_MUTED}}}
+.ct-sec th{{text-align:left;padding:16px 0 6px;font-size:{FS['2xs']};font-weight:{FW['medium']};
+  text-transform:uppercase;letter-spacing:{TRACK_CAPS};color:{PRIMARY};border-bottom:1px solid {RULE}}}
+.ct .chg{{white-space:nowrap;font-weight:{FW['medium']}}}
+.ct .chg .k-glyph{{width:12px;height:12px;vertical-align:-2px;margin-right:4px}}
+
+/* Daily log */
+.log{{width:100%;border-collapse:collapse;font-size:{FS['xs']}}}
+.log th,.log td{{vertical-align:top;text-align:left;padding:10px 0;border-top:1px solid {rgba(RULE, 0.8)}}}
+.log tr:first-child th,.log tr:first-child td{{border-top:0}}
+.log th{{width:22%;padding-right:16px;font-weight:{FW['normal']}}}
+.log-day{{display:block;font-weight:{FW['medium']};color:{INK};font-size:{FS['sm']}}}
+.log-date{{display:block;color:{INK_MUTED};font-variant-numeric:tabular-nums}}
+.log-status{{display:block;padding-top:4px;color:{INK_MUTED};font-size:{FS['2xs']}}}
+.log-status.note{{color:{sem('warning-muted-foreground')}}}
+.log ul{{margin:0;padding-left:18px;line-height:1.55;color:{INK}}}
+.log-mark{{font-size:{FS['2xs']};color:{sem('warning-muted-foreground')};padding-top:6px}}
+
+/* ── Footer: fi3's plate. The bit stands on the page, not in a box: the
+   canvas is transparent and its ground grid runs out into a breath of KOC
+   blue. Under it, before any script runs and wherever there is no hardware
+   WebGL2, is fi3's own line elevation of the same bit. ── */
+.foot{{margin-top:56px;border-top:1px solid {rgba(INK, 0.1)};
+  background:radial-gradient(110% 90% at 72% 45%,{rgba(PRIMARY, 0.1)} 0%,transparent 70%)}}
+.foot-in{{max-width:1120px;margin:0 auto;padding:36px 24px 26px;box-sizing:border-box;
+  display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:center}}
+.foot-title{{margin:10px 0 0;font-size:clamp(1.25rem,1.9vw,1.75rem);font-weight:{FW['medium']};
+  text-transform:uppercase;line-height:.9;letter-spacing:-.035em;color:{PRIMARY}}}
+.foot-title>span{{display:block;white-space:nowrap}}
+.foot-title .l2{{padding-left:1.2em}}
+.foot-team{{margin:10px 0 0;font-size:{FS['sm']};color:{INK}}}
+.foot-group{{margin:2px 0 0;font-size:{FS['xs']};color:{INK_MUTED}}}
+.foot .sig{{margin-top:20px;padding-top:16px;border-top:1px solid {RULE};font-size:{FS['sm']};
+  line-height:1.6;color:{INK}}}
+.foot .sig p{{margin:0}}
+.foot .sig .soft{{color:{INK_MUTED}}}
+.bitplate{{position:relative;height:440px;min-width:0}}
+.bitplate canvas{{position:absolute;inset:0;width:100%;height:100%;opacity:0;
+  transition:opacity {DUR_SLOWER} {EASE_OUT}}}
+.bitplate[data-live] canvas{{opacity:1}}
+.bitplate[data-live] .bit-line{{opacity:0}}
+.bit-probe{{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}}
+.bit-line{{position:absolute;inset:24px;width:calc(100% - 48px);height:calc(100% - 48px);
+  color:{PRIMARY};transition:opacity {DUR_SLOWER} {EASE_OUT}}}
+.bit-line .bo{{fill:{CARD};stroke:currentColor;stroke-width:.03;stroke-linejoin:round}}
+.bit-line .bl{{stroke:currentColor;stroke-width:.02}}
+.bit-line .bc{{fill:{rgba(PRIMARY, 0.15)};stroke:currentColor;stroke-width:.025}}
+/* fi3's callouts: the part in italic serif, its figure in small caps, on a
+   leader line. Placed by the render loop; drawn only on a wide plate. */
+.bit-leads{{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;display:none}}
+.bit-leads line{{stroke:{INK_MUTED};stroke-width:.75}}
+.bit-leads circle{{fill:{CARD};stroke:{PRIMARY};stroke-width:1.25}}
+.bit-callout{{position:absolute;left:0;top:0;width:176px;opacity:0;pointer-events:none}}
+.bit-callout p{{margin:0}}
+.bit-callout .t{{font-family:ui-serif,Georgia,Cambria,'Times New Roman',Times,serif;font-style:italic;
+  font-size:{FS['sm']};line-height:1.2;color:{INK}}}
+.bit-callout .s{{margin-top:2px;font-size:{FS['2xs']};text-transform:uppercase;letter-spacing:.05em;color:{INK_MUTED}}}
+.bitplate[data-live][data-wide] .bit-leads{{display:block}}
+.bitplate:not([data-live]) .bit-callout{{display:none}}
+.copy{{max-width:1120px;margin:0 auto;padding:0 24px 24px;box-sizing:border-box;
+  font-size:{FS['2xs']};color:{INK_MUTED}}}
+
+@media (max-width:900px){{
+  .kpis{{grid-template-columns:repeat(2,minmax(0,1fr))}}
+}}
 @media (max-width:760px){{
-  [role=tabpanel]{{padding:16px 12px 20px}}
-  /* On a phone the header is not pinned. Pinned, with five tabs wrapping to
-     three rows, it held 222 to 237px of a 740 to 844px screen, and nearly half
-     the smaller SharePoint preview frame, above everything being read. It now
-     scrolls away with the page, and it is also shorter: the tabs are one row
-     that scrolls sideways instead of three rows that wrap. */
-  .top{{position:static}}
-  .top-in{{padding:12px 16px 0}}
-  .top h1{{font-size:17px}}
-  .top .sub{{font-size:{FS['2xs']}}}
-  [role=tablist]{{flex-wrap:nowrap;overflow-x:auto;gap:2px;padding:8px 12px 0;
-    scrollbar-width:none;overscroll-behavior-x:contain}}
+  .wrap{{padding:0 16px 32px}}
+  /* The header scrolls away with the page on a phone and is short: on a
+     740px screen, every pixel above the figures is a pixel of them lost. */
+  .top-in{{padding:14px 16px 0}}
+  .mast{{gap:10px}}
+  .emblem{{width:2.1rem;height:2.6rem}}
+  .top h1{{font-size:{FS['lg']}}}
+  .top .sub{{margin-top:5px;font-size:{FS['2xs']}}}
+  .top .sub .abbr{{display:none}}
+  .top .sub .wide{{display:none}}
+  .top h1{{line-height:.95}}
+  .horizon{{margin-top:10px;padding:0 16px}}
+  .tabs-wrap{{padding:10px 16px 0}}
+  .weeks{{padding:4px;min-height:0}}
+  .weeks .eyebrow{{display:none}}
+  [role=tablist]{{scrollbar-width:none;overscroll-behavior-x:contain}}
   [role=tablist]::-webkit-scrollbar{{display:none}}
-  [role=tab]{{flex:0 0 auto;white-space:nowrap;font-size:13px;
-    padding:9px 12px 10px}}
-  /* The report date under each tab label is dropped here. The label names the
-     week and the underline marks the selected tab, so the second line only
-     made each tab twice as tall. */
+  [role=tab]{{padding:6px 12px}}
+  /* The report number under each tab label is dropped here. The label names
+     the week and the fill marks the selected tab. */
   [role=tab] .rep{{display:none}}
-  /* A five-column table cannot wrap, so below this width it was 503px wide
-     inside a 400px page: the fifth tile -- overstay crew -- was clipped off
-     and unreachable. The table markup has to stay for Outlook, which will
-     not lay out a flex or grid row, so the layout is re-declared here where
-     only a browser reads it. The width="20%" attribute is a presentational
-     hint and loses to this stylesheet without needing !important. */
-  .kpis,.kpis>tbody{{display:block}}
-  .kpis>tbody>tr{{display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}}
-  .kpis>tbody>tr>td.k{{display:block;width:auto}}
-  /* The two rig cards stack. Side by side they were 114 to 158px wide, and the
-     ON HIRE chip wrapped onto its own line under the rig name. */
-  /* Child combinators, not descendants: each card holds its own key/value
-     table, and ".rigs tr" also turned those rows into one-column grids, so
-     every label landed on top of its value. */
-  .rigs,.rigs>tbody{{display:block}}
-  .rigs>tbody>tr{{display:grid;grid-template-columns:1fr;gap:10px}}
-  .rigs>tbody>tr>td.rig{{display:block;width:auto}}
-  /* A 950-unit chart drawn 330px wide shrinks 11.5-unit labels to about 4px.
+  [role=tabpanel]{{padding-top:22px}}
+  .panel-head h2{{font-size:{FS['2xl']}}}
+  .sec{{margin-top:30px}}
+  .kpis{{gap:10px}}
+  /* Two tiles a row leave no room for the tag beside the label. */
+  .k .tag{{display:none}}
+  .k-alert .k-label{{color:{DANGER}}}
+  .k{{padding:14px}}
+  .k-value{{font-size:{FS['2xl']};line-height:2rem}}
+  .rigs{{grid-template-columns:1fr}}
+  .rig{{padding:16px}}
+  .kv{{grid-template-columns:1fr;gap:0}}
+  .kv dd{{padding-bottom:8px}}
+  .panel{{padding:16px}}
+  .fold summary{{padding:13px 14px;flex-wrap:wrap}}
+  .fold-body{{padding:2px 12px 14px}}
+  .fold-in{{margin-left:8px}}
+  .log th{{width:30%}}
+  /* A 950-unit chart drawn 300px wide shrinks 11-unit labels to about 3.5px.
      Below this width the chart keeps a 680px floor and scrolls sideways, so
-     its labels stay at about 8px or larger. The readout under it stays at
-     full size and full width, because it is a block in the scroll container,
-     not in the SVG. */
-  .cx{{overflow-x:auto;overscroll-behavior-x:contain}}
+     its labels stay at about 8px or larger. The readout stays at full width,
+     outside the scroller. */
+  .cx{{padding:14px}}
+  .cx-plot{{overflow-x:auto;overscroll-behavior-x:contain}}
   .cx-svg{{min-width:680px}}
+  .foot-in{{grid-template-columns:1fr;padding:28px 16px 18px}}
+  .bitplate{{height:300px;order:-1}}
+  .copy{{padding:0 16px 20px}}
+}}
+@media (max-width:420px){{
+  .kpis{{grid-template-columns:1fr 1fr}}
+  .k-value{{font-size:{FS['xl']};line-height:1.75rem}}
 }}
 @media print{{
-  .top{{position:static}}
-  [role=tablist]{{display:none}}
+  body::before{{display:none}}
+  .k,.rig,.panel,.cx,.fold,.ct-wrap,.weeks{{-webkit-backdrop-filter:none;backdrop-filter:none;background:{CARD}}}
+  /* Paper gets the line drawing, never a canvas frame. */
+  .bitplate canvas,.bit-leads,.bit-callout{{display:none!important}}
+  .bitplate[data-live] .bit-line{{opacity:1}}
+  .tabs-wrap{{display:none}}
   [role=tabpanel][hidden]{{display:block!important}}
-  .card{{box-shadow:none}}
-  /* A long table splits across pages, so its header has to come with it. */
   thead{{display:table-header-group}}
   tr,figure{{break-inside:avoid}}
-  /* The daily log is collapsed on screen and opened by to_pdf.py before
-     printing, so its summary stays visible: open, it is the section heading.
-     A long log has to be allowed to break across pages. */
   details,details table{{break-inside:auto}}
-  summary{{list-style:none}}
-  .k,.cx{{break-inside:avoid}}
+  .k,.cx,.rig{{break-inside:avoid}}
   /* "Hover" means nothing on paper. */
-  .k-hint,.cx-read{{display:none}}
+  .cx-read{{display:none}}
 }}
 @media (prefers-reduced-motion:reduce){{
-  [role=tab],.k-spark .h,.cx-bar{{transition:none}}
+  [role=tab],.k-spark .h,.cx-hit,.chev,.fold summary,.bitplate canvas,.bit-line{{transition:none}}
 }}"""
 
 JS = """(function(){
@@ -1646,7 +2088,7 @@ JS = """(function(){
      "some content didn't load" banner over this report once. */
   var hits=Array.prototype.slice.call(document.querySelectorAll('.k-spark .h'));
   if(!hits.length)return;
-  function tile(h){return h.parentNode&&h.parentNode.parentNode;}  /* circle > svg > td.k */
+  function tile(h){return h.closest?h.closest('.k'):null;}
   function set(h,live){
     var k=tile(h);
     if(!k||!k.querySelector)return;
@@ -1750,6 +2192,63 @@ JS = """(function(){
 })();"""
 
 
+VENDOR = HERE / "vendor"
+
+
+def _vendor(name):
+    f = VENDOR / name
+    if not f.exists():
+        sys.exit(f"missing {f}. See vendor/drill-bit/build.sh")
+    return f.read_text(encoding="utf-8")
+
+
+def _emblem_css():
+    """fei3's KOC emblem, white artwork drawn in KOC blue through a mask, as a
+    data URI so the page stays one file. Vendored from dweg-landing."""
+    b64 = base64.b64encode(_vendor("koc-emblem.svg").encode("utf-8")).decode("ascii")
+    return ':root{--emblem:url("data:image/svg+xml;base64,' + b64 + '")}'
+
+
+# fi3's callouts, verbatim from src/landing/fi3/Plate.tsx.
+BIT_CALLOUTS = [
+    ("cutter", "PDC cutter", "16 mm &middot; 20&deg; back-rake"),
+    ("nozzle", "Nozzle, one of six", "12/32 in &middot; threaded"),
+    ("gauge", "Gauge pad", "8&frac12; in"),
+    ("breaker", "Breaker slot", "5&frac34; in steel shank"),
+    ("pin", "API 4&frac12; in REG pin", "5 tpi &middot; 3 in/ft taper"),
+]
+
+
+def bit_plate():
+    """fi3's drill bit, for the footer.
+
+    The markup ships fi3's line elevation of the bit, which is what shows
+    before the script runs, on paper, and wherever there is no hardware
+    WebGL2 (a VDI desktop, a software renderer). vendor/drill-bit/drill-bit.js
+    is fi3's own WebGL2 renderer, bundled; when it gets a frame on screen it
+    fades the canvas in over the drawing. Decorative throughout, so hidden from
+    assistive technology: the bit says nothing the report needs."""
+    leads = "".join(f'<line data-id="{i}"/><circle data-id="{i}" r="2.75"/>'
+                    for i, _, _ in BIT_CALLOUTS)
+    labels = "".join(f'<div class="bit-callout" data-id="{i}"><p class="t">{t}</p>'
+                     f'<p class="s">{sp}</p></div>' for i, t, sp in BIT_CALLOUTS)
+    return (f'<div class="bitplate" aria-hidden="true"><span class="bit-probe"></span>'
+            f'{_vendor("drill-bit/drill-bit.svg").strip()}<canvas></canvas>'
+            f'<svg class="bit-leads">{leads}</svg>{labels}</div>')
+
+
+def signature_web(w):
+    """The same signature as the email's, as page markup. Nothing is invented:
+    only what the person's own profile or email states goes in."""
+    sig = w.get("signature") or DEFAULT_SIGNATURE
+    lines = "<br>".join(sig.get("lines", []))
+    muted = "<br>".join(sig.get("muted", []))
+    return (f'<p>Thanks and Best Regards,</p>'
+            f'<p style="margin-top:8px"><b>{sig["name"]}</b><br>{lines}'
+            + (f'<br><span class="soft">{muted}</span>' if muted else "")
+            + '</p>')
+
+
 def build_dashboard(weeks, logs, artifact=False):
     """weeks: newest first. The first is the current report.
 
@@ -1773,9 +2272,9 @@ def build_dashboard(weeks, logs, artifact=False):
         tabs += (f'      <button role="tab" id="tab-{wid}" '
                  f'aria-controls="panel-{wid}" data-week="{wid}" '
                  f'aria-selected="{"true" if is_current else "false"}" '
-                 f'tabindex="{0 if is_current else -1}">{w["tabLabel"]} '
-                 f'<span class="rep">report {w["reportLabel"]}'
-                 f'{" &middot; current" if is_current else ""}</span></button>\n')
+                 f'tabindex="{0 if is_current else -1}" '
+                 f'title="Report of {w["reportLabel"]}">{w["tabLabel"]}'
+                 f'</button>\n')
         body = week_body(w, other, logs.get(wid),
                          with_comparison=has_predecessor,
                          all_weeks=weeks)
@@ -1785,27 +2284,53 @@ def build_dashboard(weeks, logs, artifact=False):
       </div>
 {body}    </div>
 """
+    # The KOC emblem goes in the file that is uploaded to SharePoint, inside
+    # KOC. The Artifact copy is a private preview hosted outside KOC, so it
+    # carries the words but not the logo.
+    emblem = ('' if artifact else
+              '<span class="emblem" aria-hidden="true"></span>\n        ')
     shell = f"""  <header class="top">
     <div class="top-in">
-      <h1>Offshore Logistics Weekly Dashboard</h1>
-      <p class="sub">Drilling &amp; Workover Operations Support &nbsp;&middot;&nbsp; Kuwait Oil Company</p>
+      <div class="mast">
+        {emblem}<div>
+          <h1><span>Offshore Logistics</span> <span class="l2">Weekly Dashboard</span></h1>
+          <p class="sub"><b class="abbr">DWOS &middot; </b>Drilling &amp; Workover Operations Support Team<span class="wide"> &middot; Drilling &amp; Workover Engineering Group &middot; Kuwait Oil Company</span></p>
+        </div>
+      </div>
     </div>
-    <div role="tablist" aria-label="Report week">
-{tabs}    </div>
+    <div class="horizon" aria-hidden="true"><i></i></div>
+    <div class="tabs-wrap">
+      <div class="weeks"><p class="eyebrow" id="weeks-label">Weeks</p>
+      <div role="tablist" aria-labelledby="weeks-label">
+{tabs}      </div></div>
+    </div>
   </header>
   <main class="wrap">
-    <div class="card">
-{panels}      <footer class="sig">
-{signature(cur)}      </footer>
+{panels}  </main>
+  <footer class="foot">
+    <div class="foot-in">
+      <div>
+        <p class="eyebrow"><span class="idx">DWEG</span> &mdash; Drilling &amp; Workover Engineering Group</p>
+        <p class="foot-title"><span>Offshore Logistics</span> <span class="l2">Weekly Dashboard</span></p>
+        <p class="foot-team">Drilling &amp; Workover Operations Support Team</p>
+        <p class="foot-group">Exploration &amp; Drilling Directorate &middot; Kuwait Oil Company</p>
+        <div class="sig">{signature_web(cur)}</div>
+      </div>
+      {bit_plate()}
     </div>
-  </main>
+    <p class="copy">Drill bit: the DWEG landing&rsquo;s fi3 plate, an 8&frac12; in PDC bit drawn from its own dimensions.</p>
+  </footer>
 <script>
 {JS}
+</script>
+<script>
+{_vendor("drill-bit/drill-bit.js").strip()}
 </script>
 """
     style = f"""<style>
 {FONT_FACE}
-body{{margin:0;background:{PAGE};font-family:{FONT_STACK};color:{INK};-webkit-text-size-adjust:100%;font-size:{FS['base']}}}
+{"" if artifact else _emblem_css()}
+body{{margin:0;background:{PAGE};font-family:{FONT_STACK};color:{INK};-webkit-text-size-adjust:100%;font-size:{FS['base']};position:relative;z-index:0}}
 table{{font-variant-numeric:tabular-nums}}
 {CSS}
 </style>"""
