@@ -222,7 +222,7 @@
       "name": "page-header",
       "type": "registry:ui",
       "title": "Page Header",
-      "description": "The top of every KOC application screen — an eyebrow (the in-app path), a light large h1, actions and meta — plus SectionHeading for a long page's numbered parts ('02 — Figures'). The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
+      "description": "The top of every KOC application screen — shadcn's breadcrumb (the in-app path), a light large h1, actions and meta — plus SectionHeading for a long page's numbered parts ('02 — Figures'). The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
       "categories": [
         "layout",
         "koc"

@@ -3,12 +3,15 @@ import * as React from "react";
 import { cn } from "../lib/utils";
 import {
   Breadcrumb,
+  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "./breadcrumb";
+import { Button } from "./button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "./dropdown-menu";
 
 /**
  * PageHeader — the top of every KOC application screen.
@@ -38,9 +41,11 @@ import {
  * THE RIG3 HEADER (2026-10-25)
  * ----------------------------
  * Restyled to the DWEG landing's rig3 page, the base Saud chose for the whole
- * system. The breadcrumb becomes the EYEBROW — 11px capitals set wide, above
- * the title — so the path reads as context rather than as a second row of
- * navigation. The title is light and large (30/36px, weight 300): hierarchy
+ * system. The breadcrumb is shadcn's own (2026-11-02, Saud: "use these
+ * breadcrumbs from shadcn") — sentence case, chevrons, the parents as links and
+ * the current page in the foreground colour; a path longer than three collapses
+ * its middle into the ellipsis menu, as shadcn's demo does. (Until then it was
+ * set as an eyebrow, 11px capitals with slashes.) The title is light and large (30/36px, weight 300): hierarchy
  * comes from size and air, not from weight, which is what lets the quiet card
  * chrome underneath stay quiet. No rule under the header: whitespace separates
  * it from the content.
@@ -55,6 +60,71 @@ const EYEBROW = "text-2xs font-medium uppercase tracking-caps text-muted-foregro
 export interface PageHeaderCrumb {
   label: string;
   href?: string;
+  /** Your router's link, so a crumb navigates without a reload:
+   *  `{ label: "Register", render: <Link to="/register" /> }`. */
+  render?: React.ReactElement;
+}
+
+/** A parent crumb: a link when it has somewhere to go, plain text when not. */
+function CrumbLink({ crumb }: { crumb: PageHeaderCrumb }) {
+  if (crumb.render) return <BreadcrumbLink render={crumb.render}>{crumb.label}</BreadcrumbLink>;
+  if (crumb.href) return <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>;
+  return <span>{crumb.label}</span>;
+}
+
+/** shadcn's breadcrumb; past three crumbs, the middle folds into a menu. */
+function PageBreadcrumb({ crumbs }: { crumbs: PageHeaderCrumb[] }) {
+  const current = crumbs[crumbs.length - 1];
+  const parents = crumbs.slice(0, -1);
+  const folded = parents.length > 2 ? parents.slice(1, -1) : [];
+  const shown = folded.length ? [parents[0], parents[parents.length - 1]] : parents;
+  return (
+    <Breadcrumb className="mb-3">
+      <BreadcrumbList>
+        {shown.map((crumb, i) => (
+          <React.Fragment key={`${crumb.label}-${i}`}>
+            <BreadcrumbItem>
+              <CrumbLink crumb={crumb} />
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            {i === 0 && folded.length > 0 && (
+              <>
+                <BreadcrumbItem>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button size="icon" variant="ghost" className="size-7">
+                          <BreadcrumbEllipsis className="size-7" />
+                          <span className="sr-only">Show the rest of the path</span>
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="start">
+                      <DropdownMenuGroup>
+                        {folded.map((f, j) => (
+                          <DropdownMenuItem
+                            key={`${f.label}-${j}`}
+                            render={f.render ?? (f.href ? <a href={f.href} /> : undefined)}
+                            disabled={!f.render && !f.href}
+                          >
+                            {f.label}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuGroup>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+              </>
+            )}
+          </React.Fragment>
+        ))}
+        <BreadcrumbItem>
+          <BreadcrumbPage>{current.label}</BreadcrumbPage>
+        </BreadcrumbItem>
+      </BreadcrumbList>
+    </Breadcrumb>
+  );
 }
 
 export interface PageHeaderProps {
@@ -92,30 +162,7 @@ export function PageHeader({
       {eyebrow ? (
         <p className={cn(EYEBROW, "mb-2")}>{eyebrow}</p>
       ) : (
-        breadcrumbs &&
-        breadcrumbs.length > 0 && (
-          <Breadcrumb className="mb-2">
-            <BreadcrumbList className={cn(EYEBROW, "gap-1.5 sm:gap-2")}>
-              {breadcrumbs.map((crumb, i) => {
-                const last = i === breadcrumbs.length - 1;
-                return (
-                  <React.Fragment key={`${crumb.label}-${i}`}>
-                    <BreadcrumbItem>
-                      {last || !crumb.href ? (
-                        <BreadcrumbPage className="font-medium text-muted-foreground">{crumb.label}</BreadcrumbPage>
-                      ) : (
-                        <BreadcrumbLink href={crumb.href} className="underline-offset-4 hover:underline">
-                          {crumb.label}
-                        </BreadcrumbLink>
-                      )}
-                    </BreadcrumbItem>
-                    {!last && <BreadcrumbSeparator className="text-muted-foreground/60">/</BreadcrumbSeparator>}
-                  </React.Fragment>
-                );
-              })}
-            </BreadcrumbList>
-          </Breadcrumb>
-        )
+        breadcrumbs && breadcrumbs.length > 0 && <PageBreadcrumb crumbs={breadcrumbs} />
       )}
 
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">

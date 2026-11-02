@@ -172,9 +172,9 @@ const META: Record<string, Meta> = {
   "page-header": {
     title: "Page Header",
     description:
-      "The top of every KOC application screen — an eyebrow (the in-app path), a light large h1, actions and meta — plus SectionHeading for a long page's numbered parts ('02 — Figures'). The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
+      "The top of every KOC application screen — shadcn's breadcrumb (the in-app path), a light large h1, actions and meta — plus SectionHeading for a long page's numbered parts ('02 — Figures'). The title is an h1 because the app shell contributes no heading, so without it a screen has no top-level landmark at all.",
     categories: ["layout", "koc"],
-    docs: "Keep breadcrumbs shallow: they render as the eyebrow, and Directorate and Group are identity, not navigation. The title is weight 300 by design (rig3, 2026-10-25) — hierarchy comes from size and air, so do not bold it back.",
+    docs: "Keep breadcrumbs shallow — past three the middle folds into a menu — and pass `render: <Link to=… />` per crumb for router navigation; Directorate and Group are identity, not navigation. The title is weight 300 by design (rig3, 2026-10-25) — hierarchy comes from size and air, so do not bold it back.",
   },
   "date-range-filter": {
     title: "Date Range Filter",
