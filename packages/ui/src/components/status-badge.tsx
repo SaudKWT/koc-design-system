@@ -45,53 +45,52 @@ interface StatusSpec {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   className: string;
-  /** The icon carries the hue; the label stays dark, as on shadcn's badge. */
+  /** Extra classes for the icon; empty means it takes the label's colour. */
   iconClassName: string;
   /** Prefix announced to screen readers, so the state is spoken, not just seen. */
   srPrefix: string;
 }
 
 /**
- * Three steps of weight, and the step IS the importance:
- *
- *   outline   — a state to read: producing, normal, maintenance, shut-in…
- *   tinted    — warning: needs attention, findable down a column without reading
- *   solid     — critical: act now
- *
- * The label is always the foreground colour, as on shadcn's badge; the hue
- * lives in the icon (and, for the top two steps, the ground). Colour is never
- * the only carrier — each status has its own icon shape — so the hue can be
- * this quiet on the outline step without breaking WCAG 1.4.1.
+ * A pale ground with the hue as the label, every status (Saud, 2026-11-02,
+ * from a reference: green Active, orange Pending, red Inactive). Critical alone
+ * is a solid fill, so it is still found without reading. The icon takes the
+ * label's colour; each status has its own icon shape, so colour is never the
+ * only carrier (WCAG 1.4.1).
  */
-const OUTLINE = "border-border text-foreground";
+const TINT = {
+  success: "border-transparent bg-success-muted text-success-muted-foreground",
+  warning: "border-transparent bg-warning-muted text-warning-muted-foreground",
+  info: "border-transparent bg-info-muted text-info-muted-foreground",
+  neutral: "border-transparent bg-muted text-muted-foreground",
+};
 
 const STATUS: Record<OperationalStatus, StatusSpec> = {
   producing: {
     label: "Producing",
     icon: CheckCircle2,
-    className: OUTLINE,
-    iconClassName: "text-success-muted-foreground",
+    className: TINT.success,
+    iconClassName: "",
     srPrefix: "Status: producing",
   },
   normal: {
     label: "Normal",
     icon: CheckCircle2,
-    className: OUTLINE,
-    iconClassName: "text-success-muted-foreground",
+    className: TINT.success,
+    iconClassName: "",
     srPrefix: "Status: normal",
   },
   warning: {
     label: "Warning",
     icon: AlertTriangle,
-    className: "border-transparent bg-warning-muted text-foreground",
-    iconClassName: "text-warning-muted-foreground",
+    className: TINT.warning,
+    iconClassName: "",
     srPrefix: "Status: warning",
   },
   critical: {
     label: "Critical",
     icon: OctagonAlert,
-    // The only status that gets a solid fill. In a column of outlined and
-    // tinted badges the filled one is pre-attentively visible — an operator
+    // The only status that gets a solid fill. In a column of tinted badges the filled one is pre-attentively visible — an operator
     // finds it without reading. Reserved exclusively for "act now"; using it
     // decoratively anywhere else devalues it everywhere.
     className: "border-transparent bg-destructive text-destructive-foreground",
@@ -101,29 +100,29 @@ const STATUS: Record<OperationalStatus, StatusSpec> = {
   shutin: {
     label: "Shut-in",
     icon: CircleSlash,
-    className: OUTLINE,
-    iconClassName: "text-muted-foreground",
+    className: TINT.neutral,
+    iconClassName: "",
     srPrefix: "Status: shut in",
   },
   maintenance: {
     label: "Maintenance",
     icon: Wrench,
-    className: OUTLINE,
-    iconClassName: "text-info-muted-foreground",
+    className: TINT.info,
+    iconClassName: "",
     srPrefix: "Status: under maintenance",
   },
   offline: {
     label: "Offline",
     icon: CircleDashed,
-    className: OUTLINE,
-    iconClassName: "text-muted-foreground",
+    className: TINT.neutral,
+    iconClassName: "",
     srPrefix: "Status: offline",
   },
   unknown: {
     label: "Unknown",
     icon: Info,
-    className: OUTLINE,
-    iconClassName: "text-muted-foreground",
+    className: TINT.neutral,
+    iconClassName: "",
     srPrefix: "Status: unknown",
   },
 };

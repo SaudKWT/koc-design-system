@@ -12,7 +12,7 @@
  * drops into a KOC app and is automatically on-brand, with no re-styling.
  */
 
-import { palette, chartSeries, chartSeriesDark, statusTint, warningInk } from "./palette.js";
+import { palette, chartSeries, chartSeriesDark, statusInk, statusTint, warningInk } from "./palette.js";
 
 const { primary, neutral, success, warning, danger, info } = palette;
 
@@ -126,13 +126,13 @@ export const light: SemanticTheme = {
   // Status tints: shadcn's badge shape — a pale ground with the hue as the
   // label. Tokens rather than `bg-success/10`; statusTint in palette.ts says why.
   "success-muted": statusTint.success.light,
-  "success-muted-foreground": success[600],
+  "success-muted-foreground": statusInk.success,
   "warning-muted": statusTint.warning.light,
   "warning-muted-foreground": warningInk.light,
   "info-muted": statusTint.info.light,
-  "info-muted-foreground": info[600],
+  "info-muted-foreground": statusInk.info,
   "destructive-muted": statusTint.danger.light,
-  "destructive-muted-foreground": danger[600],
+  "destructive-muted-foreground": statusInk.danger,
 
   // Decorative separators only — card edges, dividers, table rules. These are
   // exempt from WCAG 1.4.11 (nothing about them is "required to identify a

@@ -250,19 +250,31 @@ export const chartSeriesDark = [
  * carry 9–20% of its peak chroma by design, which is why warning[100] is
  * peach-beige rather than amber.
  *
- * DEEPENED 2026-11-02 (Saud: the amber badge "fades into the light grey
- * background"). At L 0.95 every light tint measured ~1.05:1 against the page —
- * a ground you had to look for. Each is now held to 1.2:1 against BOTH the
- * page and the card, in both themes, by contrast.test.ts; that is what moved
- * light from L 0.95 to 0.90 and dark from 0.34 to 0.36. Warning's label went
- * darker with it (L 0.53 → 0.50) to keep 4.5:1 on the deeper ground.
+ * 2026-11-02, twice. First deepened to L 0.90 because the amber "faded into
+ * the light grey background" — but the real fault was the data table having
+ * no surface of its own, so its badges sat on the grey page. With the table on
+ * the white card (data-table.tsx), Saud's reference (a pale ground, the hue as
+ * a vivid label: green Active, orange Pending, red Inactive) set the look: light
+ * tints back at L 0.955 with a little chroma, held to 1.1:1 against the card.
+ * The reference's labels measure 2.6–3.4:1 on their grounds; these are the most
+ * vivid inks per hue that still clear 4.5:1 (statusInk).
  */
 export const statusTint = {
-  success: themePair(164, { l: 0.9, c: 0.08 }, { l: 0.36, c: 0.06 }),
-  // 85, not the ramp's 70: at this lightness 70 reads as peach and 85 as amber.
-  warning: themePair(85, { l: 0.9, c: 0.12 }, { l: 0.36, c: 0.06 }),
-  info: themePair(210, { l: 0.9, c: 0.07 }, { l: 0.36, c: 0.054 }),
-  danger: themePair(22, { l: 0.9, c: 0.06 }, { l: 0.36, c: 0.066 }),
+  success: themePair(150, { l: 0.955, c: 0.035 }, { l: 0.36, c: 0.06 }),
+  warning: themePair(65, { l: 0.955, c: 0.035 }, { l: 0.36, c: 0.06 }),
+  info: themePair(215, { l: 0.955, c: 0.03 }, { l: 0.36, c: 0.054 }),
+  danger: themePair(30, { l: 0.955, c: 0.03 }, { l: 0.36, c: 0.066 }),
+} as const;
+
+/**
+ * The labels on the light tints: per hue, the lightest, most saturated ink that
+ * still reads at 4.5:1 on its ground — as vivid as Saud's reference allows
+ * without dropping below AA. Dark labels are the ramps' 300 steps.
+ */
+export const statusInk = {
+  success: fromOklch(0.515, 0.18, 150),
+  info: fromOklch(0.525, 0.18, 215),
+  danger: fromOklch(0.55, 0.18, 27),
 } as const;
 
 /**
@@ -272,6 +284,6 @@ export const statusTint = {
  * them, at hue 55 where the gamut still allows real chroma: orange, not brown.
  */
 export const warningInk = {
-  light: fromOklch(0.5, 0.13, 55),
+  light: fromOklch(0.54, 0.18, 60),
   dark: fromOklch(0.82, 0.12, 75),
 } as const;

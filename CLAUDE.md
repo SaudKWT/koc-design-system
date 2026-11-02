@@ -47,7 +47,7 @@ Each one exists because documentation already failed to hold the line:
 
 | Gate | Catches | Why a test and not a comment |
 | --- | --- | --- |
-| `test:tokens` | contrast regressions, **and chart series that fail colour-blind separation** | 177 assertions; a guideline drifts the first time someone is in a hurry. The chart set passed ΔE2000 and greyscale for months while failing under protanopia — nothing simulated CVD, and dark chart tokens were never audited at all |
+| `test:tokens` | contrast regressions, **and chart series that fail colour-blind separation** | 169 assertions; a guideline drifts the first time someone is in a hurry. The chart set passed ΔE2000 and greyscale for months while failing under protanopia — nothing simulated CVD, and dark chart tokens were never audited at all |
 | `check:drift` | redefinition of KOC tokens | `shadcn add` appends stock theme blocks that silently de-brand the app — it appended one *directly beneath the warning comment telling it not to* |
 | `check:motion` | off-scale duration/easing, transitions that name no duration, **and `animate-in` that names no easing or duration** | the motion scale sat unused from the first commit; a hand-written `duration-200` appeared in the same session it was fixed; a bare `transition-all` was then reported from a consuming KOC app, and 11 such sites existed |
 | `test:a11y` | broken ARIA, unreachable controls, invisible focus, unannounced state, **and best-practice rules** | Playwright + axe in a real browser. Found a `Tabs` with no `TabsContent` — `aria-controls` pointing at an id that didn't exist — on its first run |

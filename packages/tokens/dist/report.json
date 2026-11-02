@@ -881,68 +881,68 @@
         "onBlack": 21
       },
       "success-muted": {
-        "hex": "#ADEFD0",
-        "l": 0.8994,
-        "c": 0.079,
-        "h": 164.08,
-        "onWhite": 1.31,
-        "onBlack": 16.03
+        "hex": "#E0F7E4",
+        "l": 0.9541,
+        "c": 0.0349,
+        "h": 150.55,
+        "onWhite": 1.13,
+        "onBlack": 18.59
       },
       "success-muted-foreground": {
-        "hex": "#00704E",
-        "l": 0.4825,
-        "c": 0.1032,
-        "h": 163.75,
-        "onWhite": 6.13,
-        "onBlack": 3.43
+        "hex": "#007D37",
+        "l": 0.5153,
+        "c": 0.1423,
+        "h": 149.89,
+        "onWhite": 5.26,
+        "onBlack": 3.99
       },
       "warning-muted": {
-        "hex": "#FFD988",
-        "l": 0.9002,
-        "c": 0.1084,
-        "h": 85.18,
-        "onWhite": 1.35,
-        "onBlack": 15.53
+        "hex": "#FFEDDC",
+        "l": 0.9559,
+        "c": 0.0299,
+        "h": 65.85,
+        "onWhite": 1.14,
+        "onBlack": 18.4
       },
       "warning-muted-foreground": {
-        "hex": "#974C00",
-        "l": 0.4999,
-        "c": 0.1238,
-        "h": 55.01,
-        "onWhite": 6.27,
-        "onBlack": 3.35
+        "hex": "#A25900",
+        "l": 0.5385,
+        "c": 0.1264,
+        "h": 59.89,
+        "onWhite": 5.3,
+        "onBlack": 3.97
       },
       "info-muted": {
-        "hex": "#A7EBF8",
-        "l": 0.8992,
-        "c": 0.07,
-        "h": 210.75,
-        "onWhite": 1.32,
-        "onBlack": 15.88
+        "hex": "#DBF6FD",
+        "l": 0.9557,
+        "c": 0.0297,
+        "h": 215.06,
+        "onWhite": 1.13,
+        "onBlack": 18.61
       },
       "info-muted-foreground": {
-        "hex": "#006B78",
-        "l": 0.4833,
-        "c": 0.0834,
-        "h": 209.34,
-        "onWhite": 6.22,
-        "onBlack": 3.37
+        "hex": "#00778C",
+        "l": 0.5243,
+        "c": 0.093,
+        "h": 215.7,
+        "onWhite": 5.23,
+        "onBlack": 4.02
       },
       "destructive-muted": {
-        "hex": "#FFD1CF",
-        "l": 0.8997,
-        "c": 0.0521,
-        "h": 21.09,
-        "onWhite": 1.37,
-        "onBlack": 15.27
+        "hex": "#FFEBE7",
+        "l": 0.9549,
+        "c": 0.0225,
+        "h": 31.1,
+        "onWhite": 1.15,
+        "onBlack": 18.29
       },
       "destructive-muted-foreground": {
-        "hex": "#AA2422",
-        "l": 0.4835,
-        "c": 0.1706,
-        "h": 27.03,
-        "onWhite": 7.04,
-        "onBlack": 2.98
+        "hex": "#C53732",
+        "l": 0.5508,
+        "c": 0.1798,
+        "h": 26.96,
+        "onWhite": 5.29,
+        "onBlack": 3.97
       },
       "border": {
         "hex": "#D4D9DE",
@@ -1251,11 +1251,11 @@
         "onBlack": 1.18
       },
       "success-muted": {
-        "hex": "#194735",
-        "l": 0.3603,
-        "c": 0.0597,
-        "h": 164.55,
-        "onWhite": 10.53,
+        "hex": "#24462C",
+        "l": 0.3602,
+        "c": 0.0601,
+        "h": 150.09,
+        "onWhite": 10.57,
         "onBlack": 1.99
       },
       "success-muted-foreground": {
@@ -1267,12 +1267,12 @@
         "onBlack": 12.13
       },
       "warning-muted": {
-        "hex": "#4C3A13",
-        "l": 0.3597,
-        "c": 0.0601,
-        "h": 83.76,
-        "onWhite": 10.93,
-        "onBlack": 1.92
+        "hex": "#533618",
+        "l": 0.3604,
+        "c": 0.0604,
+        "h": 64.66,
+        "onWhite": 11,
+        "onBlack": 1.91
       },
       "warning-muted-foreground": {
         "hex": "#F2B966",
@@ -1283,12 +1283,12 @@
         "onBlack": 11.91
       },
       "info-muted": {
-        "hex": "#11454D",
-        "l": 0.3609,
-        "c": 0.0544,
-        "h": 209.82,
-        "onWhite": 10.59,
-        "onBlack": 1.98
+        "hex": "#13444F",
+        "l": 0.3596,
+        "c": 0.0541,
+        "h": 215.74,
+        "onWhite": 10.67,
+        "onBlack": 1.97
       },
       "info-muted-foreground": {
         "hex": "#8BCFDB",
@@ -1299,12 +1299,12 @@
         "onBlack": 12.05
       },
       "destructive-muted": {
-        "hex": "#5B2E2D",
-        "l": 0.36,
-        "c": 0.066,
-        "h": 22.21,
-        "onWhite": 11.21,
-        "onBlack": 1.87
+        "hex": "#5B2F28",
+        "l": 0.3606,
+        "c": 0.0658,
+        "h": 30.14,
+        "onWhite": 11.16,
+        "onBlack": 1.88
       },
       "destructive-muted-foreground": {
         "hex": "#FEA89E",

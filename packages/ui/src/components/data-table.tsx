@@ -257,7 +257,11 @@ export function DataTable<T extends RowData>({
       </div>
 
       {/* ── Table ───────────────────────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-md border border-border">
+      {/* The card surface (opaque, unlike a Card's 70%): a table is read row by
+          row, and its badges' tints are measured against the card. Without
+          it the table took the grey page, and the amber badge vanished into
+          it (2026-11-02). */}
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
         <Table>
           <caption className="sr-only">{caption}</caption>
           <TableHeader>
