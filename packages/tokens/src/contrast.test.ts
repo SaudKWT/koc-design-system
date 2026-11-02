@@ -19,6 +19,8 @@ import { palette } from "./palette.js";
 
 const AA_TEXT = 4.5;
 const AA_UI = 3.0;
+/** Floor for a tinted ground against the surface it sits on. Not a WCAG number. */
+const TINT_FLOOR = 1.2;
 
 /**
  * Floor for decorative borders. NOT a WCAG number — 1.4.11 does not apply to
@@ -147,6 +149,15 @@ function auditTheme(name: string, t: SemanticTheme): void {
   // so this is held to the graphical-object 3:1 rather than left to chance.
   for (const s of ["success", "warning", "info", "destructive"])
     check(`${s} status icon vs card`, t[`${s}-muted-foreground`], t.card, AA_UI, "WCAG 1.4.11");
+
+  // A tinted ground (Badge's status variants, StatusBadge's warning step) has to
+  // be SEEN as a ground. Not a WCAG number — the label on it is what WCAG
+  // tests, above — but at ~1.05:1 the amber "faded into the light grey
+  // background" (Saud, 2026-11-02) and every light tint measured the same.
+  for (const s of ["success", "warning", "info", "destructive"]) {
+    check(`${s} tint vs background`, t[`${s}-muted`], t.background, TINT_FLOOR, "visible ground");
+    check(`${s} tint vs card`, t[`${s}-muted`], t.card, TINT_FLOOR, "visible ground");
+  }
   check("focus ring vs background", t.ring, t.background, AA_UI, "WCAG 2.4.11");
 
   // Charts are read, not decorated. Each series must be resolvable against the

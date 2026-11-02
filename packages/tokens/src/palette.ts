@@ -249,13 +249,20 @@ export const chartSeriesDark = [
  * Coordinates, not ramp steps, like the chart slots: a ramp's 50/100 steps
  * carry 9–20% of its peak chroma by design, which is why warning[100] is
  * peach-beige rather than amber.
+ *
+ * DEEPENED 2026-11-02 (Saud: the amber badge "fades into the light grey
+ * background"). At L 0.95 every light tint measured ~1.05:1 against the page —
+ * a ground you had to look for. Each is now held to 1.2:1 against BOTH the
+ * page and the card, in both themes, by contrast.test.ts; that is what moved
+ * light from L 0.95 to 0.90 and dark from 0.34 to 0.36. Warning's label went
+ * darker with it (L 0.53 → 0.50) to keep 4.5:1 on the deeper ground.
  */
 export const statusTint = {
-  success: themePair(164, { l: 0.95, c: 0.045 }, { l: 0.34, c: 0.06 }),
+  success: themePair(164, { l: 0.9, c: 0.08 }, { l: 0.36, c: 0.06 }),
   // 85, not the ramp's 70: at this lightness 70 reads as peach and 85 as amber.
-  warning: themePair(85, { l: 0.95, c: 0.07 }, { l: 0.34, c: 0.06 }),
-  info: themePair(210, { l: 0.95, c: 0.035 }, { l: 0.34, c: 0.054 }),
-  danger: themePair(22, { l: 0.95, c: 0.03 }, { l: 0.34, c: 0.066 }),
+  warning: themePair(85, { l: 0.9, c: 0.12 }, { l: 0.36, c: 0.06 }),
+  info: themePair(210, { l: 0.9, c: 0.07 }, { l: 0.36, c: 0.054 }),
+  danger: themePair(22, { l: 0.9, c: 0.06 }, { l: 0.36, c: 0.066 }),
 } as const;
 
 /**
@@ -265,6 +272,6 @@ export const statusTint = {
  * them, at hue 55 where the gamut still allows real chroma: orange, not brown.
  */
 export const warningInk = {
-  light: fromOklch(0.53, 0.14, 55),
+  light: fromOklch(0.5, 0.13, 55),
   dark: fromOklch(0.82, 0.12, 75),
 } as const;

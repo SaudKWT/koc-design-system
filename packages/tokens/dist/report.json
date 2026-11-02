@@ -881,12 +881,12 @@
         "onBlack": 21
       },
       "success-muted": {
-        "hex": "#D4F9E6",
-        "l": 0.9506,
-        "c": 0.0459,
-        "h": 163.13,
-        "onWhite": 1.14,
-        "onBlack": 18.49
+        "hex": "#ADEFD0",
+        "l": 0.8994,
+        "c": 0.079,
+        "h": 164.08,
+        "onWhite": 1.31,
+        "onBlack": 16.03
       },
       "success-muted-foreground": {
         "hex": "#00704E",
@@ -897,28 +897,28 @@
         "onBlack": 3.43
       },
       "warning-muted": {
-        "hex": "#FFEDC7",
-        "l": 0.951,
-        "c": 0.0531,
-        "h": 85.64,
-        "onWhite": 1.15,
-        "onBlack": 18.19
+        "hex": "#FFD988",
+        "l": 0.9002,
+        "c": 0.1084,
+        "h": 85.18,
+        "onWhite": 1.35,
+        "onBlack": 15.53
       },
       "warning-muted-foreground": {
-        "hex": "#A45300",
-        "l": 0.5311,
-        "c": 0.1316,
-        "h": 54.95,
-        "onWhite": 5.5,
-        "onBlack": 3.82
+        "hex": "#974C00",
+        "l": 0.4999,
+        "c": 0.1238,
+        "h": 55.01,
+        "onWhite": 6.27,
+        "onBlack": 3.35
       },
       "info-muted": {
-        "hex": "#D5F5FC",
-        "l": 0.9493,
-        "c": 0.0346,
-        "h": 212.37,
-        "onWhite": 1.15,
-        "onBlack": 18.3
+        "hex": "#A7EBF8",
+        "l": 0.8992,
+        "c": 0.07,
+        "h": 210.75,
+        "onWhite": 1.32,
+        "onBlack": 15.88
       },
       "info-muted-foreground": {
         "hex": "#006B78",
@@ -929,12 +929,12 @@
         "onBlack": 3.37
       },
       "destructive-muted": {
-        "hex": "#FFE8E7",
-        "l": 0.9492,
-        "c": 0.0252,
-        "h": 20.61,
-        "onWhite": 1.17,
-        "onBlack": 17.95
+        "hex": "#FFD1CF",
+        "l": 0.8997,
+        "c": 0.0521,
+        "h": 21.09,
+        "onWhite": 1.37,
+        "onBlack": 15.27
       },
       "destructive-muted-foreground": {
         "hex": "#AA2422",
@@ -1251,12 +1251,12 @@
         "onBlack": 1.18
       },
       "success-muted": {
-        "hex": "#13422F",
-        "l": 0.3412,
-        "c": 0.0611,
-        "h": 163.02,
-        "onWhite": 11.36,
-        "onBlack": 1.85
+        "hex": "#194735",
+        "l": 0.3603,
+        "c": 0.0597,
+        "h": 164.55,
+        "onWhite": 10.53,
+        "onBlack": 1.99
       },
       "success-muted-foreground": {
         "hex": "#98D1B6",
@@ -1267,12 +1267,12 @@
         "onBlack": 12.13
       },
       "warning-muted": {
-        "hex": "#46350D",
-        "l": 0.3395,
-        "c": 0.0599,
-        "h": 84.94,
-        "onWhite": 11.83,
-        "onBlack": 1.78
+        "hex": "#4C3A13",
+        "l": 0.3597,
+        "c": 0.0601,
+        "h": 83.76,
+        "onWhite": 10.93,
+        "onBlack": 1.92
       },
       "warning-muted-foreground": {
         "hex": "#F2B966",
@@ -1283,12 +1283,12 @@
         "onBlack": 11.91
       },
       "info-muted": {
-        "hex": "#0A3F47",
-        "l": 0.3389,
-        "c": 0.0537,
-        "h": 210.16,
-        "onWhite": 11.57,
-        "onBlack": 1.81
+        "hex": "#11454D",
+        "l": 0.3609,
+        "c": 0.0544,
+        "h": 209.82,
+        "onWhite": 10.59,
+        "onBlack": 1.98
       },
       "info-muted-foreground": {
         "hex": "#8BCFDB",
@@ -1299,12 +1299,12 @@
         "onBlack": 12.05
       },
       "destructive-muted": {
-        "hex": "#552928",
-        "l": 0.3401,
-        "c": 0.0655,
-        "h": 22.46,
-        "onWhite": 12.11,
-        "onBlack": 1.73
+        "hex": "#5B2E2D",
+        "l": 0.36,
+        "c": 0.066,
+        "h": 22.21,
+        "onWhite": 11.21,
+        "onBlack": 1.87
       },
       "destructive-muted-foreground": {
         "hex": "#FEA89E",

@@ -627,7 +627,7 @@
       "type": "color"
     },
     "success-muted": {
-      "value": "#D4F9E6",
+      "value": "#ADEFD0",
       "type": "color"
     },
     "success-muted-foreground": {
@@ -635,15 +635,15 @@
       "type": "color"
     },
     "warning-muted": {
-      "value": "#FFEDC7",
+      "value": "#FFD988",
       "type": "color"
     },
     "warning-muted-foreground": {
-      "value": "#A45300",
+      "value": "#974C00",
       "type": "color"
     },
     "info-muted": {
-      "value": "#D5F5FC",
+      "value": "#A7EBF8",
       "type": "color"
     },
     "info-muted-foreground": {
@@ -651,7 +651,7 @@
       "type": "color"
     },
     "destructive-muted": {
-      "value": "#FFE8E7",
+      "value": "#FFD1CF",
       "type": "color"
     },
     "destructive-muted-foreground": {
@@ -813,7 +813,7 @@
       "type": "color"
     },
     "success-muted": {
-      "value": "#13422F",
+      "value": "#194735",
       "type": "color"
     },
     "success-muted-foreground": {
@@ -821,7 +821,7 @@
       "type": "color"
     },
     "warning-muted": {
-      "value": "#46350D",
+      "value": "#4C3A13",
       "type": "color"
     },
     "warning-muted-foreground": {
@@ -829,7 +829,7 @@
       "type": "color"
     },
     "info-muted": {
-      "value": "#0A3F47",
+      "value": "#11454D",
       "type": "color"
     },
     "info-muted-foreground": {
@@ -837,7 +837,7 @@
       "type": "color"
     },
     "destructive-muted": {
-      "value": "#552928",
+      "value": "#5B2E2D",
       "type": "color"
     },
     "destructive-muted-foreground": {
