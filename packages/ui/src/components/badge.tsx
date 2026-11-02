@@ -28,10 +28,10 @@ const badgeVariants = cva(
       variant: {
         default: "bg-primary text-primary-foreground",
         secondary: "bg-secondary text-secondary-foreground",
-        destructive: "bg-destructive-muted text-destructive-muted-foreground",
-        success: "bg-success-muted text-success-muted-foreground",
-        warning: "bg-warning-muted text-warning-muted-foreground",
-        info: "bg-info-muted text-info-muted-foreground",
+        destructive: "border-destructive-muted-foreground/25 bg-destructive-muted text-destructive-muted-foreground",
+        success: "border-success-muted-foreground/25 bg-success-muted text-success-muted-foreground",
+        warning: "border-warning-muted-foreground/25 bg-warning-muted text-warning-muted-foreground",
+        info: "border-info-muted-foreground/25 bg-info-muted text-info-muted-foreground",
         // A badge is not a control, so its edge is the decorative `border`,
         // not `input` (invariant 4).
         outline: "border-border text-foreground",

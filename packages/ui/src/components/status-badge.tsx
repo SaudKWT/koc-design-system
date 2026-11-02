@@ -59,10 +59,11 @@ interface StatusSpec {
  * only carrier (WCAG 1.4.1).
  */
 const TINT = {
-  success: "border-transparent bg-success-muted text-success-muted-foreground",
-  warning: "border-transparent bg-warning-muted text-warning-muted-foreground",
-  info: "border-transparent bg-info-muted text-info-muted-foreground",
-  neutral: "border-transparent bg-muted text-muted-foreground",
+  // The hairline is the label colour at 25%: Claude's chip, which Saud chose.
+  success: "border-success-muted-foreground/25 bg-success-muted text-success-muted-foreground",
+  warning: "border-warning-muted-foreground/25 bg-warning-muted text-warning-muted-foreground",
+  info: "border-info-muted-foreground/25 bg-info-muted text-info-muted-foreground",
+  neutral: "border-border bg-muted text-muted-foreground",
 };
 
 const STATUS: Record<OperationalStatus, StatusSpec> = {

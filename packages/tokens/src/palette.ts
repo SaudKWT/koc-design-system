@@ -258,10 +258,16 @@ export const chartSeriesDark = [
  * tints back at L 0.955 with a little chroma, held to 1.1:1 against the card.
  * The reference's labels measure 2.6–3.4:1 on their grounds; these are the most
  * vivid inks per hue that still clear 4.5:1 (statusInk).
+ *
+ * Then, the same day, Claude's own "Needs your input" chip (Saud: "I like
+ * this style"): a cream ground, a hairline of the same hue, and a DEEP label —
+ * brown on amber rather than orange. So the inks went dark (L ~0.45, about 7:1)
+ * and the badges gained a border at 25% of the label colour; warning's ground
+ * moved from peach (h 65) to cream (h 82).
  */
 export const statusTint = {
   success: themePair(150, { l: 0.955, c: 0.035 }, { l: 0.36, c: 0.06 }),
-  warning: themePair(65, { l: 0.955, c: 0.035 }, { l: 0.36, c: 0.06 }),
+  warning: themePair(82, { l: 0.96, c: 0.04 }, { l: 0.36, c: 0.06 }),
   info: themePair(215, { l: 0.955, c: 0.03 }, { l: 0.36, c: 0.054 }),
   danger: themePair(30, { l: 0.955, c: 0.03 }, { l: 0.36, c: 0.066 }),
 } as const;
@@ -272,9 +278,9 @@ export const statusTint = {
  * without dropping below AA. Dark labels are the ramps' 300 steps.
  */
 export const statusInk = {
-  success: fromOklch(0.515, 0.18, 150),
-  info: fromOklch(0.525, 0.18, 215),
-  danger: fromOklch(0.55, 0.18, 27),
+  success: fromOklch(0.43, 0.11, 150),
+  info: fromOklch(0.43, 0.08, 215),
+  danger: fromOklch(0.46, 0.15, 27),
 } as const;
 
 /**
@@ -284,6 +290,6 @@ export const statusInk = {
  * them, at hue 55 where the gamut still allows real chroma: orange, not brown.
  */
 export const warningInk = {
-  light: fromOklch(0.54, 0.18, 60),
+  light: fromOklch(0.45, 0.09, 65),
   dark: fromOklch(0.82, 0.12, 75),
 } as const;
