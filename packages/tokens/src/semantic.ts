@@ -29,7 +29,12 @@ export interface SemanticTheme {
  * raised without needing a heavy shadow.
  */
 export const light: SemanticTheme = {
-  background: neutral[50],
+  // White, and the sidebar grey (Saud, 2026-11-02: "make the sidebar light
+  // grey and the main screen white, so that it's in focus"). Until then the
+  // page was neutral[50] and the sidebar white, which put the nav in the light
+  // and the work in the shade. Cards stay white and read by their hairline,
+  // which the rig3 cards always had.
+  background: "#FFFFFF",
   foreground: neutral[950],
 
   card: "#FFFFFF",
@@ -179,14 +184,16 @@ export const light: SemanticTheme = {
   // is unreadable on a light surface. Consumers must put it on a `bg-primary`
   // tile (see the docs sidebar header) rather than dropping it straight onto
   // `bg-sidebar`. That is a real constraint the old dark slab was hiding.
-  sidebar: "#FFFFFF",
+  sidebar: neutral[50],
   "sidebar-foreground": neutral[800],
   "sidebar-primary": primary[600],
   "sidebar-primary-foreground": "#FFFFFF",
   // Active item: a blue wash with the label in brand blue — enough to locate
   // yourself at a glance, far short of a slab. Moves with `accent`, because a
   // current nav item and a hovered button should read as the same idea.
-  "sidebar-accent": neutral[100],
+  // One step deeper since the sidebar went grey: neutral[100] on neutral[50] is
+  // barely a step, and the selected row has to be found at a glance.
+  "sidebar-accent": neutral[200],
   "sidebar-accent-foreground": neutral[900],
   "sidebar-border": neutral[200],
   "sidebar-ring": primary[600],

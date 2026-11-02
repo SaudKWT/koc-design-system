@@ -539,7 +539,7 @@
   },
   "semantic/light": {
     "background": {
-      "value": "{color.neutral.50}",
+      "value": "#FFFFFF",
       "type": "color"
     },
     "foreground": {
@@ -691,7 +691,7 @@
       "type": "color"
     },
     "sidebar": {
-      "value": "#FFFFFF",
+      "value": "{color.neutral.50}",
       "type": "color"
     },
     "sidebar-foreground": {
@@ -707,7 +707,7 @@
       "type": "color"
     },
     "sidebar-accent": {
-      "value": "{color.neutral.100}",
+      "value": "{color.neutral.200}",
       "type": "color"
     },
     "sidebar-accent-foreground": {

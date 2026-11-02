@@ -109,7 +109,7 @@
  * Kibo UI component is automatically on-brand with no restyling.
  */
 :root {
-  --background: oklch(0.97 0.0029 264.54);
+  --background: oklch(1 0 0);
   --foreground: oklch(0.2061 0.0086 240.33);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2061 0.0086 240.33);
@@ -147,11 +147,11 @@
   --chart-3: oklch(0.4512 0.1403 338.08);
   --chart-4: oklch(0.591 0.1339 159.92);
   --chart-5: oklch(0.5399 0.1401 277.77);
-  --sidebar: oklch(1 0 0);
+  --sidebar: oklch(0.97 0.0029 264.54);
   --sidebar-foreground: oklch(0.3528 0.0168 251.8);
   --sidebar-primary: oklch(0.483 0.139 250.61);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.9364 0.0046 258.33);
+  --sidebar-accent: oklch(0.8829 0.0088 247.93);
   --sidebar-accent-foreground: oklch(0.2866 0.0131 253.03);
   --sidebar-border: oklch(0.8829 0.0088 247.93);
   --sidebar-ring: oklch(0.483 0.139 250.61);

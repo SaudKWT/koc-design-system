@@ -705,12 +705,12 @@
   "themes": {
     "light": {
       "background": {
-        "hex": "#F4F5F7",
-        "l": 0.97,
-        "c": 0.0029,
-        "h": 264.54,
-        "onWhite": 1.09,
-        "onBlack": 19.25
+        "hex": "#FFFFFF",
+        "l": 1,
+        "c": 0,
+        "h": 0,
+        "onWhite": 1,
+        "onBlack": 21
       },
       "foreground": {
         "hex": "#14181B",
@@ -1009,12 +1009,12 @@
         "onBlack": 3.99
       },
       "sidebar": {
-        "hex": "#FFFFFF",
-        "l": 1,
-        "c": 0,
-        "h": 0,
-        "onWhite": 1,
-        "onBlack": 21
+        "hex": "#F4F5F7",
+        "l": 0.97,
+        "c": 0.0029,
+        "h": 264.54,
+        "onWhite": 1.09,
+        "onBlack": 19.25
       },
       "sidebar-foreground": {
         "hex": "#353C44",
@@ -1041,12 +1041,12 @@
         "onBlack": 21
       },
       "sidebar-accent": {
-        "hex": "#E8EAED",
-        "l": 0.9364,
-        "c": 0.0046,
-        "h": 258.33,
-        "onWhite": 1.21,
-        "onBlack": 17.42
+        "hex": "#D4D9DE",
+        "l": 0.8829,
+        "c": 0.0088,
+        "h": 247.93,
+        "onWhite": 1.42,
+        "onBlack": 14.78
       },
       "sidebar-accent-foreground": {
         "hex": "#262B31",
