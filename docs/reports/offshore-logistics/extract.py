@@ -20,7 +20,7 @@ the audit arrays in the data file record which way they called it.
 import json
 import re
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 import openpyxl
@@ -81,6 +81,10 @@ def read_sheet(ws, lo_date=None, hi_date=None):
     for lo, hi in day_blocks(ws):
         rows = list(ws.iter_rows(min_row=lo, max_row=hi))
         day, dtxt, status = (clean(rows[0][i].value) for i in range(1, 4))
+        # From report 32 the Date column holds real dates, not DD.MM.YYYY
+        # text, and str() of one reads "2026-10-29 00:00:00".
+        if isinstance(rows[0][2].value, (datetime, date)):
+            dtxt = rows[0][2].value.strftime("%d.%m.%Y")
         entry = {
             "day": DAY_FIX.get(day.lower(), day),
             "date": dtxt,
@@ -150,7 +154,12 @@ def read_sheet(ws, lo_date=None, hi_date=None):
 
 
 def period(ws):
-    m = re.findall(r"(\d{2}\.\d{2}\.\d{4})", clean(ws["B1"].value))
+    title = clean(ws["B1"].value)
+    m = re.findall(r"(\d{2}\.\d{2}\.\d{4})", title)
+    if len(m) < 2:
+        # From report 32 the title reads "29-Oct-2026 to 04-Nov-2026".
+        m = [datetime.strptime(t, "%d-%b-%Y").strftime("%d.%m.%Y")
+             for t in re.findall(r"(\d{2}-[A-Za-z]{3}-\d{4})", title)]
     return {"from": m[0], "to": m[1]} if len(m) >= 2 else {}
 
 

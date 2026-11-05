@@ -1620,7 +1620,7 @@ def build_email(cur, prev, all_weeks=None):
     </tr></table></td></tr>
   <tr><td style="padding:22px 28px 6px;">
     <p style="margin:0 0 6px;font-size:15px;">Salam Bu Khaled,</p>
-    <p style="margin:0;font-size:14px;color:{INK_MUTED};">Kindly find below the Offshore Logistics weekly summary. The week in one line and five figures comes first, then both rigs, then what happened, then the supporting charts and the full week on week comparison. Full daily port and vessel logs are in the attached workbook.</p>
+    <p style="margin:0;font-size:14px;color:{INK_MUTED};">Kindly find below the Offshore Logistics weekly summary. The week in one line and four figures comes first, then {'the rig' if len(cur['rigs']) == 1 else 'the rigs'}, then what happened, then the supporting charts and the full week on week comparison. Full daily port and vessel logs are in the attached workbook.</p>
   </td></tr>
   <tr><td style="padding:14px 28px 0;">
 {body}  </td></tr>
@@ -2417,7 +2417,7 @@ def main():
     argv = sys.argv[1:]
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
-    dates = args or ["2026-10-29", "2026-10-22", "2026-10-15", "2026-10-08",
+    dates = args or ["2026-11-05", "2026-10-29", "2026-10-22", "2026-10-15", "2026-10-08",
                      "2026-10-01", "2026-09-24", "2026-09-17", "2026-09-10",
                      "2026-09-03", "2026-08-26"]
 

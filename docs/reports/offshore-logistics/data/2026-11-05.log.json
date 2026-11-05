@@ -1,0 +1,336 @@
+{
+  "reportDate": "2026-11-05",
+  "source": "report.xlsx",
+  "port": {
+    "from": "29.10.2026",
+    "to": "04.11.2026",
+    "days": [
+      {
+        "day": "Thursday",
+        "date": "29.10.2026",
+        "status": "Normal",
+        "lines": [
+          "1 truck arrived with Cargo Basket carry with Explosive for OD1 (CallOff:OD-SH1-B-2-9) from WPS Burgan Yard, as per delivery ticket HPM-DT-1633.",
+          "1 truck arrived with five 9.5’’DC for OD1 (CallOff:OD-SH1R-C-2-3) from COSL Mina Abdallah facility ,as per delivery ticket COSL-DT-OD-SH1R-C-2-3.",
+          "1 truck arrived with one 15’H/Hbasket for OD1 (CallOff:OD-SH1R-C-3-13) from Odfjell Mina Abdallah facility, as per delivery ticket OWS-DT-TRS-086.",
+          "1 truck arrived with three 6’mini-carry with CMT tools for OD1 (CallOff:OD-SH1R-C-1-8) from CMT Hall Mina Abdallah facility, as per delivery ticket CMT-DT- OD-SH1R-C-1-8.",
+          "1 truck arrived with one 6’mini-carry with Sperry tools for OD1(CallOff:OD-SH1R-C-1-17) from Sperry SDL Hal lMina Abdallah facility, as per delivery ticket SDL-DT- OD-SH1R-C-1-17.",
+          "6 trucks arrived with 44 joints 24’’Casing for OD1 from KOC Ahmadi Yard-4, as per delivery KOC MTF 2026/10/29/(0621,0630,0554,0542,0596,0609).",
+          "1 Call off truck arrived with two 30’’ FloatShoe & Collar for OD1 from KOC Ahmadi Fabrication Shop, as per delivery KOC MTF 2026/10/29/1272.",
+          "2 Al Rashed food provision Lorries arrived with Crest Argus-3 food provision.",
+          "Containerizing 30\" Casing accessories & MLS equipment at Shuaiba Berth-20 & loaded 6 cargo basket on CA1 after shifting CA-1 deck cargo.",
+          "Offloaded Wireline explosives from Truck & loaded on Vessel Charlie-3.",
+          "Offloaded 6 cargo lifts from 3 trucks and loaded 6 cargo lifts on VesselCharlie-3 as per updated Lookahead received from OD1.",
+          "Offloaded 1 truck carry with two 30\" Float Shoe joint & one Float Collar Joint arrived from KOC Fabrication work shop and kept on Berth-20 pipe racks for inspection & MPI by Al-Mansoori.",
+          "Placed OD-1 Chiller container with general provision container near electri cpower point & offloaded CA3 food provision & kept inOD-1 Chiller container at Shuaiba Berth-4.",
+          "Offloading 6 trucks with 44 joints x 24\" Casing R3 CAT ID 70126893.",
+          "loaded one truck with 3 x 38\" Cut piece casing arrived from OD1 RCM-OD-970.",
+          "Offload Deck Cargo of CA3 as per RCM-OD-970.",
+          "Bundling 22 joints 24\" Casing."
+        ],
+        "defects": [],
+        "_rows": [
+          4,
+          20
+        ],
+        "iso": "2026-10-29"
+      },
+      {
+        "day": "Friday",
+        "date": "30.10.2026",
+        "status": "Normal",
+        "lines": [
+          "1 truck was dispatched with 3 Cut Joints received from OD1 (RCM-OD-970) to Shuaiba Port Pipe Yard, as per delivery ticket RM-SP-9127.",
+          "1 truck was dispatched with 5 lifts received from OD1 (RCM-OD-969) to Shuaiba Port Pipe Yard, as per delivery ticket RM-SP-9128.",
+          "1 truck was dispatched with 6 lifts received from OPH (RCM-OP-939) to Shuaiba Port Pipe Yard, as per delivery ticket RM-SP-9129.",
+          "1 truck was dispatched with 2 baskets received from OD1 (RCM-OD-958) to Shuaiba Port Pipe Yard, as per delivery ticket RM-SP-9130.",
+          "1 truck was dispatched with 2 X 2-7/8’’ tubing & 38’’Casing received from OD1 (RCM-OD-970) to Shuaiba Port Pipe Yard, as per delivery ticket RM-SP-9131.",
+          "3 trucks arrived with 24 joints 24'' casing, 203ppf, L80, TSHERR3, Casing Joint ID-70126893 from Shuaiba Port Pipe Yard, as per delivery ticket HPM-DT-1636.",
+          "1 truck arrived with 2 baskets carry with Fishingtools for OD1 (CallOff:OD-SH1R-B-1-14) from Odfjell Mina Abdallah facility, as per delivery ticket OWS-DT-FIS-031.",
+          "1 Pick-up arrived from Shuaiba Pipe Yard with 33\" Bit breaker & 30\"Drift to Shuaiba port Berth-4.",
+          "1 pick up dispatched with 2 Cement samples & 1 water sample to Cement lab Mina Abdulla.",
+          "Loaded 5 trucks with 19 backload cargo lifts received from OD-1 as per RCM-OD-938,939&970 and sent to Shuaiba Pipe yard for safe storage.",
+          "Offloaded 3 trucks arrived from Shuaiba Pipe Yard with 24 joints casing OD 24\" 203ppf, L-80, TSHERR-3 casing joints for next section of OD1, the casing joints at Shuaiba Port pipe racks.",
+          "Offloaded the empty baskets arrived from Shuaiba Pipe yard to Shuaiba Berth-20.",
+          "Offloaded the 32-33\" Bit breaker & 28.125\" Drift for 30\" casing, 234.51ppf from Pick up and loaded on Vessel Charlie-3.",
+          "Offloaded 2 cargo basket carry with 33\"X35\" fishing equipment as per Call Off OD-SH1R-B-1-14 at Shuaiba Berth-20.",
+          "Bundling 24\" R3 Casing CAT ID 70126893, Complete 40 Jts."
+        ],
+        "defects": [],
+        "_rows": [
+          21,
+          35
+        ],
+        "iso": "2026-10-30"
+      },
+      {
+        "day": "Saturday",
+        "date": "31.10.2026",
+        "status": "Normal",
+        "lines": [
+          "1 truck was dispatched with 5x6’mini containers carry with trash received from OD1(RCM-OD-969&970) to BSS Mud Plant, as per delivery ticket RM-SP-9133.",
+          "1 boom truck arrived with 6 Pallets carry with Cementing Chemical for OD1 (callOff:OD1-SH1R-C-2-8) from Cementing Hall Mina Abdallah facility, as per delivery ticket CMT-DT-OD-SH1R-C-2-8.",
+          "1 truck arrived with 6x6’ mini containers carry with Mud Chemicals for OD1 (callOff:OD1-SH1R-C-2-4/OD1-SH1R-C-1-4) from BSS Mud Plant facility, as per delivery ticket BAR-DT-19.",
+          "5 trucks arrived with 39 Joints 24''casing, 203ppf,L80,TSH ER R3 Casing Joint ID-70126893 from Shuaiba Port Pipe Yard to Shuaiba port berth-20 as per delivery ticket HPM-DT-1638,1639.",
+          "7 trucks arrived with 56 joints 24'' casing, 193.6ppf, L80,TSH ER R3 Casing Joint ID-70126887 from KOC Yard-4 to Shuaiba Port Pipe Yard, as per KOC delivery ticket 2026/10/31/(0412,0431,0382,0333,0450,0366,0339)",
+          "7 trucks dispatched with 27 full WBM cutting skips to BG-1525 disposal WBM pit",
+          "loaded one truck with 5X6ft. Mini Container carry with Baroid Mud backload from OD1 EX. RCM-OD-969&970 and sent to Baroid Magwa Plant.",
+          "Cargo operation with Charlie-3, loaded 3X6ft Mini containers as per CallOffOD-SH1R-C-2-8.",
+          "Cargo operation with Charlie-3, offloaded 6 Ful lMud Skips from Charlie-3 deck as per RCM-OD-972.",
+          "Offload 7 trucks carry with 56 joints of 24'' casing, 193.6 ppf, L80, TSHERR3, CasingID-70126887 from KOC Yard-4 at Pipe Yard Pipe racks and loaded 39 joints of 24'' casing, 203ppf, L80, TSHERR3, CasingID-70126893 and sent to Shuaiba Berth-20.",
+          "Cargo operation with CA3, loaded 25 cargolifts on Vessel CA3 deck as per updated Lookahead received from OD-1.",
+          "Offloading 6 trucks with 24\" Casing CAT ID 70126893 at berth 20 storage racks (39 Jts).",
+          "Cargo operation with CA5 offloaded return cargo as per RCM-OD-973.",
+          "7 trucks loaded with total of 27 Full mud skips with WBM cuttings, as per RM-SP-9134 to 9140 Ex RCM-OD-973."
+        ],
+        "defects": [],
+        "_rows": [
+          36,
+          49
+        ],
+        "iso": "2026-10-31"
+      },
+      {
+        "day": "Sunday",
+        "date": "01.11.2026",
+        "status": "Normal",
+        "lines": [
+          "1 truck was dispatched with 3 lifts received from OD1 (RCM-OD-970, 971 & 973) to COSL Mina Abdallah, as per delivery ticket RM-SP-9141.",
+          "1 truck was dispatched with Pipe Recovery Box received from OD1 (RCM-OD-970) to WPS Hall Mina Abdallah, as per delivery ticket RM-SP-9142.",
+          "1 truck was dispatched with 2 lifts received from OD1 (RCM-OD-970) to OWS Mina Abdallah, as per delivery ticket RM-SP-9143.",
+          "1 Pickup was dispatched with 4 x H-and Carry received from OD1 (RCM-OD-972) to HPM, CMT & BSS Lab Hall Mina Abdallah, as per delivery ticket RM-SP-9144.",
+          "1 truck arrived with 1 x 7.8mtr. empty basket from OWS Mina Abdallah facility, as per delivery ticket HPM-DT-1640.",
+          "7 trucks arrived with 27 empty mud skips from KOC Location BG-1525, as per delivery ticket RDT-SP-9134.",
+          "2 trucks arrived with 16 joints 24''casing, 203ppf, L80, TSH ER R3 Casing Joint ID-70126893 from Shuaiba Port Pipe Yard, as per delivery ticket HPM-DT-1641.",
+          "1 truck arrived with 4 lifts for OD1 (CallOff:OD-SH1R-C-3-3) from COSL Mina Abdallah facility, as per delivery ticket COSL-DT-OD-SH1R-C-3-3.",
+          "2 trucks wew dispatched with CATID:70126871-Csg, 36\", 374.15PPF, X-80, XLW, R3 to KOC Ahmadi Yard-4,as per delivery ticket RM-SP-9145.",
+          "5 trucks arrived with 40 joints 24'' casing, 193.6ppf, L80, TSH ER R3 Casing Joint ID-70126887 from KOC Yard-4 to Shuaiba Port Pipe Yard, as per KOC delivery ticket 2026/11/1/(0485,0471,0762,0491,0506).",
+          "6 trucks dispatched with 23 full WBM cutting skips to BG-1525 disposal WBM pit.",
+          "Loading backload, loaded 3 X trucks with 6 lifts for COSL, Wireline & Odfjell backload cargo received from Rig Oriental Dragon-1 as per RCM OD-970 & 972.",
+          "Offload 24\" casing joints received from KOC Yard# 4, offloaded 32 joints of 24'' 193.6ppf L80 TSH ER R3 casing with 8 Short joints, offloaded 16 casing joints at Shuaiba Pipe Yard.",
+          "Loaded 14 joints of 24'' 203ppf L80 TSH ER R3 casing on 2 trucks & sent to Shuaiba Port Berth-20. Offloaded 10 joints of casing joints at Sbuaiba Berth-20 pipe racks.",
+          "Loaded 6 joints of 36\", 374.15 PPF , X-80, XLW, R3 Ex. Rig Oriental Dragon-1 Casing (CAT-70126871) on 2 X regulat trucks & sent to KOC Yard-4 & sent to Hetco yard for STBY and deliver at KOC Yard# 4.",
+          "Offloaded 27 empty mud skips from 7 trucks arrived at Shuaiba Port Berth-20 from KOC Treatment plant BG-1525 after disposal of mud cuttings.",
+          "load 2 Trucks with R1 & R2 38\" Casing backloaded from OD-1 Ex RCM-OD-967 as per KOC MTF, send trucks to Pipe yard to go early morning to KOC yard",
+          "Offloaded cargo RCM-OD-974 from CA5 deck.",
+          "Loaded CA5 with 23 empty mud skips and COSL rig spares as per last updated LAH."
+        ],
+        "defects": [],
+        "_rows": [
+          50,
+          68
+        ],
+        "iso": "2026-11-01"
+      },
+      {
+        "day": "Monday",
+        "date": "02.11.2026",
+        "status": "Normal",
+        "lines": [
+          "6 trucks arrived at Shuaiba port with 23 empty mud skips from KOC treatment plant BG-1525 as per RDT-SP-9149,9150,9151, 9152,9153,9194",
+          "1 truck loadeed with 2 Joints of 36\" 374.15 PPF , X-80, XLW Casing R-1 Casing joint CAT: 70126872 and sent for KOC Yard# 4 as per RM-SP-9156.",
+          "1 truck loadeed with 2 Joints of 36\" 374.15 PPF , X-80, XLW Casing R-2 Casing joint CAT: 70126873 and sent for KOC Yard# 4 as per RM-SP-9157.",
+          "1 truck loadeed with 2 Joints of 36\" 374.15 PPF , X-80, XLW Casing R-3 Casing joint CAT: 70126871 and sent for KOC Yard# 4 as per RM-SP-9158.",
+          "1 truck loadeed with 2 Joints of 36\" 374.15 PPF , X-80, XLW Casing R-3 Casing joint CAT: 70126871 and sent for KOC Yard# 4 as per RM-SP-9159.",
+          "1 truck loaded with 1 full OBM skip received from OD1 as per RCM-OD-974 & sent to KOC SEK location for disposal as per RM-SP-9155.",
+          "1 truck arrived at Shuaiba Pipe Yard with 2 X 24\" Short joints CAT: 70126894 & 2 X 24\" Short joints CAT: 70126896.",
+          "1 truck arrived at Shuaiba Pipe Yard with 2 X 24\" Short joints CAT: 70126895 & 2 X 24\" Short joints CAT: 70126889.",
+          "2 trucks dispatched with 8 full WBM cutting skips to BG-1525 disposal WBM pit.",
+          "1 Truck loaded with Baroid Compressor sent to Baroid work shop. Road manifest No. RM-SP-9164.",
+          "Cargo operation with Vessel Crest Argus-5, loaded 29 cargo lifts on Vessel Crest Argus-5 as per updated Lookahead received from OD1.",
+          "Offloaded 23 empty mud Skips from 6 trucks and loaded on CA5.",
+          "Loaded 4 trucks with 8 joints 36\" casing, 374.15 PPF , X-80, XLW Casing R-3, 3 X R-2 & 2 X R-1 joints and sent to Shuaiba Pipe Yard to STBY and deliver the casing joints at KOC Yard# 4 tomorrow.",
+          "Loaded 1 truck with 1 full OBM skip received from OD1 as per RCM-OD-974.",
+          "Loaded 2 trucks with total of 8 Full mud skips with WBM cuttings, as per RM-SP-9161 to 9162 Ex RCM-OD-976."
+        ],
+        "defects": [],
+        "_rows": [
+          69,
+          83
+        ],
+        "iso": "2026-11-02"
+      },
+      {
+        "day": "Tuesday",
+        "date": "03.11.2026",
+        "status": "Normal",
+        "lines": [
+          "Cargo operation with CA3, loaded 11 cargo lifts on CA3 as per updated Lookahead received from OD1.",
+          "Offloaded 8 empty mud Skips from trucks and loaded on CA3.",
+          "Loaded 4 trucks with 6 joints 36\" casing, 374.15PPF, X-80, XLW, R-3 and one joint 38\" casing, 395.53PPF, X-80, XLW, R1 and sent to Shuaiba Pipe Yard to STBY and deliver the casing joints at KOC Yard# 4 tomorrow morning.",
+          "Loaded 2 trucks with 32 ea. Solid Cement IBC Tanks and sent to Arabian Gulf, Mina Abdullah for disposal.",
+          "Loaded 6 trucks with total of 24 Full mud skips with WBM cuttings, as per RM-SP-9172 to 9177 Ex RCM-OD-976.",
+          "Offloaded 16 Jts of 30\", 234.5 PPF Casings from CA1 as per RCM-OD-978.",
+          "1 Pick-up sent to Mina Abdullah Office to deliver 4 Hand Carry received from OPH as per RCM-OD-975 for Cementing, HPM, GR & Baroid Mud Lab (RM-SP-9165).",
+          "1 truck sent with one Baroid Compressor to Baroid Magwa Plant for maintenance as per RM-SP-9164.",
+          "1 truck arrived at Shuaiba Port with two 6ft Mini containers from Magwa Plant as per Call Off OD-SH1R-C-2-4 & OD-SH1R-C-3-4, offloaded the cargo and loaded on CA3.",
+          "2 trucks arrived at Shuaiba port with 4 empty mud skips from KOC treatment plant BG-1525 as per RDT-SP-9161,9162.",
+          "4 trucks sent with 8 Joints 36\" casing 374.15PPF, X-80, XLW, R-3, CAT:70126871 to KOC Yard#4 as per RM-SP-9168,9169,9170,9171.",
+          "2 trucks sent with 16 IBC tanks with Solid Cement & Mud cutting sand Arabian Gulf, Mina Abdullah for disposal as per RM-SP-9166.",
+          "1 truck arrived with 7 joints 24'' casing 203ppf, L80, TSHER, R3, ID-70126893 from KOC Yard#4, as per KOC Material Transfer Note 2026/11/3/0803.",
+          "1 truck arrived with assorted wooden boxes carry with 24\" Casing Accessories from KOC Yard#4, as per KOC Material Transfer Note 2026/11/3/0364.",
+          "1 truck arrived with 2 joints 24''casing, 203ppf, L80, TSHER, R1, ID-70126890 from KOC Yard#4, as per KOC Material Transfer Note 2026/11/3/0808.",
+          "1 truck arrived from Baroid Magwa Plant with Baroid Compressor SAP# 14503132 as per HPM-DT-1642.",
+          "6 trucks dispatched with 24 full WBM cutting skips to BG-1525 disposal WBM pit."
+        ],
+        "defects": [],
+        "_rows": [
+          84,
+          100
+        ],
+        "iso": "2026-11-03"
+      },
+      {
+        "day": "Wednesday",
+        "date": "04.11.2026",
+        "status": "Normal",
+        "lines": [
+          "1 Truck arrived from Wireline Facility with Radioactive Source Box as per HPM-DT-1643, offloaded the RA Box and loaded on Charlie-3.",
+          "1 Truck loaded with one COSL Diverter Test Plug & one COSL Full Trash Skip (RCM-OD-974 & 976) and one 3mtr. Basket carry with Drill Bits, Bit Breakers & Bit Gauges and sent to Shuaiba Pipe yard and then to COSL Warehouse as pe RM-SP-9178.",
+          "1 Truck arrived at Shuaiba port with 2 COSL Cargo lifts as per Call Off OD-SH1R-C-4-3.",
+          "1 Truck sent with 20 IBC tanks with Solid Cement & Mud cuttings to Arabian Gulf, Mina Abdullah for disposal as per RM-SP-9179",
+          "6 Trucks arrived at Shuaiba port with 24 empty mud skips from KOC treatment plant BG-1525 as per RDT-SP-9172,9173,9174,9175,9176,9177.",
+          "8 trucks dispatched with 30 full WBM cutting skips to BG-1525 disposal WBM pit.",
+          "Cargo operation with CA-3, loaded 26 cargo lifts on CA3 as per updated Lookahead received from OD1.",
+          "Offloaded truck carry with the RA Box arrived from Wireline as per Call Off OD-SH1R-B-1-9, and loaded on Vessel Charlie-3.",
+          "Offloaded 1 Truck carry with COSL Rig Spares & Full Acetylene Gas Cylinder Rack as per COSL-DT-OD-SH1R-C-4.3 at Shuaiba Berth-20 and loaded on CA3.",
+          "Loaded 1 truck with 20 ea. Solid Cement IBC Tanks and sent to Arabian Gulf, Mina Abdullah for disposal.",
+          "Offloaded 6 empty mud skips arrived from KOC location BG-1525 after disposal of Mud Cuttings and loaded on CA3.",
+          "Cargo offloaded with CA5, offloading cargo as per RCM-OD-979.",
+          "Loaded 8 trucks with total of 30 Full mud skips with WBM cuttings, as per RM-SP-9180 to 9187 Ex RCM-OD-979."
+        ],
+        "defects": [],
+        "_rows": [
+          101,
+          113
+        ],
+        "iso": "2026-11-04"
+      }
+    ]
+  },
+  "vessel": {
+    "from": "29.10.2026",
+    "to": "04.11.2026",
+    "days": [
+      {
+        "day": "Thursday",
+        "date": "29.10.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel at Berth 20,cargo operation, received cement(120 MT), Vessel remains secured at berth 20",
+          "Vessel CA3- Vessel STBY anchored at OD1 Location,heave up anchor@07:15,vessel in position on the p/s OD1@08:20, cargo operation, transferred barite(30.92MT), pull out@15:20, departed to Shuaiba Port, arrived and secured alongside at Shuaiba Port berth 20@19:20, fresh water received (36 M3), receiving drill water is in progress, vessel remain alongside at Shuaiba Port, Berth 20.",
+          "Vessel CA5- Vessel remain port side of OD1,deck cargo operation,Pull out 500m@01:05, vessel STBY anchor at OD 1 area.",
+          "Vessel Charlie 3- Vessel STBY at berth 4,cargo loaded, PAx In, castoff and proceed to OD1@10:45, along side of OD1@11:50, cargo operation,Pax transfer,pullout@12:45 proceed to Shuaiba, secured alongside of berth 4@ 14:00, Pax In/out, cargo Loaded, castoff and proceed to OD1@ 16:15, along side of OD1@17:25 offloaded cargo, PAx out,pullout@ 18:15, secured alongside of berth 4@ 19:30, vessel STBY at berth 20"
+        ],
+        "defects": [],
+        "_rows": [
+          4,
+          7
+        ],
+        "iso": "2026-10-29"
+      },
+      {
+        "day": "Friday",
+        "date": "30.10.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel remains secured at berth 20,Vessel cast off from Shuaiba Port@00:20, proceed to OD1,Vessel under STBD side Crane of OD1@04:35, Transferred cement (120 Mt)Vessel pulled out and shifted to Port side, @16:40, cargo operation,Vessel enganged with OD1",
+          "Vessel CA3- Vessel at berth 20, received drill water (468 M3), fresh water(72 M3) receiving drill water is in progress, vessel remain alongside at Shuaiba Port, Berth 20.",
+          "Vessel CA5- Vessel STBY anchor at OD 1 area.",
+          "Vessel Charlie 3- Vessel STBY at berth 4,cargo loaded, castoff and proceed to OD1@15:50, along side of OD1@17:00, cargo operation,pullout@17:10 proceed to Shuaiba, secured alongside of berth 4@ 19:55, vessel STBY at berth 20"
+        ],
+        "defects": [],
+        "_rows": [
+          8,
+          11
+        ],
+        "iso": "2026-10-30"
+      },
+      {
+        "day": "Saturday",
+        "date": "31.10.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel remains at OD1, Transferred bentonite(24 MT), cargo operation, Vessel pulled out from OD1@11:10 , exit to 500 M zone, Vessel remains standby anchorage Near OD1.",
+          "Vessel CA3- Vessel at berth 20, received barite (186.3 MT), deck cargo operation, cast off from Shuaib Port, Departed to OD1@19:20, vessel in position on the p/s OD1@22:30, transferred drill water (30 M3),pull out due to DGPS signal Loss and standby outside 500 @23:44",
+          "Vessel CA5- Vessel STBY anchor at OD 1 area,heave up anchor@07:50, in position, stbd side crane of OD 1@09:00, cargo operation, shifted to STBD side @16:55, transferred cement(40MT) Pull out 500m zone@22:25",
+          "Vessel Charlie 3- Vessel STBY at berth 4,cargo loaded, castoff and proceed to OD1@12:20, along side of OD1@13:45, Pax in, cargo operation,pullout@15:11 proceed to Shuaiba, secured alongside of berth 4@ 16:50,Pax out, vessel STBY at berth 20"
+        ],
+        "defects": [],
+        "_rows": [
+          12,
+          15
+        ],
+        "iso": "2026-10-31"
+      },
+      {
+        "day": "Sunday",
+        "date": "01.11.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel remains standby anchorage near OD1",
+          "Vessel CA3- Vessel STBY outside 500 mz for monitoring DGPS signal,heave up anchor@07:15, vessel in position on the s/s OD1@08:30, transferred drill water (76 M3), pull out and shifted to p/s OD1, transferred drill water (194 M3), cargo operation, pull out and standby inside 500 mz@14:09,vessel in position on the p/s OD1@15:15, transferred fresh water (150M3) , cargo operation, pull out@20:24 standby anchored at OD1 Location, heave up anchor@23:08,proceed to s/s OD1.",
+          "Vessel CA5- Vessel arrived berth 20@02:00,cargo operation, received drill water(36 M3), fresh water(72 M3), vessel cast off@08:48,Arrived at OD 1 location@11:30, in position at port side of OD1@12:45, transferred cement(80MT), drill water (280 M3), Pull out 500m zone@23.12 departure to Shuaiba.",
+          "Vessel Charlie 3- Vessel STBY at berth 4,cargo offloaded,PAx IN,castoff and proceed to south Pier@07:50, secured alongside of south pier @08:10PAx IN,castoff and proceed to OD1@08:55, along side of OD1@10:00, Pax out, pullout and STBY, along side of OD1@12:05,Pax in, pullout @ 12:24,departure to south pier, secured alongside of south pier @13:30 PAx out, proceed to shuaiba@ 13:45, alongside of berth 4@14:15 and STBY at berth 4."
+        ],
+        "defects": [],
+        "_rows": [
+          16,
+          19
+        ],
+        "iso": "2026-11-01"
+      },
+      {
+        "day": "Monday",
+        "date": "02.11.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel remains standby anchorage near OD1, Anchor heaved up@06:45, Vessel under port side Crane of OD1@ 08:05, cargo operation, Vessel pulled out from OD1@15:20,exit to 500 M zone, Vessel remains standby anchorage Near OD1.",
+          "Vessel CA3- Vessel approaching OD1, in position on the s/s OD1@00:20, cargo operation, pullout@02:00 and standby anchored at OD1 Location,heave up anchor@06:54,in position on the s/s OD1@08:05,transferred fresh water(150M3), pull out 300 m@11:38, vessel back in position on the p/s OD1@13:40, cargo operation, transferred Bentonite(60MT), cargo operation, pull out@21:00,Departed to Shuaiba Port.",
+          "Vessel CA5- Vessel underway to Shuaiba port,Arrived at Shuaiba port@02:20, cargo operation, received drill water(252M3) ,cast off from berth 20@15:20,departure to OD 1,in post stbd crane@19:30, deck cargo operation, Pull out@23:18,Exit 500m zone",
+          "Vessel Charlie 3- Vessel STBY at berth 4, castoff and proceed to Khiran@06:00, arrived Khiran@08:05,Pax in, castoff and proceed to OD1@ 09:10, alongside OD1@12:00, Pax OUT, pullout and proceed to Khiran @12:20, arrived Khiran@15:20, Pax out, castoff and proceed to OD1@16:05, alongside OD1@18:50, pullout and proceed to Berth 4 @19:05, alongside of berth 4@20:20 and STBY at berth 4, castoff and proceed to OD1@22:40, alongside OD1@23:50, cargo operation, pullout and proceed to Berth 4 @23:54"
+        ],
+        "defects": [],
+        "_rows": [
+          20,
+          23
+        ],
+        "iso": "2026-11-02"
+      },
+      {
+        "day": "Tuesday",
+        "date": "03.11.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel remains standby anchorage near OD1, Anchor heaved up@08:04, Vessel under port side Crane of OD1@ 09:22, Pax transferred,Vessel pulled out from OD1@09:32,exit to 300 M zone, Vessel back to port side Crane of OD1@10:30, Pax received, cargo operation , transferred bentonite (8MT); Vessel pulled out from OD1@ 20:10, proceed to shaiba, arrived and secured vessel at berth 20@23:50",
+          "Vessel CA3- Vessel arrived berth 20@02:20,cargo operation, received drill water(324 M3), fresh water(144 M3), swap position from STBD to port side alongside, remain alongside at berth 20.",
+          "Vessel CA5- Vessel at OD1 location, heave up anchor@08:20,in position stbd crane OD 1@09:15,deck cargo operation, pax transfer, transferred drill wate(195 MT), Pull out 500m@17:30, vessel back in position p/s crane OD 1@21:25, transferring drill water is in progress.",
+          "Vessel Charlie 3- Vessel underway to berth 4,cargo loaded,Pax IN,castoff and proceed to OD1@08:05, along side of OD1@09:50, cargo operation, Pax out, pullout and proceed to shuaiba@ 10:26, alongside of berth 4@11:50, Pax out, received fresh water (20MT) and STBY at berth 4."
+        ],
+        "defects": [],
+        "_rows": [
+          24,
+          27
+        ],
+        "iso": "2026-11-03"
+      },
+      {
+        "day": "Wednesday",
+        "date": "04.11.2026",
+        "status": "Normal",
+        "lines": [
+          "Vessel CA1- Vessel at berth 20, received Barite (67 MT),bentonite (35 MT),fresh water(180M3), drill water(504M3), deck cargo operation, Vessel remains secured Starboard side alongside at berth 20",
+          "Vessel CA3- Vessel at berth 20, castoff and proceed to OD1@18:40, Arrived at OD1 Location, Proceed to p/s OD1@21:00, VSL in position on the p/s OD1@21:50,Deck cargo operation is in progress, Vessel remain alongside at p/s OD1",
+          "Vessel CA5- Vessel at OD 1 , transferred drill water(20M3), Pull out 500m@00:43, STBY, heave up anchor@13:30,In poisiont STBD side crane OD 1@14:40,deck cargo operation , transferred drill water(100M3), Pax transfer, Pull out 500m zone@21:15, Vessel under way to Shuiba port",
+          "Vessel Charlie 3- Vessel STBY at berth 4,cargo loaded, Pax IN, castoff and proceed to OD1@12:55, along side of OD1@14:10, Pax IN/OUT, cargo operation,pullout@15:00 proceed to Shuaiba, secured alongside of berth 4@16:15,Pax OUT, vessel STBY at berth 20"
+        ],
+        "defects": [],
+        "_rows": [
+          28,
+          31
+        ],
+        "iso": "2026-11-04"
+      }
+    ]
+  }
+}
