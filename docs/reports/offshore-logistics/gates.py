@@ -233,6 +233,32 @@ with sync_playwright() as p:
         }""")
         check(not over, f"{w}px: nothing past the right edge {over or ''}")
         pg.close()
+    # ── 9. SharePoint's injected buttons ─────────────────────────────────
+    # Safari in SharePoint's iPhone viewer (06.11.2026): the viewer adds an
+    # absolute div straight into body with three empty 680px buttons, which
+    # made a 430px page 724px wide and 4,730px tall against a footer ending at
+    # 3,136. Recreated here as measured. The page must keep its own size, still
+    # scroll, and leave a fixed element (the viewer's Copilot button) alone.
+    print("9. SharePoint's injected buttons")
+    pg = b.new_page(viewport={"width": 430, "height": 775}, is_mobile=True, has_touch=True)
+    pg.goto(SRC.as_uri()); pg.wait_for_timeout(500)
+    r = pg.evaluate("""async () => {
+        const d = document.createElement('div'); d.style.cssText = 'position:absolute;left:0;top:0';
+        for (const top of [1200, 2600, 4700]) { const bt = document.createElement('button');
+          bt.style.cssText = 'position:absolute;left:44px;top:' + top + 'px;width:680px;height:30px'; d.appendChild(bt); }
+        document.body.appendChild(d);
+        const f = document.createElement('div'); f.style.cssText = 'position:fixed;right:16px;bottom:16px;width:60px;height:60px';
+        document.body.appendChild(f);
+        const de = document.documentElement, foot = document.querySelector('.foot');
+        const end = Math.round(foot.getBoundingClientRect().bottom + scrollY);
+        window.scrollTo(0, 1500); await new Promise(r => setTimeout(r, 100));
+        const fr = f.getBoundingClientRect();
+        return [de.scrollWidth, de.clientWidth, de.scrollHeight, end, scrollY, fr.bottom <= innerHeight];
+    }""")
+    check(r[0] == r[1], f"page stays {r[1]}px wide (scroll width {r[0]})")
+    check(r[2] == r[3], f"page ends at the footer ({r[2]} against {r[3]})")
+    check(r[4] > 0 and r[5], f"page still scrolls ({r[4]}) and the fixed button stays on screen")
+    pg.close()
     b.close()
 
 print(f"\n{'ALL GATES PASS' if not fails else str(len(fails)) + ' FAILED'}")

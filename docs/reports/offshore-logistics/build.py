@@ -1681,7 +1681,16 @@ def build_dashboard(weeks, logs, artifact=False):
     style = f"""<style>
 {FONT_FACE}
 {"" if artifact else _emblem_css()}
-body{{margin:0;background:{PAGE};font-family:{FONT_STACK};color:{INK};-webkit-text-size-adjust:100%;font-size:{FS['base']};position:relative;z-index:0}}
+/* SharePoint's viewer adds an absolute div straight into body, holding three
+   empty 680px buttons; in Safari on an iPhone (06.11.2026, measured) they
+   reached x=724 and y=4,730 on a page 430px wide whose footer ends at 3,136,
+   so the report scrolled sideways and on past its own end. body is the
+   containing block for that div, so body clips it. clip, never hidden: hidden
+   makes body a scroll container, and that is what stopped scrolling below
+   section 03 on iOS. html keeps an explicit overflow so body's is not
+   propagated to the viewport, which would stop the page scrolling at all. */
+html{{overflow:auto}}
+body{{margin:0;background:{PAGE};font-family:{FONT_STACK};color:{INK};-webkit-text-size-adjust:100%;font-size:{FS['base']};position:relative;z-index:0;overflow:clip}}
 table{{font-variant-numeric:tabular-nums}}
 {CSS}
 </style>"""
