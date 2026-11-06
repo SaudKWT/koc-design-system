@@ -1232,6 +1232,11 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .ct .chg .k-glyph{{width:12px;height:12px;vertical-align:-2px;margin-right:4px}}
 
 /* Daily log */
+/* A belt to the wrap rule below: the three blocks clip anything wider than
+   the screen. Never on html or body: on iOS, overflow on the page root inside
+   SharePoint's frame stopped vertical scrolling below section 03. clip, not
+   hidden, so no block becomes a scroll container; hidden is the fallback. */
+.top,.wrap,.foot{{overflow-x:hidden;overflow-x:clip}}
 /* The workbook writes some days as one comma-joined run with no spaces
    ("Vessel CA1- Vessel at OD1,Anchor heaved up@11:09,..."). Unbroken, that is
    wider than a phone: 479px in a 390px screen, which Chromium clips and iOS
@@ -1676,7 +1681,6 @@ def build_dashboard(weeks, logs, artifact=False):
     style = f"""<style>
 {FONT_FACE}
 {"" if artifact else _emblem_css()}
-html,body{{max-width:100%;overflow-x:hidden}}
 body{{margin:0;background:{PAGE};font-family:{FONT_STACK};color:{INK};-webkit-text-size-adjust:100%;font-size:{FS['base']};position:relative;z-index:0}}
 table{{font-variant-numeric:tabular-nums}}
 {CSS}
