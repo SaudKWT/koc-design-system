@@ -12,6 +12,12 @@
  *     composed frame, exploded, and no loop
  *   - no localStorage, sessionStorage, cookies or history: all four throw in
  *     the null origin SharePoint previews an uploaded file in
+ *   - nothing here may throw to the page. Every callback runs through guard():
+ *     the first error stops the bit for good, puts the line drawing back and
+ *     is swallowed. SharePoint's mobile viewer turns any uncaught error in the
+ *     frame into a "Some content didn't load" banner over the report, and an
+ *     error in a callback that fires on every scroll fills it with "Script
+ *     error." lines.
  */
 import { buildBit, type BitModel } from "@fi3gl/bit";
 import { PlateRenderer, hardwareContext, type Layout } from "@fi3gl/renderer";
@@ -48,8 +54,10 @@ function layoutOf(wrap: HTMLElement): Layout {
 }
 
 function loadModel(): Promise<BitModel> {
-  return new Promise((resolve) => {
-    const here = () => setTimeout(() => resolve(buildBit()), 0);
+  return new Promise((resolve, reject) => {
+    const here = () => setTimeout(() => {
+      try { resolve(buildBit()); } catch (e) { reject(e); }
+    }, 0);
     let worker: Worker;
     let url = "";
     try {
@@ -74,9 +82,30 @@ function mount(wrap: HTMLElement) {
   const reducedQ = window.matchMedia("(prefers-reduced-motion: reduce)");
   let LAYOUT = layoutOf(wrap);
 
+  // One switch for the whole plate. Once anything throws, every guarded
+  // callback becomes a no-op and the line drawing is what stays.
+  let dead = false;
+  const undo: (() => void)[] = [];
+  const stop = () => {
+    if (dead) return;
+    dead = true;
+    for (const f of undo) { try { f(); } catch { /* already gone */ } }
+    wrap.removeAttribute("data-live");
+  };
+  const guard = <A extends unknown[]>(fn: (...a: A) => void) => (...a: A) => {
+    if (dead) return;
+    try { fn(...a); } catch { stop(); }
+  };
+  const listen = (t: EventTarget, type: string, fn: (e: Event) => void) => {
+    const g = guard(fn);
+    t.addEventListener(type, g);
+    undo.push(() => t.removeEventListener(type, g));
+  };
+
   const start = (model: BitModel) => {
     const renderer = new PlateRenderer(canvas);
     if (!renderer.init(model)) return;
+    undo.push(() => renderer.dispose());
     renderer.setPalette(readPalette(probe));
     renderer.setLayout(LAYOUT);
     let raf = 0, lost = false, onScreen = true, clock = 0, last = performance.now();
@@ -84,10 +113,11 @@ function mount(wrap: HTMLElement) {
     const pointer = { x: 0, y: 0, sx: 0, sy: 0 };
     let frames = 0, fpsT = last, slow = 0, degraded = false;
     let dpr = Math.min(2, window.devicePixelRatio || 1);
+    undo.push(() => { if (raf) cancelAnimationFrame(raf); raf = 0; });
 
     const draw = () => { if (!lost) renderer.render({ explode, azimuth: az, elevation: el }); };
-    const shouldRun = () => !lost && !degraded && onScreen && !document.hidden && !reducedQ.matches;
-    const tick = (now: number) => {
+    const shouldRun = () => !dead && !lost && !degraded && onScreen && !document.hidden && !reducedQ.matches;
+    const tick = guard((now: number) => {
       raf = 0;
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
@@ -108,8 +138,8 @@ function mount(wrap: HTMLElement) {
         if (slow >= 2) { slow = 0; if (dpr > 1) { dpr = 1; resize(); } else degraded = true; }
       }
       if (shouldRun()) raf = requestAnimationFrame(tick);
-    };
-    const ensure = () => {
+    });
+    const ensure = guard(() => {
       if (shouldRun()) {
         if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
         return;
@@ -118,46 +148,56 @@ function mount(wrap: HTMLElement) {
       raf = 0;
       if (reducedQ.matches) { explode = 1; az = AZ0; el = EL0; }
       draw();
-    };
-    const resize = () => {
+    });
+    const resize = guard(() => {
       const w = wrap.clientWidth, h = wrap.clientHeight;
       LAYOUT = layoutOf(wrap);
       const budget = Math.sqrt(3.2e6 / Math.max(1, w * h));
       renderer.resize(w, h, Math.min(dpr, budget));
       renderer.setLayout(LAYOUT);
       draw();
-    };
-    new ResizeObserver(resize).observe(wrap);
+    });
+    const ro = new ResizeObserver(() => resize());
+    ro.observe(wrap);
+    undo.push(() => ro.disconnect());
     resize();
-    new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; ensure(); }).observe(wrap);
-    document.addEventListener("visibilitychange", ensure);
-    reducedQ.addEventListener?.("change", ensure);
-    wrap.addEventListener("pointermove", (e) => {
+    const io = new IntersectionObserver(guard(([e]: IntersectionObserverEntry[]) => {
+      onScreen = e.isIntersecting; ensure();
+    }));
+    io.observe(wrap);
+    undo.push(() => io.disconnect());
+    listen(document, "visibilitychange", () => ensure());
+    // Safari before 14 has no addEventListener on a MediaQueryList.
+    if ("addEventListener" in reducedQ) listen(reducedQ, "change", () => ensure());
+    listen(wrap, "pointermove", (ev) => {
+      const e = ev as PointerEvent;
       const r = wrap.getBoundingClientRect();
       pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
       pointer.y = ((e.clientY - r.top) / r.height) * 2 - 1;
     });
-    canvas.addEventListener("webglcontextlost", (e) => {
+    listen(canvas, "webglcontextlost", (e) => {
       e.preventDefault(); lost = true;
       if (raf) cancelAnimationFrame(raf);
       raf = 0; wrap.removeAttribute("data-live");
     });
-    canvas.addEventListener("webglcontextrestored", () => {
-      if (!renderer.init(model)) return;
+    listen(canvas, "webglcontextrestored", () => {
+      if (!renderer.init(model)) return stop();
       lost = false; renderer.setPalette(readPalette(probe));
       resize(); ensure(); wrap.setAttribute("data-live", "");
     });
     ensure();
-    // The canvas fades in over the line drawing on its first frame.
-    wrap.setAttribute("data-live", "");
+    // The canvas fades in over the line drawing on its first frame, and only
+    // if that frame drew without error.
+    if (!dead) wrap.setAttribute("data-live", "");
   };
 
-  const near = new IntersectionObserver((es) => {
+  const near = new IntersectionObserver(guard((es: IntersectionObserverEntry[]) => {
     if (!es.some((e) => e.isIntersecting)) return;
     near.disconnect();
-    loadModel().then((m) => { try { start(m); } catch { /* the drawing stays */ } });
-  }, { rootMargin: "600px 0px" });
+    loadModel().then(guard((m: BitModel) => start(m)), stop);
+  }), { rootMargin: "600px 0px" });
   near.observe(wrap);
+  undo.push(() => near.disconnect());
 }
 
 try {

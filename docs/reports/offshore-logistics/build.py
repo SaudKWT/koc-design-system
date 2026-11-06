@@ -1232,7 +1232,13 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
 .ct .chg .k-glyph{{width:12px;height:12px;vertical-align:-2px;margin-right:4px}}
 
 /* Daily log */
-.log{{width:100%;border-collapse:collapse;font-size:{FS['xs']}}}
+/* The workbook writes some days as one comma-joined run with no spaces
+   ("Vessel CA1- Vessel at OD1,Anchor heaved up@11:09,..."). Unbroken, that is
+   wider than a phone: 479px in a 390px screen, which Chromium clips and iOS
+   lets the page slide sideways to show. So it may break anywhere, here and in
+   every other block of workbook or email text. */
+.log{{width:100%;border-collapse:collapse;font-size:{FS['xs']};table-layout:fixed}}
+.log td,.ops li,.kv dd,.rig-op,.lead{{overflow-wrap:anywhere}}
 .log th,.log td{{vertical-align:top;text-align:left;padding:10px 0;border-top:1px solid {rgba(RULE, 0.8)}}}
 .log tr:first-child th,.log tr:first-child td{{border-top:0}}
 .log th{{width:22%;padding-right:16px;font-weight:{FW['normal']}}}
@@ -1365,7 +1371,10 @@ body::before{{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
   [role=tab],.k-spark .h,.cx-hit,.chev,.fold summary,.bitplate canvas,.bit-line{{transition:none}}
 }}"""
 
-JS = """(function(){
+JS = """/* Each block is wrapped so that nothing it does can throw to the page:
+   SharePoint's viewer puts any uncaught error in the frame in a banner
+   over the report. A failing block loses only its own behaviour. */
+(function(){try{
   var list=document.querySelector('[role="tablist"]');
   if(!list)return;
   var tabs=Array.prototype.slice.call(list.querySelectorAll('[role="tab"]'));
@@ -1431,9 +1440,9 @@ JS = """(function(){
   tabs.forEach(function(t,i){if(t.getAttribute('aria-selected')==='true')initial=i;});
   var start=fromHash();
   select(start>-1?start:initial,false);
-})();
+}catch(e){}})();
 
-(function(){
+(function(){try{
   /* KPI sparklines. Hovering, tapping or focusing a point scrubs that
      tile's own number and caption; there is no floating tooltip. A tooltip
      would be clipped by the edge of a SharePoint preview frame, is
@@ -1494,9 +1503,9 @@ JS = """(function(){
     var inside=e.target&&e.target.closest&&e.target.closest('.k-spark .h');
     hits.forEach(function(h){if(h!==inside)set(h,false);});
   });
-})();
+}catch(e){}})();
 
-(function(){
+(function(){try{
   /* Detail charts. Hovering or focusing a column reads that whole category
      out under the chart: every series, and for the two-week charts the change
      between them. No floating tooltip -- it would repeat the value already
@@ -1547,7 +1556,7 @@ JS = """(function(){
       if(read)read.innerHTML=read.getAttribute('data-default');
     });
   });
-})();"""
+}catch(e){}})();"""
 
 
 VENDOR = HERE / "vendor"
@@ -1667,6 +1676,7 @@ def build_dashboard(weeks, logs, artifact=False):
     style = f"""<style>
 {FONT_FACE}
 {"" if artifact else _emblem_css()}
+html,body{{max-width:100%;overflow-x:hidden}}
 body{{margin:0;background:{PAGE};font-family:{FONT_STACK};color:{INK};-webkit-text-size-adjust:100%;font-size:{FS['base']};position:relative;z-index:0}}
 table{{font-variant-numeric:tabular-nums}}
 {CSS}

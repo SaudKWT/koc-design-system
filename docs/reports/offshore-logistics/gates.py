@@ -206,6 +206,33 @@ with sync_playwright() as p:
         hh.append(pg.evaluate("document.documentElement.scrollHeight"))
         c.close()
     check(hh[0] == hh[1], f"page height without script equals with it {hh}")
+    # ── 8. nothing wider than a phone, folds open ───────────────────────
+    # The daily log held a comma-joined run with no spaces that was 479px wide
+    # in a 390px screen. Chromium clipped it, so the page never scrolled
+    # sideways here; iOS did not, and in SharePoint's mobile viewer the whole
+    # report slid off to the right. So the check is on every element, not on
+    # the document's scroll width, which a clip hides. Scroll boxes (the tab
+    # row, the chart plots, the comparison table) may hold wider content.
+    print("8. no element wider than the screen")
+    for w in (320, 360, 390):
+        pg = b.new_page(viewport={"width": w, "height": 800}, is_mobile=True, has_touch=True)
+        pg.goto(SRC.as_uri()); pg.wait_for_timeout(500)
+        over = pg.evaluate("""() => {
+            const out = [];
+            for (const panel of document.querySelectorAll('[role=tabpanel]')) {
+              panel.hidden = false;
+              panel.querySelectorAll('details').forEach(d => d.open = true);
+            }
+            const W = document.documentElement.clientWidth;
+            for (const e of document.querySelectorAll('body *')) {
+              if (e.closest('[role=tablist], .cx-plot, .ct-wrap, .bitplate')) continue;
+              const r = e.getBoundingClientRect();
+              if (r.width && r.right > W + 1) out.push(e.tagName + '.' + (e.getAttribute('class') || '') + ' ' + Math.round(r.right));
+            }
+            return out.slice(0, 4);
+        }""")
+        check(not over, f"{w}px: nothing past the right edge {over or ''}")
+        pg.close()
     b.close()
 
 print(f"\n{'ALL GATES PASS' if not fails else str(len(fails)) + ' FAILED'}")
