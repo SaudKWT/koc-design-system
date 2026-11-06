@@ -118,6 +118,20 @@ Three things the PDF path has to get right, each of which was wrong first:
 `to_pdf.py` asserts that every panel it kept is visible under print media, so a
 broken print rule fails loudly instead of shipping a truncated PDF.
 
+### The red banner on a phone is SharePoint's, not the page's
+
+On an iPhone, SharePoint's mobile viewer shows "Some content didn't load. A
+script didn't run correctly on this page." over **any** uploaded HTML file.
+Tested 06.11.2026 with a blank page holding one paragraph and an error
+recorder: the same banner, and nine "Script error." events with no file and
+no line, at 0.1, 0.2, 0.3, 0.5, 0.9, 1.7, 3.3, 6.5 and 12.9 s. That doubling
+is a retry loop in the scripts SharePoint adds to the frame: eight on the
+phone, among them a 40,436-character one, against five on a Mac, where
+there are no errors and no banner. The dashboard's own scripts report
+nothing. Every block is wrapped, and every drill bit callback is guarded.
+
+So the banner cannot be fixed from this file. Close it; the page works.
+
 ## Checking a build
 
 ```bash
