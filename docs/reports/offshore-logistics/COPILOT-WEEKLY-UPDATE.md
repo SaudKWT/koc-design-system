@@ -70,7 +70,8 @@ you can recognise it:
 - **Footer:** only the words "Drilling & Workover Engineering Group" in
   large blue capitals and the 3D drill bit beside them. No other text and
   no signature.
-- **The email** keeps its own table layout and the signature.
+- **There is no email output.** It was dropped on 05.11.2026. The dashboard
+  is the only report.
 
 If the user asks for a design change, tell them it is made in `build.py`,
 not in the data file, and do not attempt it.
@@ -330,7 +331,7 @@ Copilot chat cannot do this part. It needs Python and the repository.
 3. Add the new date at the start of the `dates` list in `main()` in
    `build.py`. A date that is not in this list is missing from the
    dashboard, and nothing warns you.
-4. Run `python3 build.py`. It makes the dashboard, the email and the notes.
+4. Run `python3 build.py`. It makes the dashboard and the notes.
 5. Run `python3 check_contrast.py` and
    `python3 gates.py dashboard/Offshore_Logistics_Weekly_Dashboard.html <axe.min.js>`.
    Both must pass. The gates also check that the page is the same height

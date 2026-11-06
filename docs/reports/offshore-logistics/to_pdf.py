@@ -21,7 +21,7 @@ printing, which is why this reads the built HTML rather than re-rendering from
 data: one source, and the PDF cannot disagree with the page it came from.
 
 Needs playwright and the Chromium it points at. Kept out of build.py so the
-HTML build stays a matplotlib-only job.
+HTML build needs nothing beyond the Python standard library.
 """
 
 import glob

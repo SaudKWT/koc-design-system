@@ -1,66 +1,54 @@
 # Offshore Logistics weekly update
 
-A generator for the weekly Offshore Logistics report. One JSON file per report
-week in, two self-contained HTML files out.
+A generator for the weekly Offshore Logistics dashboard. One JSON file per
+report week in, one self-contained HTML file out.
 
 ```bash
-python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 2026-08-26
-python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --dashboard
-python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --email
-python3 docs/reports/offshore-logistics/build.py 2026-09-10 2026-09-03 --no-notes
+python3 docs/reports/offshore-logistics/build.py                         # every week in main()
+python3 docs/reports/offshore-logistics/build.py 2026-11-05 2026-10-29   # only these weeks
+python3 docs/reports/offshore-logistics/build.py --dashboard             # one output only
 ```
 
 Pass any number of report dates, each matching a filename in `data/`, in any
-order. Each becomes a tab. **Tabs run oldest to newest, left to right**, the
-same direction every chart orders its bars, and the newest week is the one that
-opens. The email format always covers the newest. `--no-notes` drops the amber "Data notes" block and writes a
-`_clean` file, for once the open queries in that block have been answered.
+order, or none for the list at the top of `main()`. Each becomes a tab. **Tabs
+run oldest to newest, left to right**, the same direction every chart orders
+its bars, and the newest week is the one that opens.
 
 Every week is compared against **its own predecessor in the set**, so adding a
 week does not re-point the older tabs at the wrong baseline. The oldest week has
-no predecessor and falls back to its successor, which the charts still order
-correctly because they sort by period rather than by argument.
+no predecessor and is shown on its own.
 
-Requires `matplotlib`, plus `openpyxl` for `extract.py`. `pillow` is optional
-and cuts the output roughly in half.
+`build.py` needs only the Python standard library. `extract.py` needs
+`openpyxl`; `to_pdf.py` needs `playwright`.
 
-## Three outputs, one per audience
+**There is no email any more.** Saud dropped the Outlook email format on
+05.11.2026; only the dashboard is wanted. Its code, its two `.ttf` fonts and
+matplotlib went with it, and git history holds them.
+
+## Three outputs
 
 ```
-dashboard/  Offshore_Logistics_Weekly_Dashboard.html   every week, for circulating
-email/      Offshore_Logistics_Weekly_Update_<date>.html   the newest week, for the mail
+dashboard/  Offshore_Logistics_Weekly_Dashboard.html   every week, for SharePoint or OneDrive
 notes/      data-queries.md                            the open questions
+artifact/   dashboard.artifact.html                    the same page as a body fragment, for review
 ```
 
-| | `email` | `dashboard` |
-| --- | --- | --- |
-| Weeks | one | all of them, behind a tab strip |
-| Layout | nested tables, inline styles | CSS, sticky header |
-| Charts | 1 PNG, base64 | 3 inline SVG per week |
-| KPI cards | 4 | 4 |
-| Trend | raster small multiples | live sparkline inside each KPI tile |
-| Script | none | tabs, sparkline scrub, chart readout |
-| Daily logs | in the attached workbook | in the page |
-| Size | 67 KB | 326 KB at four weeks |
-
-The tab strip needs CSS and script, which is exactly what an Outlook-safe email
-cannot have, so those two cannot be the same file. The email is what Bu Khaled
-receives. The dashboard is for a browser, and because it has no attachment it
-carries the full daily port and vessel logs itself.
+The dashboard is for a browser, and because it has no attachment it carries
+the full daily port and vessel logs itself.
 
 The dashboard filename carries no date. It covers every week, the tab strip says
 which, and each rebuild replaces it rather than leaving a trail of near-copies.
 
 ### The queries are a file, not a section
 
-They are not rendered on the page at all now, in either format.
+They are not rendered on the page at all now.
 `notes/data-queries.md` is generated from the same `dataNotes` fields and is
 the only place they appear. The METHOD footnote went the same way, so the
 counting rules live here in this README rather than at the foot of every week.
 
 ### Why the queries are a separate file
 
-They were an amber block inside both reports. They are questions for the report
+They were an amber block inside the report. They are questions for the report
 author, not findings about operations, so they have no place in something being
 circulated. They are also not something to lose, hence a file of their own,
 generated from the same `dataNotes` arrays the reports were reading. One source,
@@ -75,12 +63,6 @@ figures. Tick an item once it is answered and correct the matching
 The dashboard states one figure per metric and carries no caveats on its face.
 Where a published number differs, the reason is in the notes file's Resolved
 section rather than in a footnote on something being circulated.
-
-Outlook renders mail through the Word engine, so the email format uses no
-`<svg>`, no external CSS, no `<style>`, no media queries, no classes and no
-HTML5 sectioning elements. Outlook also blocks images by default, so every
-chart carries `alt` text with its figures and the comparison table repeats
-every charted number as text.
 
 ## Hosting it on SharePoint
 
@@ -230,7 +212,7 @@ current one.
 workbook.xlsx  --extract.py-->  data/<date>.log.json   the daily narrative, machine-read
                                 data/<date>.json       the counts, hand-audited
                                         |
-                                    build.py  -->  dist/*.html
+                                    build.py  -->  dashboard/*.html
 ```
 
 `extract.py` reads the narrative only. Every count stays hand-audited in
@@ -243,18 +225,6 @@ The report states the same figure in a KPI tile, in a chart, and in the
 comparison table. Hand-editing three copies is how they start to disagree. Each
 number is read once from the JSON and rendered everywhere from that one value,
 so a correction is a one-line edit in `data/`.
-
-## Why the HTML is email-safe
-
-Nested `<table>` elements, inline styles, base64 PNG charts, no script and no
-external CSS. KOC is a Windows and Outlook organisation, and Outlook strips
-`<svg>`, external stylesheets and script. An interactive SVG chart would arrive
-as nothing.
-
-Because Outlook also blocks images by default, every chart carries `alt` text
-with its figures, every bar carries a printed value, and the week on week
-comparison table repeats all charted figures as text. A recipient with images
-off still gets the whole report.
 
 ## Adding next week
 
@@ -276,8 +246,7 @@ off still gets the whole report.
    for the MARSEC line, and a `label` naming the day the email's list actually
    covers. Check the email's figures against the ones you entered first.
    Without this key the week falls back to written `highlights`.
-8. Run the build, then `python3 check_contrast.py` if you touched a chart
-   colour.
+8. Run the build, then `python3 check_contrast.py` and `gates.py`.
 
 ## Where the source disagrees with itself
 
@@ -356,38 +325,21 @@ and reports a 7-day week for an 8-day period.
 
 ## Signatures
 
-**Whoever circulates the report signs it.** That is `DEFAULT_SIGNATURE` in
-`build.py`: Saud Abdulaziz AlKharji, Engineer Drilling & Workover, Drilling &
-Workover Operational Support Team, skharji@kockw.com. Report 29 was briefly
-signed by Naser M Gh Hassan; the signature then returned to Saud. The
-signature belongs to the build, not to a week, so changing it re-signs every
-tab and every PDF. A week that must keep an earlier
-signer can set its own `signature` key.
+**Nothing on the dashboard is signed.** The signature left the footer on
+29.10.2026, when the footer became the group wordmark and the drill bit, and
+the email that also carried one was dropped on 05.11.2026. `DEFAULT_SIGNATURE`
+went with it.
 
 The sender of the source email is a different thing and belongs in
 `provenance`, which is kept in each week's data file. The reports come from
 Rejeesh Kumar Kunjupillai, so his name is recorded there and nowhere else.
 
-A week can override the block with a `signature` key (`name`, `lines`,
-`muted`). Nothing goes in that the person's own profile or email does not state,
-which is why there is no phone or postal line. Only the newest week's signature
-is ever rendered, in the footer below the tabs and at the foot of the email.
+## Palette
 
-## Palette: a deliberate exemption from invariant 1
-
-The colours in `build.py` are the 26-08-2026 report's own palette, kept so the
-weekly series stays visually continuous. **They are not the KOC token palette.**
-This navy is `#1F3B57`; the KOC brand blue is `#0060A9`.
-
-That is why this directory sits under `docs/reports/` and not in `packages/` or
-`apps/`. It is an email deliverable, not design-system source, and invariant 1
-(never hand-write a hex outside `packages/tokens/src/`) is scoped to the system
-itself. No build gate reads this directory: `check:drift` reads only
-`apps/docs/src/styles.css`, and `check:motion` reads only `.ts` and `.tsx` under
-`packages/ui/src` and `apps/docs/src`.
-
-Moving this report onto KOC tokens is a live option, and it would change the
-look. It is not done here because it was not asked for.
+Every colour comes from `packages/tokens` through `tok()` and `sem()` in
+`build.py`; no hex is written in this directory. The earlier exemption, for the
+26-08-2026 report's own navy, ended when the report moved onto KOC tokens and
+then onto the rig3 design (see the last section).
 
 ## Contrast defects carried over, and fixed
 
@@ -462,8 +414,6 @@ Four decisions in that, each of which was the second attempt:
 
 - **Inline SVG, not a PNG.** A tenth of the bytes, it prints as vectors rather
   than a 140 dpi raster, and it is the only version a reader can interrogate.
-  Email still gets the raster small multiples, because Outlook strips `<svg>`
-  and runs no script.
 - **In the tile, not beside it.** The lines began as a strip of their own under
   the KPI row, which meant the page stated the same five figures twice, 400px
   apart. Upper management reading a weekly report does not need to be told
@@ -505,11 +455,7 @@ Two smaller things the sparklines forced:
 - **The KPI row now wraps below 760px.** A five-column table cannot, and at a
   400px viewport it was 503px wide inside a 400px page, so the fifth tile --
   overstay crew -- was clipped off and unreachable. That predates the
-  sparklines; taller tiles made it obvious. The table markup has to stay for
-  Outlook, which will not lay out a flex or grid row, so the browser layout is
-  re-declared in a media query that only a browser reads. The `width="20%"`
-  attribute is a presentational hint and loses to the stylesheet without
-  needing `!important`.
+  sparklines; taller tiles made it obvious. The tiles are now a CSS grid.
 
 ## What "What happened" became
 
@@ -599,9 +545,7 @@ day counts.
 ## Chart notes
 
 **All four chart types are inline SVG.** The sparklines in the KPI tiles and
-the three detail charts. matplotlib is still in `build.py`, but only the email
-path reaches it: Outlook strips `<svg>` and runs no script, so the mail keeps
-one rasterised chart.
+the three detail charts. Nothing is rasterised any more.
 
 Three reasons, in the order they matter here:
 
@@ -701,7 +645,7 @@ which are properties of the inherited brand palette.
 Charts above the table in **Full figures**. The shape is what a reader takes
 from that section; the table is what they check a single figure against, and
 they scroll to it deliberately. The table was on top, so the charts sat below
-sixty rows of numbers. The email is ordered the same way.
+sixty rows of numbers.
 
 A nested fold is indented 18px (`details details`), so **Port operations** and
 **Vessel movements** read as children of **Daily log** rather than as three
@@ -713,7 +657,7 @@ peers.
 now on.** A weekly update changes the data, not the design. Keep the footer
 as it is: only the "Drilling & Workover Engineering Group" wordmark and the
 drill bit, centred as one group, with no small text, no callouts and no
-signature. The email keeps its own table layout and its signature.
+signature. There is no email (dropped 05.11.2026).
 
 The browser dashboard follows the KOC rig3 design language and the DWEG landing's
 fei3 page (dweg-landing, branch `rig3-design-system-sync`):
@@ -725,7 +669,6 @@ fei3 page (dweg-landing, branch `rig3-design-system-sync`):
 - fi3 footer plate: the 8½ in PDC bit in WebGL2, centred, with no callouts. Its renderer
   is dweg-landing's own `src/landing/fi3/gl/`, bundled into `vendor/drill-bit/`.
   Without hardware WebGL2, and on paper, fi3's line elevation shows instead.
-- The email is unchanged in layout. It is still tables with inline styles.
 
 The rig3 tokens (chart series, status tints, `light` weight, `tracking-caps`)
 come from `packages/tokens`, taken from the `claude/rig3-design-language` branch.

@@ -1,49 +1,36 @@
 #!/usr/bin/env python3
 """
-Build the Offshore Logistics weekly report.
+Build the Offshore Logistics weekly dashboard.
 
-    python3 build.py 2026-09-03 2026-08-26              # both formats
-    python3 build.py 2026-09-03 2026-08-26 --dashboard  # tabbed, browser only
-    python3 build.py 2026-09-03 2026-08-26 --email      # single week, Outlook safe
-    python3 build.py 2026-09-03 2026-08-26 --no-notes   # drop the data-notes block
+    python3 build.py                        # every week in main()'s list
+    python3 build.py 2026-11-05 2026-10-29  # only these weeks
+    python3 build.py --dashboard            # one output only
+                                            # (--dashboard, --notes, --artifact)
 
-Two formats, because they cannot be one file:
+One page for a browser: every week behind a tab strip, with live SVG charts,
+the full daily port and vessel logs, and the drill bit footer. It is uploaded
+to SharePoint or OneDrive and previewed there.
 
-  email      One week, nested tables, inline styles, base64 PNG charts, no
-             script and no SVG. This is what Bu Khaled receives. Outlook strips
-             <svg>, external CSS and script, so an interactive chart arrives as
-             nothing, and Outlook blocks images by default, so every chart
-             carries alt text and every charted figure is repeated as text.
-
-  dashboard  Both weeks behind a tab strip. Tabs need CSS and script, which is
-             exactly what the email format cannot have, so this one is for a
-             browser. It carries the full daily port and vessel logs, which the
-             email leaves to the attached workbook.
+There is no email format any more. It was dropped on 05.11.2026, when Saud
+said it was not wanted; git history holds it.
 
 Numbers come from data/<report-date>.json (hand-audited counts, each with the
 workbook cell it came from) and data/<report-date>.log.json (the daily
 narrative, machine-extracted by extract.py). Nothing is typed twice.
 
-PALETTE NOTE: these colours are the 26-08-2026 report's own, kept on
-instruction so the weekly series stays visually continuous. They are NOT the
-KOC token palette -- this navy is #1F3B57, the KOC brand blue is #0060A9. That
-is why this directory sits under docs/reports/ and not in packages/ or apps/:
-an email deliverable, not design-system source. See README.md.
+Colours come from packages/tokens through tok() and sem() below; no hex is
+written here. This directory sits under docs/reports/ and not in packages/ or
+apps/ because it is a report, not design-system source. See README.md.
 """
 
 import base64
-import io
 import json
 import math
 import re
 import sys
 from pathlib import Path
 
-import matplotlib
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-from matplotlib.ticker import MaxNLocator
 
 HERE = Path(__file__).parent
 REPO = HERE.parents[2]
@@ -179,24 +166,12 @@ RING = sem("ring")
 EASE_OUT = "cubic-bezier(0,0,.2,1)"
 DUR_FAST = "120ms"
 
-# Inter is fontFamily.sans. The browser gets it from Google Fonts; matplotlib
-# gets the two vendored weights, because a KOC machine may not reach gstatic.
+# Inter is fontFamily.sans, inlined from fonts/ (see _inter_face), because a
+# KOC machine may not reach gstatic.
 FONT_STACK = ("Inter, 'Inter var', -apple-system, BlinkMacSystemFont, "
               "'Segoe UI', 'Helvetica Neue', Arial, sans-serif")
-EMAIL_FONT_STACK = "'Segoe UI', Arial, Helvetica, sans-serif"
-
-def _register_inter():
-    from matplotlib import font_manager as fm
-    found = []
-    for ttf in sorted((HERE / "fonts").glob("Inter-*.ttf")):
-        fm.fontManager.addfont(str(ttf))
-        found.append(ttf.name)
-    if found and "Inter" in {f.name for f in fm.fontManager.ttflist}:
-        return "Inter", found
-    return "DejaVu Sans", found
 
 
-FONT, _FONT_FILES = _register_inter()
 FLUIDS = ("Fresh water", "Fuel", "Drill water")
 
 
@@ -246,204 +221,28 @@ def overstay_by(w):
 
 # ── Chart plumbing ─────────────────────────────────────────────────────────
 
-def _frame(ax, ylabel):
-    """Recessive axes: y grid only, no top or right spine."""
-    ax.set_axisbelow(True)
-    ax.yaxis.grid(True, color=RULE, linewidth=0.9)
-    ax.xaxis.grid(False)
-    for side in ("top", "right"):
-        ax.spines[side].set_visible(False)
-    for side in ("left", "bottom"):
-        ax.spines[side].set_color(INK_MUTED)
-        ax.spines[side].set_linewidth(0.9)
-    ax.set_ylabel(ylabel, fontsize=11, color=INK, fontname=FONT)
-    ax.tick_params(axis="both", labelsize=10.5, colors=INK, length=0)
-    for lbl in ax.get_xticklabels() + ax.get_yticklabels():
-        lbl.set_fontname(FONT)
 
 
-def _legend(ax, ncol=2, y=-0.20):
-    """Always below the axis, never inside it.
-
-    Inside the plot area a legend collides with whatever bar happens to be tall
-    that week. It has happened twice: the fluids legend landed on the slops
-    annotation, and the trips legend landed on CA1's value label the week CA1
-    reached 6. Below the axis the collision cannot happen at any data value,
-    which is worth more than the vertical space it costs."""
-    leg = ax.legend(frameon=False, fontsize=10.5, ncol=ncol,
-                    loc="upper center", bbox_to_anchor=(0.5, y))
-    for t in leg.get_texts():
-        t.set_color(INK)
-        t.set_fontname(FONT)
-    return leg
 
 
-def _png(fig):
-    """Render at 2x the 664px display width, then quantise.
-
-    These charts are a handful of flat fills plus antialiasing, so an adaptive
-    128-colour palette is visually identical to truecolour and about a third of
-    the bytes. That matters: the PNGs are base64-inlined and base64 adds another
-    33%, and the dashboard carries six of them."""
-    buf = io.BytesIO()
-    fig.savefig(buf, format="png", dpi=140, bbox_inches="tight",
-                facecolor="white", edgecolor="none")
-    plt.close(fig)
-    buf.seek(0)
-    try:
-        from PIL import Image
-    except ImportError:
-        return base64.b64encode(buf.getvalue()).decode("ascii")
-    im = Image.open(buf).convert("RGB").quantize(
-        colors=128, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-    out = io.BytesIO()
-    im.save(out, format="PNG", optimize=True)
-    return base64.b64encode(out.getvalue()).decode("ascii")
 
 
-def _labels(ax, bars, colour, fmt="{:g}", size=10.5):
-    """Direct value labels. Required, not decorative: they are the relief that
-    discharges the sub-3:1 contrast of the amber and pale-blue fills."""
-    for b in bars:
-        h = b.get_height()
-        ax.annotate(fmt.format(h), (b.get_x() + b.get_width() / 2, h),
-                    textcoords="offset points", xytext=(0, 4), ha="center",
-                    va="bottom", fontsize=size, fontweight="bold",
-                    color=colour, fontname=FONT)
 
 
-def _one_week_bars(ax, x, vals, w=0.58):
-    """A single series for the baseline week, which has nothing to compare to.
-
-    One series takes one colour: the category is already on the x axis, so a
-    second hue per bar would be decoration. No legend either -- the title names
-    the series."""
-    _labels(ax, ax.bar(x, vals, w, color=PRIMARY, edgecolor="white",
-                       linewidth=1.2), PRIMARY)
 
 
-def _two_week_bars(ax, x, mine_w, mine_v, other_w, other_v, w=0.39):
-    """The shared grammar, used by both two-week charts so the reader learns the
-    encoding once: this week is solid navy, the previous week is pale, and the
-    legend says which in words rather than leaving dates to be decoded.
-
-    Bars are ordered by period, never by whose panel it is, so time always reads
-    left to right. Ordering by panel put the later week on the left in the
-    previous-week tab, which read as time running backwards. Centres at
-    +/-0.2025 leave a ~4px gap between the pair at render width."""
-    pairs = sorted([(mine_w, mine_v, True), (other_w, other_v, False)],
-                   key=lambda pr: pr[0]["periodStart"])
-    for k, (wk, vals, is_mine) in enumerate(pairs):
-        off = -0.2025 if k == 0 else 0.2025
-        role = "This week" if is_mine else "Previous week"
-        bars = ax.bar([i + off for i in x], vals, w,
-                      color=PRIMARY if is_mine else PRIOR,
-                      edgecolor="white", linewidth=1.2,
-                      label=f"{role}  ({short(wk)})")
-        _labels(ax, bars, PRIMARY if is_mine else INK_MUTED)
 
 
-def chart_trips(mine, theirs):
-    names = ["CA1", "CA3", "CA5", "Charlie-3"]
-    fig, ax = plt.subplots(figsize=(9.5, 3.9))
-    x = range(len(names))
-    vals = list(mine["vesselTrips"].values())
-    if theirs is None:
-        _one_week_bars(ax, list(x), [mine["vesselTrips"][n] for n in names])
-        title = f"Vessel Trips by Vessel   ({trips(mine)} total)"
-    else:
-        vals += list(theirs["vesselTrips"].values())
-        _two_week_bars(ax, x,
-                       mine, [mine["vesselTrips"][n] for n in names],
-                       theirs, [theirs["vesselTrips"][n] for n in names])
-        title = (f"Vessel Trips by Vessel   ({trips(mine)} this week, "
-                 f"{trips(theirs)} previous week)")
-    ax.set_xticks(list(x))
-    ax.set_xticklabels(names)
-    # 7 was the 26-08 report's ceiling and is kept as a floor so the weeks stay
-    # visually comparable, but it grows rather than clipping: CA1 reached 6 in
-    # report 24 and a fixed ceiling would fail silently on the first 8.
-    ax.set_ylim(0, max(7, max(vals) * 1.18))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    _frame(ax, "No. of trips")
-    ax.set_title(title, fontsize=13.5, fontweight="bold", color=PRIMARY,
-                 fontname=FONT, pad=12)
-    if theirs is not None:
-        _legend(ax)
-    return _png(fig)
 
 
-def chart_ground(w):
-    """Per week by nature: the two periods are 8 days and 6 days long."""
-    days = w["trucks"]["byDay"]
-    out = [d["out"] for d in days]
-    inn = [d["in"] for d in days]
-
-    fig, ax = plt.subplots(figsize=(9.5, 3.9))
-    x = range(len(days))
-    b_out = ax.bar([i - 0.2025 for i in x], out, 0.39, color=PRIMARY,
-                   edgecolor="white", linewidth=1.2, label="Dispatched (out)")
-    b_in = ax.bar([i + 0.2025 for i in x], inn, 0.39, color=CHART[1],
-                  edgecolor="white", linewidth=1.2, label="Arrived (in)")
-    _labels(ax, b_out, PRIMARY)
-    _labels(ax, b_in, INK_MUTED)
-
-    ax.set_xticks(list(x))
-    ax.set_xticklabels([d["label"] for d in days])
-    # Same as the trips chart: the 26-08 ceiling of 12 is a floor, not a cap.
-    ax.set_ylim(0, max(12, max(out + inn) * 1.18))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    _frame(ax, "Trucks / tankers")
-    ax.set_title(f"Daily Ground Transport Movements   ({sum(out)} out / "
-                 f"{sum(inn)} in, {sum(out) + sum(inn)} total)",
-                 fontsize=13.5, fontweight="bold", color=PRIMARY,
-                 fontname=FONT, pad=12)
-    _legend(ax)
-    return _png(fig)
 
 
-def chart_fluids(mine, theirs):
-    """Six categories, three fluids by two directions.
-
-    Grouped rather than stacked, and in the same grammar as the trips chart,
-    because the interesting thing this week is a composition shift the totals
-    hide: fuel moved from bunkering into delivery and drill water went the other
-    way. A stack would bury that inside two columns."""
-    cats = [(d, f) for d in ("bunkered", "delivered") for f in FLUIDS]
-    labels = [f"{f}\n{'bunkered' if d == 'bunkered' else 'to rigs'}"
-              for d, f in cats]
-    mv = [mine["fluids"][d][f] for d, f in cats]
-
-    fig, ax = plt.subplots(figsize=(9.5, 4.0))
-    # A gap between the bunkered trio and the delivered trio.
-    x = [0, 1, 2, 3.45, 4.45, 5.45]
-    if theirs is None:
-        _one_week_bars(ax, x, mv, w=0.55)
-        ceiling = max(mv)
-        title = f"Fluids & Bulk Managed   ({fluid_total(mine):,} m³ total)"
-    else:
-        tv = [theirs["fluids"][d][f] for d, f in cats]
-        _two_week_bars(ax, x, mine, mv, theirs, tv, w=0.37)
-        ceiling = max(mv + tv)
-        title = (f"Fluids & Bulk Managed   ({fluid_total(mine):,} m³ this "
-                 f"week, {fluid_total(theirs):,} m³ previous week)")
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels, fontsize=9.5)
-    ax.set_ylim(0, ceiling * 1.22)
-    _frame(ax, "Cubic metres (m³)")
-    ax.set_title(title, fontsize=13.5, fontweight="bold", color=PRIMARY,
-                 fontname=FONT, pad=12)
-    if theirs is not None:
-        # Lower, because this chart's tick labels are two lines deep.
-        _legend(ax, y=-0.30)
-    return _png(fig)
 
 
 # ── Detail charts: inline SVG ──────────────────────────────────────────────
 #
 # One builder for all three, because all three are the same chart: grouped
-# bars, a categorical x axis, direct value labels and a legend. The matplotlib
-# versions are kept for the email, which cannot have <svg> at all.
+# bars, a categorical x axis, direct value labels and a legend.
 
 
 def _nice_step(top, target=5, integer=False):
@@ -767,63 +566,6 @@ def spark_svgs(weeks, upto):
     return out
 
 
-def chart_trend(weeks, upto):
-    """One small panel per metric, every week to date, each on its own scale.
-
-    This is the chart upper management actually needs: not this week against
-    last, but the shape of four weeks. Small multiples rather than one chart
-    with four lines, because trips run 9 to 16 while fluids run 742 to 1,782 --
-    a shared axis would flatten four of the five, and a second y-axis is the
-    one thing a chart must never do.
-
-    Only weeks up to and including the panel's own are drawn, so an older tab
-    does not show figures that had not happened yet when it was written."""
-    series = TREND_SERIES
-    order = _trend_weeks(weeks, upto)
-    if len(order) < 2:
-        return None
-
-    fig, axes = plt.subplots(1, len(series), figsize=(9.5, 2.45))
-    for ax, (label, get, fmt) in zip(axes, series):
-        ys = [get(w) for w in order]
-        xs = list(range(len(ys)))
-        ax.plot(xs, ys, color=PRIMARY, linewidth=2, zorder=2,
-                solid_capstyle="round")
-        ax.plot(xs[:-1], ys[:-1], "o", color=PRIMARY, markersize=4.5,
-                zorder=3, markeredgecolor=CARD, markeredgewidth=1.2)
-        # The endpoint is the week the reader is on, so it carries the weight.
-        ax.plot(xs[-1], ys[-1], "o", color=PRIMARY, markersize=8, zorder=4,
-                markeredgecolor=CARD, markeredgewidth=1.6)
-
-        span = (max(ys) - min(ys)) or 1
-        ax.set_ylim(min(ys) - span * 0.62, max(ys) + span * 0.78)
-        ax.set_xlim(-0.5, len(ys) - 0.5)
-
-        # Put each end label on the side the line is NOT arriving from.
-        # Fixed above, a label lands on its own line wherever the series drops
-        # steeply into the endpoint, which is what fluids and overstay do.
-        def place(i, other_i, text, size, weight, colour, align):
-            below = ys[i] < ys[other_i]
-            ax.annotate(text, (xs[i], ys[i]), textcoords="offset points",
-                        xytext=(3 if align == "right" else -3,
-                                -17 if below else 12),
-                        ha=align, va="top" if below else "baseline",
-                        fontsize=size, fontweight=weight, color=colour,
-                        fontname=FONT, clip_on=False)
-
-        place(-1, -2, fmt.format(ys[-1]), 12.5, "bold", PRIMARY, "right")
-        place(0, 1, fmt.format(ys[0]), 10, "normal", INK_MUTED, "left")
-        ax.set_title(label, fontsize=10, color=INK_MUTED, fontname=FONT,
-                     pad=9, loc="left")
-        for side in ("top", "right", "left"):
-            ax.spines[side].set_visible(False)
-        ax.spines["bottom"].set_color(RULE)
-        ax.spines["bottom"].set_linewidth(1)
-        ax.set_xticks([])
-        ax.set_yticks([])
-    fig.suptitle("")
-    fig.tight_layout(pad=0.4, w_pad=2.2)
-    return _png(fig)
 
 
 # ── Deltas ─────────────────────────────────────────────────────────────────
@@ -832,127 +574,17 @@ def chart_trend(weeks, upto):
 # rig count. A fall in overstay crew is unambiguously good. So `intent` decides
 # the colour and `delta` only decides the arrow.
 
-UP, DOWN = "&#9650;", "&#9660;"
 
 
-def delta(now, was, mode="abs", intent="neutral", unit=""):
-    """Return (html, colour). intent: 'neutral' | 'lower-is-better'."""
-    diff = now - was
-    if diff == 0:
-        return f"No change &nbsp;({was:,g}{unit})", INK_MUTED
-    arrow = UP if diff > 0 else DOWN
-    if mode == "pct":
-        size = "new" if was == 0 else f"{abs(diff) / was * 100:.0f}%"
-    else:
-        size = f"{abs(diff):,g}{unit}"
-    colour = INK_MUTED
-    if intent == "lower-is-better":
-        # Delta text is always 11px, so the alarm uses the small-text red.
-        colour = GOOD if diff < 0 else DANGER
-    return f"{arrow} {size} &nbsp;({was:,g}{unit})", colour
 
 
-def kpis(w, other):
-    """Four tiles, in the same order every week. Consistency across weeks is
-    most of what makes a weekly dashboard readable, so the set never changes.
-
-    Vessel movements is not one of them. The count is still carried -- in the
-    comparison table, per vessel and per day, under the rule it is counted on
-    -- but it was the second of five headline figures and sat next to vessel
-    trips, which a reader has to hold two definitions apart to tell apart.
-
-    The oldest week in the set is the baseline and carries no arrows. Comparing
-    it forward to a later week would read as time running backwards, and the
-    week it was originally measured against is not in the dashboard at all."""
-    arrows = other is not None and w.get("showArrows", True)
-
-    def cmp(now, key, other_val, mode="abs", intent="neutral"):
-        if arrows:
-            return delta(now, other_val, mode, intent)
-        return "", INK_MUTED
-
-    tiles = [
-        dict(value=trips(w), label="Vessel trips", colour=PRIMARY,
-             **dict(zip(("delta_html", "delta_colour"),
-                        cmp(trips(w), "trips",
-                            trips(other) if other else 0, "pct")))),
-        dict(value=truck_total(w), label="Truck moves", colour=PRIMARY,
-             **dict(zip(("delta_html", "delta_colour"),
-                        cmp(truck_total(w), "truckMoves",
-                            truck_total(other) if other else 0, "pct")))),
-        dict(value=f"{fluid_total(w):,}", label="Fluids handled, m³",
-             colour=PRIMARY,
-             **dict(zip(("delta_html", "delta_colour"),
-                        cmp(fluid_total(w), "fluids",
-                            fluid_total(other) if other else 0, "pct")))),
-        dict(value=overstay(w), label="Overstay crew", colour=DANGER, alert=True,
-             **dict(zip(("delta_html", "delta_colour"),
-                        cmp(overstay(w), "overstay",
-                            overstay(other) if other else 0,
-                            "abs", "lower-is-better")))),
-    ]
-    # The corrected truck figure cannot be compared to a baseline counted under
-    # the old rule, so that one tile states both numbers instead of an arrow.
-    if not arrows and w["trucks"].get("publishedTotal"):
-        # By label, not by index. It was written to tiles[1], which was Truck
-        # moves until the vessel movements tile was inserted ahead of it, and
-        # the correction then sat under a figure it did not describe. Removing
-        # that tile would have shifted it a second time.
-        truck = next(t for t in tiles if t["label"] == "Truck moves")
-        truck["delta_html"] = (
-            f'{truck_total(w)} counted once each &nbsp;'
-            f'<span style="font-weight:400;">'
-            f'({w["trucks"]["publishedTotal"]} as published)</span>')
-        truck["delta_colour"] = DANGER
-    return tiles
 
 
-def kpi_row(w, other, sparks=None):
-    """One table row of tiles. A table, not flex, because the email format has
-    to render it too and Outlook's engine will not lay out a flex row.
-
-    sparks adds the week-on-week line inside each tile, and with it the two
-    hidden lines the scrub swaps in. Email passes nothing: Outlook strips
-    <svg> and runs no script, so it keeps the raster small-multiples chart
-    further down instead. Every style stays inline for the same reason -- the
-    classes are there for the stylesheet and are inert in a mail client."""
-    # "Last week", not "vs 03 to 09 Sep". The reader does not need the dates
-    # of the week they are not reading; the panel head states the week they
-    # are, and the comparison table below spells both out in full.
-    default_caption = ("Last week"
-                       if other is not None and w.get("showArrows", True)
-                       else "Baseline week, no comparison")
-    tiles = kpis(w, other)
-    width = f"{100 // len(tiles)}%"
-    cells = ""
-    for t in tiles:
-        alert = t.get("alert")
-        bg = ALERT_BG if alert else SURFACE
-        edge = f"border:1px solid {ALERT_RULE};" if alert else \
-               f"border:1px solid {RULE};"
-        spark = (sparks or {}).get(t["label"], "")
-        # The scrubbed week goes in its own pair of lines rather than
-        # overwriting the delta. A delta describes this week against last; put
-        # an older week's figure above it and the two contradict each other.
-        # Swapping which pair is displayed keeps the tile the same height.
-        swap = ("" if not spark else
-                f'\n        <div class="k-week"></div>'
-                f'\n        <div class="k-wsub"></div>')
-        cells += f"""      <td class="k" width="{width}" valign="top" style="background:{bg};border-radius:{RADIUS_MD};padding:14px 14px 12px;{edge}">
-        <div class="k-label" style="font-size:{FS['2xs']};color:{INK_MUTED};letter-spacing:.06em;text-transform:uppercase;font-weight:{FW['semibold']};">{t['label']}</div>
-        <div class="k-value" data-default="{t['value']}" style="font-size:{FS['3xl']};font-weight:{FW['bold']};color:{t['colour']};line-height:1.15;padding:6px 0 4px;font-variant-numeric:tabular-nums;">{t['value']}</div>
-        <div class="k-delta" style="font-size:{FS['2xs']};font-weight:{FW['semibold']};color:{t['delta_colour']};">{t['delta_html']}</div>
-        <div class="k-cap" style="font-size:{FS['2xs']};color:{INK_MUTED};">{t.get('caption') or default_caption}</div>{swap}
-        {spark}</td>
-"""
-    return cells
 
 
-# ── rig3 components (dashboard only) ───────────────────────────────────────
-# The browser page is built from the rig3 pieces in @koc/ui: StatCard,
-# SectionHeading, the translucent Card and the outline StatusBadge. The email
-# keeps kpi_row and rig_strip above, because Outlook lays out neither grid nor
-# flex and strips <svg>; its tiles stay tables with every style inline.
+# ── rig3 components ────────────────────────────────────────────────────────
+# The page is built from the rig3 pieces in @koc/ui: StatCard,
+# SectionHeading, the translucent Card and the outline StatusBadge.
 
 MINUS = "−"   # a real minus, as StatCard prints it, never a hyphen
 
@@ -1005,9 +637,9 @@ def stat_delta(now, was, mode, intent):
 def stat_cards(w, other, sparks=None):
     """Four rig3 StatCards, in the same order every week.
 
-    Same four figures as the email's tiles, and the same rules: the oldest week
-    is the baseline and carries no change row, and the corrected truck figure
-    states both numbers instead of a change against a differently counted week.
+    The oldest week is the baseline and carries no change row, and the
+    corrected truck figure states both numbers instead of a change against a
+    differently counted week.
     """
     arrows = other is not None and w.get("showArrows", True)
     specs = [
@@ -1094,59 +726,13 @@ def rig_cards(w):
     return f'  <div class="rigs">\n{cards}  </div>\n'
 
 
-def status_line(w):
-    """The week in one sentence, before any number. Upper management reads this
-    and stops; everything below is for whoever needs to act on it."""
-    return (f'  <div style="border-left:3px solid {PRIMARY};padding:2px 0 2px 14px;'
-            f'margin:4px 0 18px;">'
-            f'<div style="font-size:{FS["md"]};line-height:1.5;color:{INK};">'
-            f'{w.get("headline", "")}</div></div>\n')
 
 
-def rig_strip(w):
-    """Both rigs as two cards, replacing two five-row tables.
-
-    The tables gave every field equal weight. A reader wants three things at a
-    glance: which rig, what state, and whether anyone is overstaying."""
-    cells = ""
-    width = f"{100 // len(w['rigs'])}%"
-    for rig_id in w["rigs"]:
-        r = w["rigs"][rig_id]
-        off = "off-hired" in r["currentOperation"].lower()
-        chip_bg, chip_ink, chip = ((SURFACE, INK_MUTED, "OFF HIRED") if off
-                                   else (tok("color.warning.50"), WARN, "ON HIRE"))
-        ov = sum(r["overstay"].values())
-        ov_txt = ("Nil" if not ov else " &nbsp;".join(
-            f'{k} <span style="color:{DANGER};font-weight:{FW["bold"]};">{v}</span>'
-            for k, v in r["overstay"].items() if v))
-        pob = ("Nil" if not r["personnelOnboard"] else
-               f'{r["personnelOnboard"]} <span style="font-size:{FS["2xs"]};'
-               f'color:{INK_MUTED};font-weight:{FW["normal"]};">'
-               f'incl. {r["visaHolders"]} visa</span>')
-        cells += f"""      <td class="rig" width="{width}" valign="top" style="background:{CARD};border:1px solid {RULE};border-radius:{RADIUS_MD};padding:14px 16px;">
-        <div><span style="font-size:{FS['lg']};font-weight:{FW['bold']};color:{INK};">Rig {rig_id}</span>
-          <span style="font-size:{FS['2xs']};font-weight:{FW['bold']};color:{chip_ink};background:{chip_bg};border-radius:{RADIUS};padding:3px 8px;letter-spacing:.05em;margin-left:8px;white-space:nowrap;">{chip}</span></div>
-        <div style="font-size:{FS['sm']};color:{INK};padding:8px 0 10px;line-height:1.45;">{r['currentOperation']}</div>
-        <table width="100%" style="font-size:{FS['xs']};border-collapse:collapse;">
-          <tr><td style="color:{INK_MUTED};padding:3px 20px 3px 0;width:1%;white-space:nowrap;">Personnel onboard</td><td style="color:{INK};font-weight:{FW['semibold']};font-variant-numeric:tabular-nums;">{pob}</td></tr>
-          <tr><td style="color:{INK_MUTED};padding:3px 0;">Overstay crew</td><td style="color:{INK};font-variant-numeric:tabular-nums;">{ov_txt}</td></tr>
-          <tr><td style="color:{INK_MUTED};padding:3px 0;vertical-align:top;">Last week</td><td style="color:{INK};">{r['lastWeek']}</td></tr>
-          <tr><td style="color:{INK_MUTED};padding:3px 0;vertical-align:top;">Next steps</td><td style="color:{INK};">{r['nextSteps']}</td></tr>
-        </table></td>
-"""
-    return (f'  <table class="rigs" width="100%" cellspacing="10" '
-            f'cellpadding="0"><tr>\n{cells}  </tr></table>\n')
 
 
-def collapsible(title, inner, sub="", open_it=False, email=False):
-    """<details> on the web, a plain section in the email.
-
-    The detail is what makes the report defensible, but it is not what the
-    first reader needs, so on the web it folds away. Outlook does not implement
-    <details>, and a collapsed one there renders as a heading with nothing
-    under it, so the email gets everything inline."""
-    if email:
-        return "\n" + heading(title, PRIMARY) + inner
+def collapsible(title, inner, sub="", open_it=False):
+    """The detail is what makes the report defensible, but it is not what the
+    first reader needs, so it folds away."""
     sub_html = f'<span class="fold-sub">{sub}</span>' if sub else ""
     return f"""  <details class="fold"{' open' if open_it else ''}>
     <summary><span class="fold-title">{title}</span>{sub_html}{CHEVRON}</summary>
@@ -1164,78 +750,36 @@ CHEVRON = ('<svg class="chev" viewBox="0 0 24 24" aria-hidden="true" '
 
 # ── Tables ─────────────────────────────────────────────────────────────────
 
-def row(cells, bold=False, shade=False):
-    weight = "font-weight:700;" if bold else ""
-    bg = f"background:{SURFACE};" if shade else ""
-    tds = "".join(
-        f'<td align="{a}" style="padding:7px 10px;border:1px solid {RULE};'
-        f'{bg}{weight}{extra}">{v}</td>' for v, a, extra in cells)
-    return f"    <tr>{tds}</tr>\n"
+def comparison_table(cur, prev):
+    """The week-on-week comparison, and the text behind every chart: each
+    charted figure appears here as a number.
 
-
-def section_row(title, span=4):
-    return (f'    <tr><td colspan="{span}" style="padding:8px 10px;'
-            f'background:{PRIMARY};color:{ON_PRIMARY};font-size:11px;font-weight:700;'
-            f'letter-spacing:.06em;text-transform:uppercase;'
-            f'border:1px solid {PRIMARY};">{title}</td></tr>\n')
-
-
-def comparison_table(cur, prev, email=True):
-    """The week-on-week comparison, and the text fallback for every chart.
-    Each charted figure appears here, so a recipient whose client blocks images
-    still receives all of it.
-
-    One table, two dresses. The email gets the bordered table with every style
-    inline, which is what Outlook renders. The dashboard gets @koc/chart's
-    table: hairline rows, no vertical rules, and each block opened by a
-    tracked-caps eyebrow instead of a solid blue bar."""
+    @koc/chart's table: hairline rows, no vertical rules, and each block opened
+    by a tracked-caps eyebrow."""
     c_out, c_in = truck_split(cur)
     p_out, p_in = truck_split(prev)
     c_over, p_over = overstay_by(cur), overstay_by(prev)
 
     def line(name, now, was, mode="abs", intent="neutral", unit="",
              bold=False, fmt="{:,g}"):
-        if not email:
-            kind, text, tone = stat_delta(now, was, mode, intent)
-            b = ' class="tot"' if bold else ""
-            return (f'    <tr{b}><th scope="row">{name}</th>'
-                    f'<td>{fmt.format(now)}{unit}</td>'
-                    f'<td class="soft">{fmt.format(was)}{unit}</td>'
-                    f'<td class="chg {tone}">{glyph(kind)}{text}</td></tr>\n')
-        html, colour = delta(now, was, mode, intent, unit)
-        return row([
-            (name, "left", ""),
-            (fmt.format(now) + unit, "right", "font-variant-numeric:tabular-nums;"),
-            (fmt.format(was) + unit, "right",
-             f"font-variant-numeric:tabular-nums;color:{INK_MUTED};"),
-            (html, "right", f"color:{colour};font-weight:700;font-size:12px;"),
-        ], bold=bold)
+        kind, text, tone = stat_delta(now, was, mode, intent)
+        b = ' class="tot"' if bold else ""
+        return (f'    <tr{b}><th scope="row">{name}</th>'
+                f'<td>{fmt.format(now)}{unit}</td>'
+                f'<td class="soft">{fmt.format(was)}{unit}</td>'
+                f'<td class="chg {tone}">{glyph(kind)}{text}</td></tr>\n')
 
     def sec(title):
-        if email:
-            return section_row(title)
         return (f'    <tr class="ct-sec"><th colspan="4" scope="colgroup">'
                 f'{title}</th></tr>\n')
 
-    if email:
-        h = ('  <table width="100%" cellspacing="0" style="font-size:13px;'
-             'border-collapse:collapse;margin-top:8px;">\n  <thead>\n')
-        h += row([
-            ("Metric", "left", ""),
-            (f"{cur['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
-             f"{cur['periodDays']} days</span>", "right", ""),
-            (f"{prev['tabLabel']}<br><span style='font-weight:400;font-size:11px;'>"
-             f"{prev['periodDays']} days</span>", "right", ""),
-            ("Change", "right", ""),
-        ], bold=True, shade=True)
-    else:
-        h = ('  <div class="ct-wrap"><table class="ct">\n'
-             f'  <caption>Week on week, {cur["tabLabel"]} against '
-             f'{prev["tabLabel"]}</caption>\n  <thead>\n'
-             f'    <tr><th scope="col">Metric</th>'
-             f'<th scope="col">{cur["tabLabel"]}<span>{cur["periodDays"]} days</span></th>'
-             f'<th scope="col">{prev["tabLabel"]}<span>{prev["periodDays"]} days</span></th>'
-             f'<th scope="col">Change</th></tr>\n')
+    h = ('  <div class="ct-wrap"><table class="ct">\n'
+         f'  <caption>Week on week, {cur["tabLabel"]} against '
+         f'{prev["tabLabel"]}</caption>\n  <thead>\n'
+         f'    <tr><th scope="col">Metric</th>'
+         f'<th scope="col">{cur["tabLabel"]}<span>{cur["periodDays"]} days</span></th>'
+         f'<th scope="col">{prev["tabLabel"]}<span>{prev["periodDays"]} days</span></th>'
+         f'<th scope="col">Change</th></tr>\n')
     h += "  </thead>\n  <tbody>\n"
 
     h += sec("Vessel trips")
@@ -1245,8 +789,8 @@ def comparison_table(cur, prev, email=True):
 
     if cur.get("vesselMovements") and prev.get("vesselMovements"):
         h += sec("Vessel movements &nbsp;<span style='font-weight:400;"
-                         "text-transform:none;letter-spacing:0;'>port to rig, "
-                         "rig to port, rig to rig</span>")
+                 "text-transform:none;letter-spacing:0;'>port to rig, "
+                 "rig to port, rig to rig</span>")
         for v in ("CA1", "CA3", "CA5", "Charlie-3"):
             h += line(v, cur["vesselMovements"][v], prev["vesselMovements"][v])
         h += line("Total vessel movements", movements(cur), movements(prev),
@@ -1281,47 +825,22 @@ def comparison_table(cur, prev, email=True):
                   intent="lower-is-better")
     h += line("Total overstay crew", overstay(cur), overstay(prev),
               intent="lower-is-better", bold=True)
-    return h + "  </tbody>\n  </table>\n" + ("" if email else "  </div>\n")
-
-
-def rig_table(rig, accent, name):
-    ov = " &nbsp;|&nbsp; ".join(
-        (f'{k}: <span style="color:{DANGER};font-weight:700;">{v}</span>' if v
-         else f"{k}: Nil")
-        for k, v in rig["overstay"].items())
-    pob = "Nil" if not rig["personnelOnboard"] else (
-        f"{rig['personnelOnboard']} crew "
-        f"(incl. {rig['visaHolders']} seaman / business visas)")
-    rows = [("Current operation", rig["currentOperation"]),
-            ("Last week", rig["lastWeek"]),
-            ("Personnel onboard", pob),
-            ("Overstay crew", ov),
-            ("Next steps", rig["nextSteps"])]
-    body = "".join(
-        f'    <tr><td style="background:{SURFACE};padding:8px 10px;'
-        f'font-weight:600;width:34%;border:1px solid {RULE};">{k}</td>'
-        f'<td style="padding:8px 10px;border:1px solid {RULE};">{v}</td></tr>\n'
-        for k, v in rows)
-    return (f'  <div style="font-size:15px;font-weight:700;color:{PRIMARY};'
-            f'border-left:4px solid {accent};padding-left:10px;">{name}</div>\n'
-            f'  <table width="100%" cellspacing="0" style="margin-top:8px;'
-            f'font-size:13px;border-collapse:collapse;">\n{body}  </table>\n')
-
-
-def heading(text, accent):
-    return (f'  <div style="font-size:15px;font-weight:700;color:{PRIMARY};'
-            f'border-left:4px solid {accent};padding-left:10px;">{text}</div>\n')
+    return h + "  </tbody>\n  </table>\n  </div>\n"
 
 
 
 
-# ── Daily logs (dashboard only) ────────────────────────────────────────────
+
+
+
+
+# ── Daily logs ─────────────────────────────────────────────────────────────
 
 def daily_log(log, key, title):
     """The workbook's own narrative, one block per day.
 
-    The email leaves this to the attached workbook. A browser page has no
-    attachment, so it carries the log itself and the report stands alone."""
+    A page has no attachment, so it carries the log itself and the report
+    stands alone."""
     days = log[key]["days"]
     rows = ""
     for d in days:
@@ -1353,32 +872,8 @@ def daily_log(log, key, title):
 """
 
 
-DEFAULT_SIGNATURE = {
-    "name": "Saud Abdulaziz AlKharji",
-    "lines": ["Kuwait Oil Company (KOC)",
-              "Engineer Drilling &amp; Workover | "
-              "Drilling &amp; Workover Operational Support Team"],
-    "muted": ["skharji@kockw.com | www.kockw.com"],
-}
 
 
-def signature(w):
-    """Whoever is circulating the report signs it, which is the default below.
-
-    A week may override it with a `signature` key. Nothing is invented: only
-    what the person's own profile or email states goes in, which is why there is
-    no phone or postal line here."""
-    sig = w.get("signature") or DEFAULT_SIGNATURE
-    body = "<br>\n      ".join(sig.get("lines", []))
-    muted = "<br>\n      ".join(sig.get("muted", []))
-    if muted:
-        muted = (f'<br>\n      <span style="color:{INK_MUTED};">{muted}</span>')
-    return f"""    <p style="font-size:13px;margin:0;">Thanks and Best Regards,</p>
-    <p style="font-size:13px;margin:8px 0 0;line-height:1.6;">
-      <b>{sig['name']}</b><br>
-      {body}{muted}
-    </p>
-"""
 
 def slops_caption(mine, theirs):
     s = mine["slops"]
@@ -1426,24 +921,9 @@ def alt_fluids(mine, theirs):
 
 # ── Shared panel body ──────────────────────────────────────────────────────
 
-def figure(b64, alt, caption="", email=False):
-    """<figure> on the web, plain <div> in the email.
-
-    Outlook renders mail through the Word engine, which styles HTML5 sectioning
-    elements unreliably. The semantics are worth having in a browser and not
-    worth the risk in an inbox."""
-    outer, inner = ("div", "div") if email else ("figure", "figcaption")
-    cap = (f'\n    <{inner} style="font-size:11px;color:{INK_MUTED};'
-           f'padding:6px 2px 0;">{caption}</{inner}>' if caption else "")
-    return (f'  <{outer} style="margin:14px 0 22px;">\n'
-            f'    <img src="data:image/png;base64,{b64}" alt="{alt}"\n'
-            f'      style="width:100%;max-width:100%;display:block;'
-            f'border:1px solid {RULE};border-radius:8px;">{cap}\n'
-            f'  </{outer}>\n')
 
 
-def week_body(w, other, log, with_comparison, email=False,
-              all_weeks=None):
+def week_body(w, other, log, with_comparison, all_weeks=None):
     """One week, ordered for the person with the least time.
 
     Headline, four numbers, the rigs, what happened, then everything that
@@ -1451,12 +931,8 @@ def week_body(w, other, log, with_comparison, email=False,
     log -- folded away below. Nothing was dropped to get there; it was
     reordered and disclosed.
 
-    On screen the order is set out as rig3's numbered sections, so the page
-    reads as four parts rather than one long column. The email keeps its own
-    layout, which Outlook can render."""
-    if email:
-        return _week_body_email(w, other, log, with_comparison, True,
-                                all_weeks)
+    The order is set out as rig3's numbered sections, so the page reads as
+    four parts rather than one long column."""
     h = (f'  <p class="lead">{w.get("headline", "")}</p>\n'
          if w.get("headline") else "")
 
@@ -1503,7 +979,7 @@ def week_body(w, other, log, with_comparison, email=False,
     detail = ('    <div class="charts">\n' + svg_ground(w) + svg_trips(w, other)
               + svg_fluids(w, other) + "    </div>\n")
     if with_comparison:
-        detail += comparison_table(w, other, email=False)
+        detail += comparison_table(w, other)
     h += '  <section class="sec">\n'
     h += section_head("04", "Detail", "Every figure, and the log behind it")
     h += collapsible("Full figures", detail, "three charts, and every figure")
@@ -1517,118 +993,8 @@ def week_body(w, other, log, with_comparison, email=False,
     return h
 
 
-def _week_body_email(w, other, log, with_comparison, email=True,
-                     all_weeks=None):
-    """The email's week: the same order as the page, as tables with every
-    style inline, which is what Outlook renders. Flat tiles and the raster
-    trend chart stand in for the page's sparklines."""
-    h = status_line(w)
-    h += (f'  <table class="kpis" width="100%" cellspacing="10" '
-          f'cellpadding="0"><tr>\n{kpi_row(w, other)}'
-          f'  </tr></table>\n')
-
-    h += "\n" + rig_strip(w)
-
-    if all_weeks and email:
-        # The raster small multiples, for Outlook only. The browser gets the
-        # same five series as live sparklines inside the KPI tiles above.
-        trend = chart_trend(all_weeks, w)
-        if trend:
-            h += figure(trend, alt_trend(all_weeks, w),
-                        "Each panel on its own scale. Figures to the right "
-                        "are this week, to the left the first week tracked.",
-                        email=True)
-
-    # Where the covering email's own operations list has been transcribed,
-    # that is what this section shows: its lines, reworded and nothing else.
-    # The alternative was a written summary of the week, which is an
-    # interpretation, and an interpretation is a place for a mistake to live.
-    # The email's list covers the last day of the period, not all seven, so
-    # the heading carries that date rather than implying a week.
-    ops = w.get("dailyOperations")
-    if ops:
-        h += "\n" + heading(f"Daily ground operations &nbsp;&middot;&nbsp; "
-                            f"{ops['label']}", PRIMARY)
-        items = list(ops["lines"]) + list(ops.get("extraNotes") or [])
-    else:
-        h += "\n" + heading("What happened", PRIMARY)
-        items = w["highlights"]
-    lis = "".join(f"<li style='padding-bottom:5px;'>{x}</li>" for x in items)
-    h += (f'  <ul style="font-size:{FS["base"]};color:{INK};margin:10px 0 0;'
-          f'padding-left:20px;line-height:1.6;">{lis}</ul>\n')
-    if ops:
-        h += (f'  <div style="font-size:{FS["2xs"]};color:{INK_MUTED};'
-              f'padding:7px 2px 0;">{ops["source"]}.</div>\n')
-
-    # ── Everything below proves the above, and folds away ──────────────────
-    # Charts first, then the table. The shape is what a reader takes from
-    # this section; the table is what they check a single figure against, and
-    # they scroll to it deliberately. The table was on top, so the charts sat
-    # below sixty rows of numbers.
-    #
-    # The daily shape is the one thing no other view carries, so it stays in
-    # both formats. The trips and fluids charts are per-vessel and per-category
-    # views of totals the sparklines and the table already give, so the email
-    # drops them: four base64 charts put it over Gmail's 102 KB clip, and a
-    # clipped email loses the signature, not the chart.
-    detail = figure(chart_ground(w), alt_ground(w), email=True)
-    if with_comparison:
-        detail += comparison_table(w, other)
-    h += collapsible("Full figures", detail, "the daily shape, and every figure",
-                     email=True)
-
-    if log:
-        inner = (daily_log(log, "port", "Port operations")
-                 + daily_log(log, "vessel", "Vessel movements"))
-        ops = sum(len(d["lines"]) for k in ("port", "vessel")
-                  for d in log[k]["days"])
-        h += collapsible("Daily log", inner, f"{ops} operations", email=email)
-
-    return h
 
 
-def alt_trend(weeks, upto):
-    order = [x for x in sorted(weeks, key=lambda x: x["periodStart"])
-             if x["periodStart"] <= upto["periodStart"]]
-    parts = []
-    for label, get in (("vessel trips", trips), ("vessel movements", movements),
-                       ("truck moves", truck_total),
-                       ("fluids in cubic metres", fluid_total),
-                       ("overstay crew", overstay)):
-        parts.append(label + " " + ", ".join(str(get(x)) for x in order))
-    return ("Four week trend, one panel per metric, oldest to newest across "
-            + ", ".join(x["tabLabel"] for x in order) + ". " + "; ".join(parts) + ".")
-
-
-# ── Format: email ──────────────────────────────────────────────────────────
-
-def build_email(cur, prev, all_weeks=None):
-    body = week_body(cur, prev, None, with_comparison=True, email=True,
-                     all_weeks=all_weeks)
-    return f"""<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Offshore Logistics Weekly Update {cur['reportDate'].replace('-', '.')}</title></head>
-<body style="margin:0;padding:0;background:{PAGE};font-family:{EMAIL_FONT_STACK};color:{INK};">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{PAGE};padding:24px 0;">
-<tr><td align="center">
-<table role="presentation" width="720" cellpadding="0" cellspacing="0" style="background:{CARD};border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.08);">
-  <tr><td style="background:{PRIMARY};padding:22px 28px;">
-    <table width="100%"><tr>
-      <td style="color:{ON_PRIMARY};font-size:20px;font-weight:700;">Offshore Logistics Weekly Update</td>
-      <td align="right" style="color:{tok('color.primary.200')};font-size:13px;">{cur['periodLabel']}</td>
-    </tr></table></td></tr>
-  <tr><td style="padding:22px 28px 6px;">
-    <p style="margin:0 0 6px;font-size:15px;">Salam Bu Khaled,</p>
-    <p style="margin:0;font-size:14px;color:{INK_MUTED};">Kindly find below the Offshore Logistics weekly summary. The week in one line and four figures comes first, then {'the rig' if len(cur['rigs']) == 1 else 'the rigs'}, then what happened, then the supporting charts and the full week on week comparison. Full daily port and vessel logs are in the attached workbook.</p>
-  </td></tr>
-  <tr><td style="padding:14px 28px 0;">
-{body}  </td></tr>
-  <tr><td style="padding:20px 28px 26px;">
-    <p style="font-size:13px;margin:0 0 12px;">Full daily port and vessel logs are attached. Happy to walk through any item.</p>
-{signature(cur)}  </td></tr>
-</table></td></tr></table></body></html>
-"""
 
 
 # ── Format: tabbed dashboard ───────────────────────────────────────────────
@@ -2403,13 +1769,13 @@ def load(date_str, suffix=""):
 
 
 def main():
-    """Three outputs, one per audience:
+    """Three outputs:
 
-        dashboard/  every week behind a tab strip, for circulating
-        email/      the newest week, Outlook safe, for the weekly mail
+        dashboard/  every week behind a tab strip, for SharePoint or OneDrive
         notes/      the open queries, for chasing answers
+        artifact/   the same dashboard as a body fragment, for review
 
-    The queries used to sit in an amber block inside both reports. They are
+    The queries used to sit in an amber block inside the report. They are
     questions for the report author, so they do not belong in something being
     circulated -- but they are also not something to lose, hence a file of
     their own, generated from the same data.
@@ -2421,9 +1787,9 @@ def main():
                      "2026-10-01", "2026-09-24", "2026-09-17", "2026-09-10",
                      "2026-09-03", "2026-08-26"]
 
-    picked = flags & {"--dashboard", "--email", "--notes", "--artifact"}
+    picked = flags & {"--dashboard", "--notes", "--artifact"}
     want = {name: (f"--{name}" in flags or not picked)
-            for name in ("dashboard", "email", "notes", "artifact")}
+            for name in ("dashboard", "notes", "artifact")}
 
     weeks = []
     for d in dates:
@@ -2432,7 +1798,6 @@ def main():
             sys.exit(f"missing data/{d}.json")
         weeks.append(w)
     weeks.sort(key=lambda w: w["periodStart"], reverse=True)
-    cur, prev = weeks[0], weeks[1]
 
     for w in weeks:
         got, expect = len(w["trucks"]["byDay"]), w["periodDays"]
@@ -2453,10 +1818,6 @@ def main():
         # says which, and each rebuild replaces the file rather than adding one.
         write("dashboard", "Offshore_Logistics_Weekly_Dashboard.html",
               build_dashboard(weeks, logs))
-    if want["email"]:
-        d, m, y = cur["reportDate"][8:10], cur["reportDate"][5:7], cur["reportDate"][:4]
-        write("email", f"Offshore_Logistics_Weekly_Update_{d}-{m}-{y}.html",
-              build_email(cur, prev, weeks))
     if want["notes"]:
         write("notes", "data-queries.md", build_notes(weeks))
 
